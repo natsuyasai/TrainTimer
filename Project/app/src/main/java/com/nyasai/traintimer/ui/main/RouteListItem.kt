@@ -22,7 +22,43 @@ data class RouteListItem(val dataNo: Int,
 /**
  * 路線リストアダプタ
  */
-class RouteListAdapter(context: Context): ArrayAdapter<RouteListItem>(context, 0) {
+class RouteListAdapter(context: Context, items: Array<RouteListItem>): ArrayAdapter<RouteListItem>(context, 0) {
+
+    /**
+     * 表示アイテム
+     */
+    private val mRouteItems: Array<RouteListItem>
+
+    /**
+     * 表示コンテキスト
+     */
+    private var mContext: Context
+
+    init {
+        mContext = context
+        mRouteItems = items
+    }
+
+    /**
+     * アイテム数取得
+     */
+    override fun getCount(): Int {
+        return mRouteItems.size
+    }
+
+    /**
+     * アイテム取得
+     */
+    override fun getItem(position: Int): RouteListItem? {
+        return mRouteItems[position]
+    }
+
+    /**
+     * アイテムID取得
+     */
+    override fun getItemId(position: Int): Long {
+        return mRouteItems[position].dataNo.toLong()
+    }
 
     /**
      * ビュー取得

@@ -15,95 +15,42 @@ class RouteListFragment: ListFragment() {
         fun newInstance() = RouteListFragment()
     }
 
-    // binding
-    private lateinit var _binding: RouteListFragmentBinding
+    /**
+     * binding
+     */
+    private lateinit var mBinding: RouteListFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DataBindingUtil.inflate<RouteListFragmentBinding>(inflater, R.layout.route_list_fragment, container, false)
-        _binding.setLifecycleOwner(this)
+        // バインディングレイアウト取得
+        mBinding = DataBindingUtil.inflate<RouteListFragmentBinding>(inflater, R.layout.route_list_fragment, container, false)
+        mBinding.setLifecycleOwner(this)
+        // アダプタ設定
         val adapter = this.context?.let {
-            RouteListAdapter(it).apply {
-                add(
-                    RouteListItem(
-                        0,
-                        "RouteName1",
-                        "StationName1",
-                        "Destination1",
-                        "SrcUrl1",
-                        "DetailDataName1"
-                    )
-                )
-                add(
-                    RouteListItem(
-                        1,
-                        "RouteName2",
-                        "StationName2",
-                        "Destination2",
-                        "SrcUrl2",
-                        "DetailDataName2"
-                    )
-                )
-                add(
-                    RouteListItem(
-                        2,
-                        "RouteName3",
-                        "StationName3",
-                        "Destination3",
-                        "SrcUrl3",
-                        "DetailDataName3"
-                    )
-                )
-                add(
-                    RouteListItem(
-                        3,
-                        "RouteName4",
-                        "StationName4",
-                        "Destination4",
-                        "SrcUrl4",
-                        "DetailDataName4"
-                    )
-                )
-                add(
-                    RouteListItem(
-                        4,
-                        "RouteName5",
-                        "StationName5",
-                        "Destination5",
-                        "SrcUrl5",
-                        "DetailDataName5"
-                    )
-                )
-                add(
-                    RouteListItem(
-                        5,
-                        "RouteName6",
-                        "StationName6",
-                        "Destination6",
-                        "SrcUrl6",
-                        "DetailDataName6"
-                    )
-                )
-            }
+            RouteListAdapter(it,
+                arrayOf(
+                    RouteListItem(0,"Route0","Station0","Destination0","Url0","Detail0"),
+                    RouteListItem(1,"Route1","Station1","Destination1","Url1","Detail1"),
+                    RouteListItem(2,"Route2","Station2","Destination2","Url2","Detail2"),
+                    RouteListItem(3,"Route3","Station3","Destination3","Url3","Detail3"),
+                    RouteListItem(4,"Route4","Station4","Destination4","Url4","Detail4"),
+                    RouteListItem(5,"Route5","Station5","Destination5","Url5","Detail5"),
+                    RouteListItem(6,"Route6","Station6","Destination6","Url6","Detail6")
+                ))
         }
         // リストビューにアダプタ設定
-        _binding.routeListView.adapter = adapter
-        _binding.setOnClickRouteItem { parent, view, position, id ->
+        mBinding.routeListView.adapter = adapter
+        mBinding.setOnClickRouteItem { parent, view, position, id ->
             Log.d("Log", position.toString())
         }
-        return _binding.root
+        return mBinding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 表示データ読み込み
-
-    }
 }

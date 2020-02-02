@@ -1,4 +1,5 @@
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
             name="item"
@@ -16,6 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="left"
             android:text="@{item.routeName}"
+            tools:text="Route"
             android:textSize="18sp"></TextView>
         <!-- 駅名 -->
         <TextView
@@ -24,6 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="left"
             android:text="@{item.stationName}"
+            tools:text="Station"
             android:textSize="24sp"></TextView>
         <!-- 方面 -->
         <TextView
@@ -32,6 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="left"
             android:text="@{item.destination}"
+            tools:text="Destination"
             android:textSize="18sp"></TextView>
     </LinearLayout>
 </layout>
