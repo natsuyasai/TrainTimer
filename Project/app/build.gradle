@@ -36,4 +36,14 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    //Lifecycle
+    kapt "androidx.lifecycle:lifecycle-compiler:2.1.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.1.0"
+
+    //DI
+    implementation "com.google.dagger:dagger:2.17"
+    kapt "com.google.dagger:dagger-compiler:2.17"
+    implementation "com.google.dagger:dagger-android:2.17"
+    kapt "com.google.dagger:dagger-android-processor:2.17"
+    implementation "com.google.dagger:dagger-android-support:2.17"
 }
