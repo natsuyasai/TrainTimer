@@ -10,7 +10,7 @@
         android:label="fragment_route_list"
         tools:layout="@layout/fragment_route_list" >
         <action
-            android:id="@+id/action_routeList_to_routeInfoFragment2"
+            android:id="@+id/action_routeList_to_routeInfoFragment"
             app:destination="@id/routeInfoFragment2" />
     </fragment>
     <fragment
@@ -18,6 +18,9 @@
         android:name="com.nyasai.traintimer.routeinfo.RouteInfoFragment"
         android:label="fragment_route_info"
         tools:layout="@layout/fragment_route_info" >
+        <argument
+            android:name="parentDataId"
+            app:argType="long" />
         <action
             android:id="@+id/action_routeInfoFragment2_to_routeList"
             app:destination="@id/routeList" />

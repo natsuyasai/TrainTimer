@@ -48,13 +48,13 @@ interface RouteDatabaseDao {
     /**
      * 路線アイテム一覧取得
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId DESC")
+    @Query("SELECT * from route_list_item_table ORDER BY dataId")
     fun getAllRouteListItems(): LiveData<List<RouteListItem>>
 
     /**
      * 路線アイテム一覧取得(同期)
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId DESC")
+    @Query("SELECT * from route_list_item_table ORDER BY dataId")
     fun getAllRouteListItemsSync(): List<RouteListItem>
 
     // endregion 路線リストアイテム操作
@@ -101,26 +101,26 @@ interface RouteDatabaseDao {
      * 路線詳細アイテム一覧取得(親アイテムID指定)
      * @param parentId 親アイテムID
      */
-    @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId DESC")
+    @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId")
     fun getRouteDetailsItemsWithParentId(parentId: Long): LiveData<List<RouteDetails>>
 
     /**
      * 路線詳細アイテム一覧取得(親アイテムID指定)同期
      * @param parentId 親アイテムID
      */
-    @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId DESC")
+    @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId")
     fun getRouteDetailsItemsWithParentIdSync(parentId: Long): List<RouteDetails>
 
     /**
      * 路線詳細アイテム一覧取得
      */
-    @Query("SELECT * from route_details_table ORDER BY dataId DESC")
+    @Query("SELECT * from route_details_table ORDER BY dataId")
     fun getAllRouteDetailsItems(): LiveData<List<RouteDetails>>
 
     /**
      * 路線詳細アイテム一覧取得(同期)
      */
-    @Query("SELECT * from route_details_table ORDER BY dataId DESC")
+    @Query("SELECT * from route_details_table ORDER BY dataId")
     fun getAllRouteDetailsItemsSync(): List<RouteDetails>
 
     // endregion 路線情報詳細操作
