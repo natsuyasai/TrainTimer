@@ -39,7 +39,7 @@
             app:stationName="@{routeListItem}" />
         <!-- 方面 -->
         <TextView
-            android:id="@+id/destination_name"
+            android:id="@+id/direction_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="left"

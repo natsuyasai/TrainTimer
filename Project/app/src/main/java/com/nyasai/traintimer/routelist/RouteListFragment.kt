@@ -62,16 +62,16 @@ class RouteList : Fragment() {
         })
 
         // region *************仮データ挿入*************
-        val tmp1 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp2 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp3 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp4 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp5 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp6 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp7 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp8 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp9 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
-        val tmp10 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
+        val tmp1 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp2 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp3 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp4 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp5 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp6 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp7 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp8 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp9 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
+        val tmp10 = RouteListItem(0,"JR Hoge線", "Fuga駅", "大阪方面")
         GlobalScope.async{
             dataSource.clearAllRouteListItem()
             dataSource.insertRouteListItem(tmp1)
@@ -121,7 +121,6 @@ class RouteList : Fragment() {
             }
         })
 
-        Log.d("Debug", routeListViewModel.routeList.value.toString())
         // Inflate the layout for this fragment
         return binding.root
     }

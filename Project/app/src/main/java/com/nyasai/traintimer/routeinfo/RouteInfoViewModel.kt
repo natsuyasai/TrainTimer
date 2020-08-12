@@ -1,17 +1,19 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routeinfo
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.nyasai.traintimer.database.RouteDatabaseDao
+import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.database.RouteListItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 
-class RouteListViewModel(
-    val database: RouteDatabaseDao,
-    application: Application): AndroidViewModel(application) {
+class RouteInfoViewModel (val database: RouteDatabaseDao,
+                          application: Application,
+                          val parentId: Long): AndroidViewModel(application) {
+
 
     // ジョブ
     private var viewModelJob = Job()
@@ -19,25 +21,25 @@ class RouteListViewModel(
     //
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
-    // 路線一覧
-    val routeList = database.getAllRouteListItems()
+    // 路線詳細
+    val routeItems = database.getRouteDetailsItemsWithParentId(parentId)
 
 
     private suspend fun clear() {
         withContext(Dispatchers.IO) {
-            database.clearAllRouteListItem()
+            database.clearAllRouteDetailsItem()
         }
     }
 
-    private suspend fun update(item: RouteListItem) {
+    private suspend fun update(item: RouteDetails) {
         withContext(Dispatchers.IO) {
-            database.updateRouteListItem(item)
+            database.updateRouteDetailsItem(item)
         }
     }
 
-    private suspend fun insert(item: RouteListItem) {
+    private suspend fun insert(item: RouteDetails) {
         withContext(Dispatchers.IO) {
-            database.insertRouteListItem(item)
+            database.insertRouteDetailsItem(item)
         }
     }
 }
