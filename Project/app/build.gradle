@@ -28,6 +28,16 @@ android {
     buildFeatures {
         dataBinding = true
     }
+
+    kotlin {
+        experimental {
+            coroutines 'enable'
+        }
+    }
+
+    repositories {
+        jcenter()
+    }
 }
 
 dependencies {
@@ -62,5 +72,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     // DB Test
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
+
+    // Async
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1"
 
 }

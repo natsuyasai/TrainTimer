@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
-
+        <variable
+            name="routeListItem"
+            type="com.nyasai.traintimer.database.RouteListItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -22,7 +24,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Route"></TextView>
+            app:routeName="@{routeListItem}" />
         <!-- 駅名 -->
         <TextView
             android:id="@+id/station_name"
@@ -34,7 +36,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/route_name"
-            tools:text="Station"></TextView>
+            app:stationName="@{routeListItem}" />
         <!-- 方面 -->
         <TextView
             android:id="@+id/destination_name"
@@ -46,7 +48,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_name"
-            tools:text="Destination"></TextView>
+            app:direction="@{routeListItem}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

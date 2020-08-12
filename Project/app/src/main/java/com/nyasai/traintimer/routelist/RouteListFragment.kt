@@ -1,60 +1,77 @@
 package com.nyasai.traintimer.routelist
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.nyasai.traintimer.R
+import com.nyasai.traintimer.database.RouteDatabase
+import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.databinding.FragmentRouteListBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
  * Use the [RouteList.newInstance] factory method to
  * create an instance of this fragment.
  */
+@Suppress("DEPRECATION")
 class RouteList : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_route_list, container, false)
-    }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment RouteList.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            RouteList().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        // データバインド設定
+        val binding: FragmentRouteListBinding = DataBindingUtil.inflate(
+            inflater, R.layout.fragment_route_list, container, false)
+
+        val application = requireNotNull(this.activity).application
+
+        val dataSource = RouteDatabase.getInstance(application).routeDatabaseDao
+
+        val viewModelFactory = RouteListViewModelFactory(dataSource, application)
+
+        val routeListViewModel = ViewModelProviders.of(this, viewModelFactory)
+            .get(RouteListViewModel::class.java)
+
+        binding.routeListViewModel = routeListViewModel
+
+        binding.setLifecycleOwner(this)
+
+        // TODO:リストアイテム選択時の移動
+        //sleepTrackerViewModel.navigateTo
+
+        val adapter = RouteListAdapter()
+        binding.routeListView.adapter = adapter
+
+        // region *************仮データ挿入*************
+        val tmp1 = RouteListItem(0,"JR 宝塚線", "草野駅", "大阪方面")
+        GlobalScope.async{
+            dataSource.insertRouteListItem(tmp1)
+        }
+
+
+        // endregion *************仮データ挿入*************
+
+        // 変更監視
+        routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
+            it?.let{
+                adapter.submitList(it)
+                Log.d("Debug", routeListViewModel.routeList.value.toString())
             }
+        })
+
+        Log.d("Debug", routeListViewModel.routeList.value.toString())
+        // Inflate the layout for this fragment
+        return binding.root
     }
 }
