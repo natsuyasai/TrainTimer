@@ -84,6 +84,9 @@ class RouteListFragment : Fragment() {
         // ダミーデータ挿入
         setDummyData()
 
+        // ダイアログ初期化
+        initDialog()
+
         // 変更監視
         routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
             it?.let{
@@ -94,6 +97,69 @@ class RouteListFragment : Fragment() {
 
         // Inflate the layout for this fragment
         return binding.root
+    }
+
+    /**
+     * ダイアログ初期化
+     */
+    private fun initDialog() {
+        // 画面生成時にダイアログが存在する場合は，コールバックを再登録
+        var dialog = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        if(dialog != null && dialog is RouteListItemDeleteConfirmDialogFragment){
+            dialog.onClickPositiveButtonCallback = {
+                onClickDialogYse(it)
+            }
+            dialog.onClickNegativeButtonCallback = {
+                onClickDialogNo(it)
+            }
+        }
+    }
+
+    /**
+     * ダイアログ表示
+     * @param item 選択対象アイテム
+     */
+    private fun showDeleteConfirmDialog(item: RouteListItem){
+        // 前回分削除
+        var prevDlg = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        if(prevDlg != null){
+            requireFragmentManager().beginTransaction().remove(prevDlg)
+        }
+        requireFragmentManager().beginTransaction().addToBackStack(null)
+
+        // ダイアログ表示
+        var dialog = RouteListItemDeleteConfirmDialogFragment()
+        val bundle = Bundle()
+        bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
+        dialog.arguments = bundle
+        dialog.onClickPositiveButtonCallback = {
+            onClickDialogYse(it)
+        }
+        dialog.onClickNegativeButtonCallback = {
+            onClickDialogNo(it)
+        }
+        dialog.showNow(requireFragmentManager(), ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+
+    }
+
+    /**
+     * 削除確認ダイアログYseボタンクリック処理
+     * @param targetDataId 対象データID
+     */
+    private fun onClickDialogYse(targetDataId: Long?) {
+        if(targetDataId == null){
+            return
+        }
+        GlobalScope.async {
+            _routeDatabaseDao.deleteRouteListItem(targetDataId)
+        }
+    }
+
+    /**
+     * 削除確認ダイアログNoボタンクリック処理
+     * @param targetDataId 対象データID
+     */
+    private fun onClickDialogNo(targetDataId: Long?) {
     }
 
     /**
@@ -150,52 +216,5 @@ class RouteListFragment : Fragment() {
         }
 
         // endregion *************仮データ挿入*************
-    }
-
-    /**
-     * ダイアログ表示
-     * @param item 選択対象アイテム
-     */
-    private fun showDeleteConfirmDialog(item: RouteListItem){
-        // 前回分削除
-        var prevDlg = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
-        if(prevDlg != null){
-            requireFragmentManager().beginTransaction().remove(prevDlg)
-        }
-        requireFragmentManager().beginTransaction().addToBackStack(null)
-
-        // ダイアログ表示
-        var dialog = RouteListItemDeleteConfirmDialogFragment()
-        val bundle = Bundle()
-        bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
-        dialog.arguments = bundle
-        dialog.onClickPositiveButtonCallback = {
-            onClickDialogYse(it)
-        }
-        dialog.onClickNegativeButtonCallback = {
-            onClickDialogNo(it)
-        }
-        dialog.showNow(requireFragmentManager(), ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
-
-    }
-
-    /**
-     * 削除確認ダイアログYseボタンクリック処理
-     * @param targetDataId 対象データID
-     */
-    private fun onClickDialogYse(targetDataId: Long?) {
-        if(targetDataId == null){
-            return
-        }
-        GlobalScope.async {
-            _routeDatabaseDao.deleteRouteListItem(targetDataId)
-        }
-    }
-
-    /**
-     * 削除確認ダイアログNoボタンクリック処理
-     * @param targetDataId 対象データID
-     */
-    private fun onClickDialogNo(targetDataId: Long?) {
     }
 }
