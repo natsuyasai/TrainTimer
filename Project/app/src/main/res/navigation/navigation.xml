@@ -6,7 +6,7 @@
     app:startDestination="@id/routeList">
     <fragment
         android:id="@+id/routeList"
-        android:name="com.nyasai.traintimer.routelist.RouteList"
+        android:name="com.nyasai.traintimer.routelist.RouteListFragment"
         android:label="fragment_route_list"
         tools:layout="@layout/fragment_route_list" >
         <action

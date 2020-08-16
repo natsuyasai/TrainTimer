@@ -14,12 +14,14 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
     // アイテムクリックリスナ
     lateinit var clickListener: OnItemClickListener
 
+    lateinit var longClickListener: OnItemLongClickListener
+
     /**
      * ViewHolderに表示するデータを設定
      */
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item, clickListener)
+        holder.bind(item, clickListener, longClickListener)
     }
 
     /**
@@ -30,8 +32,19 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
     }
 
     // region アイテムクリックリスナ
+
+    /**
+     * アイテムクリックリスナIF
+     */
     interface OnItemClickListener{
         fun onItemClickListener(view: View, item: RouteListItem)
+    }
+
+    /**
+     * アイテム長押しリスナIF
+     */
+    interface OnItemLongClickListener {
+        fun onItemLongClickListener(view: View, item: RouteListItem): Boolean
     }
 
     /**
@@ -41,19 +54,30 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
         clickListener = listener
     }
 
+    /**
+     * アイテム長押しリスナ登録
+     */
+    fun setOnItemLongClickListener(listener: OnItemLongClickListener) {
+        longClickListener = listener
+    }
+
     // endregion アイテムクリックリスナ
 
+    // region ViewHolder
     class ViewHolder private constructor(
         private val binding: ListItemRouteListBinding): RecyclerView.ViewHolder(binding.root) {
 
         /**
          * バインド実行
          */
-        fun bind(item: RouteListItem, listener: OnItemClickListener) {
+        fun bind(item: RouteListItem, clickListener: OnItemClickListener, longClickListener: OnItemLongClickListener) {
             binding.routeListItem = item
             // クリックイベント登録
             binding.root.setOnClickListener{
-                listener.onItemClickListener(it, item)
+                clickListener.onItemClickListener(it, item)
+            }
+            binding.root.setOnLongClickListener{
+                longClickListener.onItemLongClickListener(it, item)
             }
             binding.executePendingBindings()
         }
@@ -66,6 +90,8 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
             }
         }
     }
+
+    // endregion ViewHolder
 }
 
 class RouteListItemDiffCallback : DiffUtil.ItemCallback<RouteListItem>() {

@@ -11,4 +11,9 @@ class Define {
         // 日曜祝日
         Sunday
     }
+
+    companion object{
+        // 路線リスト削除確認ダイアログ引数(データID)
+        const val ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID = "DATA_ID"
+    }
 }

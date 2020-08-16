@@ -9,16 +9,9 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.findNavController
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
-import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
-import com.nyasai.traintimer.databinding.FragmentRouteListBinding
-import com.nyasai.traintimer.routelist.RouteListAdapter
-import com.nyasai.traintimer.routelist.RouteListDirections
-import com.nyasai.traintimer.routelist.RouteListViewModel
-import com.nyasai.traintimer.routelist.RouteListViewModelFactory
 
 
 /**
