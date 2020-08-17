@@ -6,25 +6,26 @@
         <variable
             name="routeListItem"
             type="com.nyasai.traintimer.database.RouteListItem" />
+        <variable
+            name="currentDiagramType"
+            type="com.nyasai.traintimer.define.Define.DiagramType" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/list_frame_style"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp" >
+        android:background="@drawable/list_frame_style" >
 
         <!-- 路線名 -->
         <TextView
             android:id="@+id/route_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="left"
+            android:layout_gravity="center"
             android:textSize="18sp"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -34,8 +35,9 @@
             android:id="@+id/station_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="left"
+            android:layout_gravity="center"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:textSize="24sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -46,13 +48,28 @@
             android:id="@+id/direction_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="left"
+            android:layout_gravity="center"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:textSize="18sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_name"
             app:direction="@{routeListItem}" />
+
+        <!-- 種類(平日or土曜or日曜祝日) -->
+        <TextView
+            android:id="@+id/diagram_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textSize="18sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/direction_name"
+            app:diagramType="@{currentDiagramType}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

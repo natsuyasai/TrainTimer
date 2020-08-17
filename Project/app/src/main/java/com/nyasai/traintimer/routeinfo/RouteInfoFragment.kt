@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
+import com.nyasai.traintimer.define.Define
 
 
 /**
@@ -44,7 +45,7 @@ class RouteInfoFragment : Fragment() {
 
         binding.routeInfoViewModel = routeInfoViewModel
 
-        binding.setLifecycleOwner(this)
+        binding.lifecycleOwner = this
 
 
         // 路線詳細用アダプター設定
@@ -55,9 +56,16 @@ class RouteInfoFragment : Fragment() {
         routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
             it?.let{
                 adapter.submitList(it)
-                Log.d("Debug", "データ更新 : ${routeInfoViewModel.routeItems.value.toString()}")
+                Log.d("Debug", "詳細データ更新 : ${routeInfoViewModel.routeItems.value.toString()}")
             }
         })
+
+        routeInfoViewModel.routeInfo.observe(viewLifecycleOwner, Observer {
+            it?.let{
+                Log.d("Debug", "路線データ更新 : ${routeInfoViewModel.routeInfo.value.toString()}")
+            }
+        })
+
 
         return binding.root
     }

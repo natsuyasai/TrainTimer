@@ -43,7 +43,14 @@ interface RouteDatabaseDao {
      * @param id 路線データID
      */
     @Query("SELECT * from route_list_item_table WHERE dataId = :id")
-    fun getRouteListItemWithId(id: Long): RouteListItem?
+    fun getRouteListItemWithId(id: Long): LiveData<RouteListItem>
+
+    /**
+     * 路線アイテム取得(同期)
+     * @param id 路線データID
+     */
+    @Query("SELECT * from route_list_item_table WHERE dataId = :id")
+    fun getRouteListItemWithIdSync(id: Long): RouteListItem?
 
     /**
      * 路線アイテム一覧取得

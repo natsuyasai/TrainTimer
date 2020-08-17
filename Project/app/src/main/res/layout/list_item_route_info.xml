@@ -11,7 +11,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/list_frame_style" >
 
         <!-- 時刻 -->
         <TextView
@@ -36,7 +37,7 @@
             app:layout_constraintEnd_toEndOf="@id/destination_name"
             app:layout_constraintStart_toStartOf="@id/departure_time"
             app:layout_constraintTop_toTopOf="parent"
-            app:stationName="@{routeDetails}" />
+            app:trainType="@{routeDetails}" />
         <!-- 方面 -->
         <TextView
             android:id="@+id/destination_name"
