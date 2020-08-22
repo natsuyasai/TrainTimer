@@ -1,7 +1,6 @@
 package com.nyasai.traintimer.routeinfo
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -27,6 +26,9 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
     }
 
 
+    /**
+     * ViewHolder
+     */
     class ViewHolder private constructor(
         private val binding: ListItemRouteInfoBinding
     ): RecyclerView.ViewHolder(binding.root) {
@@ -49,6 +51,9 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
     }
 }
 
+/**
+ * 比較コールバック
+ */
 class RouteInfoDiffCallback : DiffUtil.ItemCallback<RouteDetails>() {
     override fun areItemsTheSame(oldItem: RouteDetails, newItem: RouteDetails): Boolean {
         return oldItem.dataId == newItem.dataId

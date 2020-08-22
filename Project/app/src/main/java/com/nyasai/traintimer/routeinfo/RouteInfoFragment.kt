@@ -22,6 +22,9 @@ import com.nyasai.traintimer.define.Define
  */
 class RouteInfoFragment : Fragment() {
 
+    /**
+     * onCreateViewフック
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -61,11 +64,6 @@ class RouteInfoFragment : Fragment() {
             }
         })
 
-        routeInfoViewModel.routeInfo.observe(viewLifecycleOwner, Observer {
-            it?.let{
-                Log.d("Debug", "路線データ更新 : ${routeInfoViewModel.routeInfo.value.toString()}")
-            }
-        })
 
         return binding.root
     }

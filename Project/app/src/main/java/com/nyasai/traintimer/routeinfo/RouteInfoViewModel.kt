@@ -12,6 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 
+/**
+ * 路線詳細情報表示用ViewModel
+ */
 class RouteInfoViewModel (val database: RouteDatabaseDao,
                           application: Application,
                           parentId: Long): AndroidViewModel(application) {
@@ -58,18 +61,27 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
         }
     }
 
+    /**
+     * データクリア
+     */
     private suspend fun clear() {
         withContext(Dispatchers.IO) {
             database.clearAllRouteDetailsItem()
         }
     }
 
+    /**
+     * データ更新
+     */
     private suspend fun update(item: RouteDetails) {
         withContext(Dispatchers.IO) {
             database.updateRouteDetailsItem(item)
         }
     }
 
+    /**
+     * データ追加
+     */
     private suspend fun insert(item: RouteDetails) {
         withContext(Dispatchers.IO) {
             database.insertRouteDetailsItem(item)

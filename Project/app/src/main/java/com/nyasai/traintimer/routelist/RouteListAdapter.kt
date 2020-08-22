@@ -9,6 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.ListItemRouteListBinding
 
+/**
+ * 路線一覧用アダプタ
+ */
 class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>(RouteListItemDiffCallback()){
 
     // アイテムクリックリスナ
@@ -64,6 +67,9 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
     // endregion アイテムクリックリスナ
 
     // region ViewHolder
+    /**
+     * ViewHolder
+     */
     class ViewHolder private constructor(
         private val binding: ListItemRouteListBinding): RecyclerView.ViewHolder(binding.root) {
 
@@ -94,6 +100,9 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
     // endregion ViewHolder
 }
 
+/**
+ * 路線一覧アイテム比較コールバック
+ */
 class RouteListItemDiffCallback : DiffUtil.ItemCallback<RouteListItem>() {
     override fun areItemsTheSame(oldItem: RouteListItem, newItem: RouteListItem): Boolean {
         return oldItem.dataId == newItem.dataId

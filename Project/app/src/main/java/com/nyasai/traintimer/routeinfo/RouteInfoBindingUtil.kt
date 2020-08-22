@@ -36,6 +36,9 @@ fun TextView.setDestination(item: RouteDetails?) {
     }
 }
 
+/**
+ * 路線名
+ */
 @BindingAdapter("routeName")
 fun TextView.setRouteName(item: RouteListItem?) {
     item?.let {
@@ -43,6 +46,9 @@ fun TextView.setRouteName(item: RouteListItem?) {
     }
 }
 
+/**
+ * 駅名
+ */
 @BindingAdapter("stationName")
 fun TextView.setStationName(item: RouteListItem?) {
     item?.let {
@@ -50,6 +56,9 @@ fun TextView.setStationName(item: RouteListItem?) {
     }
 }
 
+/**
+ * 行先
+ */
 @BindingAdapter("direction")
 fun TextView.setDirection(item: RouteListItem?) {
     item?.let {
@@ -57,6 +66,9 @@ fun TextView.setDirection(item: RouteListItem?) {
     }
 }
 
+/**
+ * ダイヤ種別
+ */
 @BindingAdapter("diagramType")
 fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
     text = when(currentDiagramType){

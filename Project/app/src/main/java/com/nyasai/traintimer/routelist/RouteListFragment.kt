@@ -90,6 +90,7 @@ class RouteListFragment : Fragment() {
         // 変更監視
         routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
             it?.let{
+                // リストアイテム設定
                 adapter.submitList(it)
                 Log.d("Debug", "データ更新 : ${routeListViewModel.routeList.value.toString()}")
             }

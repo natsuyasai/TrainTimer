@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import java.lang.IllegalArgumentException
 
+/**
+ * 路線詳細情報ViewModelファクトリ
+ */
 class RouteInfoViewModelFactory (
     private val dataSource: RouteDatabaseDao,
     private val application: Application,

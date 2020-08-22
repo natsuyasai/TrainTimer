@@ -5,7 +5,9 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.database.RouteListItem
 
-
+/**
+ * 路線名
+ */
 @BindingAdapter("routeName")
 fun TextView.setRouteName(item: RouteListItem?) {
     item?.let {
@@ -13,6 +15,9 @@ fun TextView.setRouteName(item: RouteListItem?) {
     }
 }
 
+/**
+ * 駅名
+ */
 @BindingAdapter("stationName")
 fun TextView.setStationName(item: RouteListItem?) {
     item?.let {
@@ -20,6 +25,9 @@ fun TextView.setStationName(item: RouteListItem?) {
     }
 }
 
+/**
+ * 行先
+ */
 @BindingAdapter("direction")
 fun TextView.setDirection(item: RouteListItem?) {
     item?.let {
