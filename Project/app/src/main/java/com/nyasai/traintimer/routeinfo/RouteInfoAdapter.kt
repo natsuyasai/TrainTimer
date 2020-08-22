@@ -27,8 +27,6 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
     }
 
 
-    // endregion アイテムクリックリスナ
-
     class ViewHolder private constructor(
         private val binding: ListItemRouteInfoBinding
     ): RecyclerView.ViewHolder(binding.root) {

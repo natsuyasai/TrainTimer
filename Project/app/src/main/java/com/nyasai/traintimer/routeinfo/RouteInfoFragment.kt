@@ -55,7 +55,8 @@ class RouteInfoFragment : Fragment() {
         // 変更監視
         routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
             it?.let{
-                adapter.submitList(it)
+                // 表示種別に応じたデータを設定
+                adapter.submitList(routeInfoViewModel.getDisplayRouteDetailsItems())
                 Log.d("Debug", "詳細データ更新 : ${routeInfoViewModel.routeItems.value.toString()}")
             }
         })
@@ -65,7 +66,6 @@ class RouteInfoFragment : Fragment() {
                 Log.d("Debug", "路線データ更新 : ${routeInfoViewModel.routeInfo.value.toString()}")
             }
         })
-
 
         return binding.root
     }

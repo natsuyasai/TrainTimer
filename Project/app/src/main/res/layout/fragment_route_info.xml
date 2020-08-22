@@ -20,6 +20,7 @@
             app:routeListItem="@{routeInfoViewModel.routeInfo}"
             app:currentDiagramType="@{routeInfoViewModel.currentDiagramType}" />
 
+        <!-- カウントダウン -->
 <!--        <TextView-->
 <!--            android:id="@+id/route_info_title"-->
 <!--            android:layout_width="match_parent"-->

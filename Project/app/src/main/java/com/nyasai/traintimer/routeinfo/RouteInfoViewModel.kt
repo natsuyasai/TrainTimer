@@ -3,6 +3,7 @@ package com.nyasai.traintimer.routeinfo
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.define.Define
@@ -29,22 +30,31 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     val routeItems = database.getRouteDetailsItemsWithParentId(parentId)
 
     // 現在の表示ダイア種別
-    var currentDiagramType = Define.DiagramType.Weekday
+    private var _currentDiagramType: MutableLiveData<Define.DiagramType> = MutableLiveData()
+    var currentDiagramType: LiveData<Define.DiagramType> = _currentDiagramType
 
-    // 表示中時刻データ種類
+    init {
+        _currentDiagramType.value = Define.DiagramType.Weekday
+    }
+
+    /**
+     * 表示ダイア更新
+     */
+    fun setCurrentDiagramType(type: Define.DiagramType) {
+        _currentDiagramType.value = type
+    }
 
     /**
      * 表示用路線詳細アイテム取得
      */
     fun getDisplayRouteDetailsItems(): List<RouteDetails> {
-        if(routeItems.value == null){
-            return listOf()
-        }
-        else {
+        return if(routeItems.value == null){
+            listOf()
+        } else {
             val filter = routeItems.value?.filter {it ->
-                it.diagramType == (currentDiagramType as Int)
+                it.diagramType == currentDiagramType.value?.ordinal
             }
-            return filter ?: listOf()
+            filter ?: listOf()
         }
     }
 
