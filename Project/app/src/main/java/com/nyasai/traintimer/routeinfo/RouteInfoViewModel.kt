@@ -44,6 +44,9 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     private var _currentDiagramType: MutableLiveData<Define.DiagramType> = MutableLiveData()
     var currentDiagramType: LiveData<Define.DiagramType> = _currentDiagramType
 
+    // 表示アイテムキャッシュ
+    private var _displayRouteDetailsItemCache: List<RouteDetails>? = null
+
     init {
         _currentDiagramType.value = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)){
             1 -> Define.DiagramType.Sunday
@@ -88,22 +91,26 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * 表示用路線詳細アイテム取得
      */
-    fun getDisplayRouteDetailsItems(): List<RouteDetails> {
+    fun getDisplayRouteDetailsItems(useCache: Boolean = false): MutableList<RouteDetails> {
+        if(useCache && _displayRouteDetailsItemCache != null) {
+            return _displayRouteDetailsItemCache as MutableList<RouteDetails>
+        }
         return if(routeItems.value == null){
-            listOf()
+            mutableListOf()
         } else {
             val filter = routeItems.value?.filter {it ->
                 it.diagramType == currentDiagramType.value?.ordinal
             }
             // 時刻順ソート
-            filter?.sortedWith(Comparator<RouteDetails>{ v1,v2 ->
+            _displayRouteDetailsItemCache = filter?.sortedWith(Comparator<RouteDetails>{ v1,v2 ->
                 var diff = ChronoUnit.SECONDS.between(LocalTime.parse(v1.departureTime), LocalTime.parse(v2.departureTime))
                 when {
                     diff < 0 -> 1
                     diff > 0 -> -1
                     else -> 0
                 }
-            }) ?: listOf()
+            })
+            _displayRouteDetailsItemCache as MutableList<RouteDetails>? ?: mutableListOf()
         }
     }
 
@@ -112,7 +119,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      */
     fun getNearTimeItem(): RouteDetails? {
         var now = LocalTime.now()
-        for(item in getDisplayRouteDetailsItems()) {
+        for(item in getDisplayRouteDetailsItems(true)) {
             if(LocalTime.parse(item.departureTime) > now){
                 return item
             }

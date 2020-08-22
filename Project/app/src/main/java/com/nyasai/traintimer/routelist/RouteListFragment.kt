@@ -211,7 +211,7 @@ class RouteListFragment : Fragment() {
             val tmpDet17 = RouteDetails(0,routeListItems[0].dataId, 1,"23:00","普通", "大阪", "url")
             val tmpDet18 = RouteDetails(0,routeListItems[0].dataId, 2,"23:00","普通", "大阪", "url")
 
-            val tmpDet00 = RouteDetails(0,routeListItems[0].dataId, 1,"16:38","普通", "大阪", "url")
+            val tmpDet00 = RouteDetails(0,routeListItems[0].dataId, 1,"16:25","普通", "大阪", "url")
 
             _routeDatabaseDao.clearAllRouteDetailsItem()
             _routeDatabaseDao.insertRouteDetailsItem(tmpDet1)

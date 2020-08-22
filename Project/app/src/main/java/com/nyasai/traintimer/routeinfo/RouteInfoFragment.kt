@@ -15,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
+import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import kotlinx.android.synthetic.main.fragment_route_info.*
 import java.time.LocalTime
@@ -125,20 +126,29 @@ class RouteInfoFragment : Fragment() {
                     if(_routeInfoViewModel.currentCountItem.value == null){
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
-                    // データが取得できなければ，ハイフン表示とするために0を設定
+                    // データが取得できなければ，ハイフン表示とするために-1を設定
                     var diffTime = when{
                         _routeInfoViewModel.currentCountItem.value != null -> ChronoUnit.SECONDS.between(
                             LocalTime.now(), LocalTime.parse(
                                 _routeInfoViewModel.currentCountItem.value?.departureTime
                             )
                         )
-                        else -> 0L
+                        else -> -1L
                     }
                     if(diffTime <= 0) {
+                        // 次のデータへ遷移
+                        if(_routeInfoViewModel.currentCountItem?.value != null) {
+                            // リストに変更通知
+                            _routeInfoAdapter.notifyItemChanged(
+                                _routeInfoAdapter.indexOf(
+                                    _routeInfoViewModel.currentCountItem.value!!
+                                )
+                            )
+                        }
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
                     var planeText = when{
-                        diffTime > 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
+                        diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
                         else -> "Next -- : --"
                     }
                     // Next部分を小さく表示させる
