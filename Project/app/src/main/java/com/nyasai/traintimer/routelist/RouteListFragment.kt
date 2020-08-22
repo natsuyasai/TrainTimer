@@ -201,6 +201,15 @@ class RouteListFragment : Fragment() {
             val tmpDet7 = RouteDetails(0,routeListItems[0].dataId, 0,"07:00","普通", "大阪", "url")
             val tmpDet8 = RouteDetails(0,routeListItems[0].dataId, 1,"08:00","普通", "大阪", "url")
             val tmpDet9 = RouteDetails(0,routeListItems[0].dataId, 2,"09:00","普通", "大阪", "url")
+            val tmpDet10 = RouteDetails(0,routeListItems[0].dataId, 0,"15:00","普通", "大阪", "url")
+            val tmpDet11 = RouteDetails(0,routeListItems[0].dataId, 1,"16:00","普通", "大阪", "url")
+            val tmpDet12 = RouteDetails(0,routeListItems[0].dataId, 2,"17:00","普通", "大阪", "url")
+            val tmpDet13 = RouteDetails(0,routeListItems[0].dataId, 0,"18:00","普通", "大阪", "url")
+            val tmpDet14 = RouteDetails(0,routeListItems[0].dataId, 1,"19:00","普通", "大阪", "url")
+            val tmpDet15 = RouteDetails(0,routeListItems[0].dataId, 2,"20:00","普通", "大阪", "url")
+            val tmpDet16 = RouteDetails(0,routeListItems[0].dataId, 0,"23:00","普通", "大阪", "url")
+            val tmpDet17 = RouteDetails(0,routeListItems[0].dataId, 1,"23:00","普通", "大阪", "url")
+            val tmpDet18 = RouteDetails(0,routeListItems[0].dataId, 2,"23:00","普通", "大阪", "url")
 
             _routeDatabaseDao.clearAllRouteDetailsItem()
             _routeDatabaseDao.insertRouteDetailsItem(tmpDet1)
@@ -212,6 +221,15 @@ class RouteListFragment : Fragment() {
             _routeDatabaseDao.insertRouteDetailsItem(tmpDet7)
             _routeDatabaseDao.insertRouteDetailsItem(tmpDet8)
             _routeDatabaseDao.insertRouteDetailsItem(tmpDet9)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet10)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet11)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet12)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet13)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet14)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet15)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet16)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet17)
+            _routeDatabaseDao.insertRouteDetailsItem(tmpDet18)
         }
 
         // endregion *************仮データ挿入*************

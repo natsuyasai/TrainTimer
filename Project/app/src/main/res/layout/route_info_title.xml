@@ -9,13 +9,17 @@
         <variable
             name="currentDiagramType"
             type="com.nyasai.traintimer.define.Define.DiagramType" />
+        <variable
+            name="routeInfoFragment"
+            type="com.nyasai.traintimer.routeinfo.RouteInfoFragment" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/list_frame_style" >
+        android:background="@drawable/list_frame_style"
+        android:onClick="@{routeInfoFragment.onClickTitle}" >
 
         <!-- 路線名 -->
         <TextView
@@ -23,9 +27,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textAlignment="center"
             android:textSize="18sp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:textColor="@color/textDark"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -36,9 +42,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textAlignment="center"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:textSize="24sp"
+            android:textColor="@color/textDark"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/route_name"
@@ -49,9 +57,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textAlignment="center"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:textSize="18sp"
+            android:textColor="@color/textDark"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_name"
@@ -63,9 +73,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textAlignment="center"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:textSize="18sp"
+            android:textColor="@color/textDark"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/direction_name"

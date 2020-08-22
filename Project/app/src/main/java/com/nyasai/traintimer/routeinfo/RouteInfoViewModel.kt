@@ -1,6 +1,7 @@
 package com.nyasai.traintimer.routeinfo
 
 import android.app.Application
+import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -48,6 +49,19 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     }
 
     /**
+     * 次の表示ダイアに設定
+     */
+    fun setNextDiagramType() {
+        _currentDiagramType.value = when(_currentDiagramType.value)
+        {
+            Define.DiagramType.Weekday -> Define.DiagramType.Saturday
+            Define.DiagramType.Saturday -> Define.DiagramType.Sunday
+            Define.DiagramType.Sunday -> Define.DiagramType.Weekday
+            else -> Define.DiagramType.Weekday
+        }
+    }
+
+    /**
      * 表示用路線詳細アイテム取得
      */
     fun getDisplayRouteDetailsItems(): List<RouteDetails> {
@@ -59,6 +73,10 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             }
             filter ?: listOf()
         }
+    }
+
+    fun getNearTimeItemId(): Long {
+        return 0L
     }
 
     /**

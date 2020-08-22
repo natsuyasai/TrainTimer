@@ -22,6 +22,15 @@ import com.nyasai.traintimer.define.Define
  */
 class RouteInfoFragment : Fragment() {
 
+    // バインド情報
+    private lateinit var _binding: FragmentRouteInfoBinding
+
+    // 詳細リストアダプタ
+    private lateinit var _routeInfoAdapter: RouteInfoAdapter
+
+    // 路線情報ViewModel
+    private lateinit var _routeInfoViewModel: RouteInfoViewModel
+
     /**
      * onCreateViewフック
      */
@@ -31,7 +40,7 @@ class RouteInfoFragment : Fragment() {
     ): View? {
 
         // データバインド設定
-        val binding: FragmentRouteInfoBinding = DataBindingUtil.inflate(
+        _binding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_route_info, container, false)
 
         val application = requireNotNull(this.activity).application
@@ -43,29 +52,39 @@ class RouteInfoFragment : Fragment() {
 
         val viewModelFactory = RouteInfoViewModelFactory(dataSource, application, arguments.parentDataId)
 
-        val routeInfoViewModel = ViewModelProviders.of(this, viewModelFactory)
+        _routeInfoViewModel = ViewModelProviders.of(this, viewModelFactory)
             .get(RouteInfoViewModel::class.java)
 
-        binding.routeInfoViewModel = routeInfoViewModel
+        // データバインド
+        _binding.routeInfoViewModel = _routeInfoViewModel
+        _binding.routeInfoFragment = this
 
-        binding.lifecycleOwner = this
+        _binding.lifecycleOwner = this
 
 
         // 路線詳細用アダプター設定
-        val adapter = RouteInfoAdapter()
-        binding.routeInfoView.adapter = adapter
+        _routeInfoAdapter = RouteInfoAdapter()
+        _binding.routeInfoView.adapter = _routeInfoAdapter
 
         // 変更監視
-        routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
+        _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
             it?.let{
                 // 表示種別に応じたデータを設定
-                adapter.submitList(routeInfoViewModel.getDisplayRouteDetailsItems())
-                Log.d("Debug", "詳細データ更新 : ${routeInfoViewModel.routeItems.value.toString()}")
+                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+                Log.d("Debug", "詳細データ更新 : ${_routeInfoViewModel.routeItems.value.toString()}")
             }
         })
 
 
-        return binding.root
+        return _binding.root
     }
 
+    /**
+     * タイトルクリック
+     */
+    fun onClickTitle(view: View) {
+        // 表示ダイア種別を更新して表示データ切り替え
+        _routeInfoViewModel.setNextDiagramType()
+        _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+    }
 }

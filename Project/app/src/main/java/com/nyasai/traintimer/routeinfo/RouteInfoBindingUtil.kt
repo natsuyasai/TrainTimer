@@ -1,10 +1,11 @@
 package com.nyasai.traintimer.routeinfo
 
+import android.graphics.Color
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.database.RouteDetails
-import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.define.Define
+import java.time.LocalTime
 
 /**
  * 時刻
@@ -13,6 +14,12 @@ import com.nyasai.traintimer.define.Define
 fun TextView.setDepartureTime(item: RouteDetails?) {
     item?.let {
         text = item.departureTime
+        if(LocalTime.parse(item.departureTime) < LocalTime.now()){
+            setTextColor(Color.GRAY)
+        }
+        else{
+            setTextColor(Color.BLACK)
+        }
     }
 }
 
@@ -23,6 +30,12 @@ fun TextView.setDepartureTime(item: RouteDetails?) {
 fun TextView.setTrainType(item: RouteDetails?) {
     item?.let {
         text = item.trainType
+        if(LocalTime.parse(item.departureTime) < LocalTime.now()){
+            setTextColor(Color.GRAY)
+        }
+        else{
+            setTextColor(Color.BLACK)
+        }
     }
 }
 
@@ -33,36 +46,12 @@ fun TextView.setTrainType(item: RouteDetails?) {
 fun TextView.setDestination(item: RouteDetails?) {
     item?.let {
         text = item.destination
-    }
-}
-
-/**
- * 路線名
- */
-@BindingAdapter("routeName")
-fun TextView.setRouteName(item: RouteListItem?) {
-    item?.let {
-        text = item.routeName
-    }
-}
-
-/**
- * 駅名
- */
-@BindingAdapter("stationName")
-fun TextView.setStationName(item: RouteListItem?) {
-    item?.let {
-        text = item.stationName
-    }
-}
-
-/**
- * 行先
- */
-@BindingAdapter("direction")
-fun TextView.setDirection(item: RouteListItem?) {
-    item?.let {
-        text = item.direction
+        if(LocalTime.parse(item.departureTime) < LocalTime.now()){
+            setTextColor(Color.GRAY)
+        }
+        else{
+            setTextColor(Color.BLACK)
+        }
     }
 }
 
@@ -72,8 +61,14 @@ fun TextView.setDirection(item: RouteListItem?) {
 @BindingAdapter("diagramType")
 fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
     text = when(currentDiagramType){
-        Define.DiagramType.Weekday -> "平日"
-        Define.DiagramType.Saturday -> "土曜"
-        Define.DiagramType.Sunday -> "日曜・祝日"
+        Define.DiagramType.Weekday -> "[平日]"
+        Define.DiagramType.Saturday -> "[土曜]"
+        Define.DiagramType.Sunday -> "[日曜・祝日]"
     }
+    val color = when(currentDiagramType){
+        Define.DiagramType.Weekday -> Color.BLACK
+        Define.DiagramType.Saturday -> Color.BLUE
+        Define.DiagramType.Sunday -> Color.RED
+    }
+    setTextColor(color)
 }
