@@ -6,7 +6,6 @@ import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.define.Define
 import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 
 /**
  * 時刻
@@ -35,7 +34,7 @@ fun TextView.setTrainType(item: RouteDetails?) {
             setTextColor(Color.GRAY)
         }
         else{
-            setTextColor(Color.BLACK)
+            setTextColor(Color.RED)
         }
     }
 }

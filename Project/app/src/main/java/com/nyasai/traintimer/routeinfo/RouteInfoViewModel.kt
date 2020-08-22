@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 /**
@@ -94,7 +95,15 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             val filter = routeItems.value?.filter {it ->
                 it.diagramType == currentDiagramType.value?.ordinal
             }
-            filter ?: listOf()
+            // 時刻順ソート
+            filter?.sortedWith(Comparator<RouteDetails>{ v1,v2 ->
+                var diff = ChronoUnit.SECONDS.between(LocalTime.parse(v1.departureTime), LocalTime.parse(v2.departureTime))
+                when {
+                    diff < 0 -> 1
+                    diff > 0 -> -1
+                    else -> 0
+                }
+            }) ?: listOf()
         }
     }
 

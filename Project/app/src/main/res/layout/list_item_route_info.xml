@@ -21,11 +21,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="30sp"
+            android:textColor="@color/textDark"
             app:layout_constraintWidth_percent="0.33"
             app:layout_constraintEnd_toEndOf="@id/train_type"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:departureTime="@{routeDetails}" />
+            app:departureTime="@{routeDetails}"
+            tools:text="時刻"/>
         <!-- 種別 -->
         <TextView
             android:id="@+id/train_type"
@@ -33,11 +35,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="30sp"
+            android:textColor="@color/textRed"
             app:layout_constraintWidth_percent="0.33"
             app:layout_constraintEnd_toEndOf="@id/destination_name"
             app:layout_constraintStart_toStartOf="@id/departure_time"
             app:layout_constraintTop_toTopOf="parent"
-            app:trainType="@{routeDetails}" />
+            app:trainType="@{routeDetails}"
+            tools:text="種別" />
         <!-- 方面 -->
         <TextView
             android:id="@+id/destination_name"
@@ -45,11 +49,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="30sp"
+            android:textColor="@color/textDark"
             app:layout_constraintWidth_percent="0.33"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/train_type"
             app:layout_constraintTop_toTopOf="parent"
-            app:destination="@{routeDetails}" />
+            app:destination="@{routeDetails}"
+            tools:text="方面" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

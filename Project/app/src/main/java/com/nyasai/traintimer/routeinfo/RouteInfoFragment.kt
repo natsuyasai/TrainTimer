@@ -127,7 +127,7 @@ class RouteInfoFragment : Fragment() {
                     }
                     // データが取得できなければ，ハイフン表示とするために0を設定
                     var diffTime = when{
-                        _routeInfoViewModel.currentCountItem.value != null ->ChronoUnit.SECONDS.between(
+                        _routeInfoViewModel.currentCountItem.value != null -> ChronoUnit.SECONDS.between(
                             LocalTime.now(), LocalTime.parse(
                                 _routeInfoViewModel.currentCountItem.value?.departureTime
                             )
