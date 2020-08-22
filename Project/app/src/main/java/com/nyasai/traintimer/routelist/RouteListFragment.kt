@@ -2,10 +2,8 @@ package com.nyasai.traintimer.routelist
 
 import android.os.Bundle
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
@@ -87,6 +85,9 @@ class RouteListFragment : Fragment() {
         // ダイアログ初期化
         initDialog()
 
+        // メニューボタン表示設定
+        setHasOptionsMenu(true)
+
         // 変更監視
         routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
             it?.let{
@@ -99,6 +100,28 @@ class RouteListFragment : Fragment() {
         // Inflate the layout for this fragment
         return binding.root
     }
+
+    /**
+     * メニュー生成
+     */
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater?.inflate(R.menu.route_list_option, menu)
+    }
+
+    /**
+     * onOptionsItemSelectedフック
+     */
+    override fun onOptionsItemSelected(item: MenuItem) =
+        when(item.itemId) {
+            R.id.route_add_menu -> {
+                Log.d("Debug","路線検索ボタン押下")
+                true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
+
 
     /**
      * ダイアログ初期化
