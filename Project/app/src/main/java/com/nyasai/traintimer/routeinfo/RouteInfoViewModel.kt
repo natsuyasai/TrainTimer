@@ -12,6 +12,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
+import java.time.LocalTime
+import java.util.*
 
 /**
  * 路線詳細情報表示用ViewModel
@@ -33,12 +35,21 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     // 路線詳細
     val routeItems = database.getRouteDetailsItemsWithParentId(parentId)
 
+    // 現在カウント中のアイテム
+    private var _currentCountItem: MutableLiveData<RouteDetails> = MutableLiveData()
+    var currentCountItem: LiveData<RouteDetails> = _currentCountItem
+
     // 現在の表示ダイア種別
     private var _currentDiagramType: MutableLiveData<Define.DiagramType> = MutableLiveData()
     var currentDiagramType: LiveData<Define.DiagramType> = _currentDiagramType
 
     init {
-        _currentDiagramType.value = Define.DiagramType.Weekday
+        _currentDiagramType.value = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)){
+            1 -> Define.DiagramType.Sunday
+            7 -> Define.DiagramType.Saturday
+            else -> Define.DiagramType.Weekday
+        }
+        _currentCountItem.value = getNearTimeItem()
     }
 
     /**
@@ -59,6 +70,18 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             Define.DiagramType.Sunday -> Define.DiagramType.Weekday
             else -> Define.DiagramType.Weekday
         }
+        // タイマ表示用に対象データを更新しておく
+        updateCurrentCountItem()
+    }
+
+    /**
+     * カウントダウン中アイテム設定
+     */
+    fun setCurrentCountItem(item: RouteDetails?) {
+        _currentCountItem.value = item
+    }
+    fun updateCurrentCountItem() {
+        _currentCountItem.value = getNearTimeItem()
     }
 
     /**
@@ -75,8 +98,17 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
         }
     }
 
-    fun getNearTimeItemId(): Long {
-        return 0L
+    /**
+     * 直近の時刻のアイテムを取得する
+     */
+    fun getNearTimeItem(): RouteDetails? {
+        var now = LocalTime.now()
+        for(item in getDisplayRouteDetailsItems()) {
+            if(LocalTime.parse(item.departureTime) > now){
+                return item
+            }
+        }
+        return null
     }
 
     /**

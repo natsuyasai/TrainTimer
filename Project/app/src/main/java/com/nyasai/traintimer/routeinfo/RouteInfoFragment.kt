@@ -1,18 +1,25 @@
 package com.nyasai.traintimer.routeinfo
 
 import android.os.Bundle
+import android.os.Handler
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.RelativeSizeSpan
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
-import com.nyasai.traintimer.define.Define
+import kotlinx.android.synthetic.main.fragment_route_info.*
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
+import java.util.*
 
 
 /**
@@ -31,6 +38,15 @@ class RouteInfoFragment : Fragment() {
     // 路線情報ViewModel
     private lateinit var _routeInfoViewModel: RouteInfoViewModel
 
+    // タイマ
+    private lateinit var _timer: Timer
+
+    // タイマ実処理受け渡し用ハンドラ
+    private val _handler = Handler()
+
+    // 文字列装飾用
+    private var _spannableStringBuilder = SpannableStringBuilder()
+
     /**
      * onCreateViewフック
      */
@@ -41,7 +57,8 @@ class RouteInfoFragment : Fragment() {
 
         // データバインド設定
         _binding = DataBindingUtil.inflate(
-            inflater, R.layout.fragment_route_info, container, false)
+            inflater, R.layout.fragment_route_info, container, false
+        )
 
         val application = requireNotNull(this.activity).application
 
@@ -50,7 +67,11 @@ class RouteInfoFragment : Fragment() {
 
         val dataSource = RouteDatabase.getInstance(application).routeDatabaseDao
 
-        val viewModelFactory = RouteInfoViewModelFactory(dataSource, application, arguments.parentDataId)
+        val viewModelFactory = RouteInfoViewModelFactory(
+            dataSource,
+            application,
+            arguments.parentDataId
+        )
 
         _routeInfoViewModel = ViewModelProviders.of(this, viewModelFactory)
             .get(RouteInfoViewModel::class.java)
@@ -68,15 +89,76 @@ class RouteInfoFragment : Fragment() {
 
         // 変更監視
         _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
-            it?.let{
+            it?.let {
                 // 表示種別に応じたデータを設定
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
-                Log.d("Debug", "詳細データ更新 : ${_routeInfoViewModel.routeItems.value.toString()}")
+                _routeInfoViewModel.updateCurrentCountItem()
+                Log.d("Debug", "詳細データ更新 : ${it.toString()}")
             }
         })
 
+        _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner, Observer {
+            it?.let {
+
+                Log.d("Debug", "詳細データ更新 : ${it.toString()}")
+            }
+        })
 
         return _binding.root
+    }
+
+    /**
+     * onResumeフック
+     */
+    override fun onResume() {
+        super.onResume()
+        // カウントダウンタイマ開始
+        _timer = Timer()
+        _timer.schedule(object : TimerTask() {
+            /**
+             * タイマ開始
+             */
+            override fun run() {
+                // UIスレッドで実行
+                _handler.post {
+                    // 画面に一番近いデータへの残り時間を設定する(1秒毎)
+                    if(_routeInfoViewModel.currentCountItem.value == null){
+                        _routeInfoViewModel.updateCurrentCountItem()
+                    }
+                    // データが取得できなければ，ハイフン表示とするために0を設定
+                    var diffTime = when{
+                        _routeInfoViewModel.currentCountItem.value != null ->ChronoUnit.SECONDS.between(
+                            LocalTime.now(), LocalTime.parse(
+                                _routeInfoViewModel.currentCountItem.value?.departureTime
+                            )
+                        )
+                        else -> 0L
+                    }
+                    if(diffTime <= 0) {
+                        _routeInfoViewModel.updateCurrentCountItem()
+                    }
+                    var planeText = when{
+                        diffTime > 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
+                        else -> "Next -- : --"
+                    }
+                    // Next部分を小さく表示させる
+                    _spannableStringBuilder.clear()
+                    _spannableStringBuilder.append(planeText)
+                    _spannableStringBuilder.setSpan(RelativeSizeSpan(0.5f),0,4,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    countdown.text = _spannableStringBuilder
+                }
+            }
+
+        }, 1000, 1000)
+    }
+
+    /**
+     * onPauseフック
+     */
+    override fun onPause() {
+        super.onPause()
+        // カウントダウンタイマ終了
+        _timer.cancel()
     }
 
     /**

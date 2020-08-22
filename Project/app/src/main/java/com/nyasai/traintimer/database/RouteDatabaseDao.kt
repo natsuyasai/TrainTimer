@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.nyasai.traintimer.define.Define
 
 /**
  * DBDao
@@ -113,6 +114,13 @@ interface RouteDatabaseDao {
      */
     @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId")
     fun getRouteDetailsItemsWithParentId(parentId: Long): LiveData<List<RouteDetails>>
+
+    /**
+     * 路線詳細アイテム一覧取得(親アイテムID指定)
+     * @param parentId 親アイテムID
+     */
+    @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId AND diagram_type = :diagramType ORDER BY dataId")
+    fun getCurrentDiagramRouteDetailsItemsWithParentId(parentId: Long, diagramType: Int): LiveData<List<RouteDetails>>
 
     /**
      * 路線詳細アイテム一覧取得(親アイテムID指定)同期

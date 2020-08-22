@@ -29,11 +29,14 @@
             android:id="@+id/countdown"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:gravity="center|end"
+            android:textSize="30dp"
+            android:layout_marginRight="10dp"
             android:textColor="@color/textDark"
             app:layout_constraintHeight_percent="0.1"
             app:layout_constraintTop_toBottomOf="@id/route_info_title"
             app:layout_constraintBottom_toTopOf="@id/route_info_view"
-            android:text="Title"/>
+            tools:text="カウントダウン" />
 
         <!-- 時刻一覧表示 -->
         <androidx.recyclerview.widget.RecyclerView
