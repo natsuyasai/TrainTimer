@@ -93,7 +93,7 @@ class RouteInfoFragment : Fragment() {
             it?.let {
                 // 表示種別に応じたデータを設定
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
-                _routeInfoViewModel.updateCurrentCountItem()
+                _routeInfoViewModel.updateCurrentCountItem(true)
                 Log.d("Debug", "詳細データ更新 : ${it.toString()}")
             }
         })

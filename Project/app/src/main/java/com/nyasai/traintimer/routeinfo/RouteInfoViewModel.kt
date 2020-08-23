@@ -84,8 +84,8 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     fun setCurrentCountItem(item: RouteDetails?) {
         _currentCountItem.value = item
     }
-    fun updateCurrentCountItem() {
-        _currentCountItem.value = getNearTimeItem()
+    fun updateCurrentCountItem(useCache: Boolean = false) {
+        _currentCountItem.value = getNearTimeItem(useCache)
     }
 
     /**
@@ -117,9 +117,9 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * 直近の時刻のアイテムを取得する
      */
-    fun getNearTimeItem(): RouteDetails? {
+    fun getNearTimeItem(useCache: Boolean = false): RouteDetails? {
         var now = LocalTime.now()
-        for(item in getDisplayRouteDetailsItems(true)) {
+        for(item in getDisplayRouteDetailsItems(useCache)) {
             if(LocalTime.parse(item.departureTime) > now){
                 return item
             }
