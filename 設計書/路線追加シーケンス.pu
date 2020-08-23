@@ -1,0 +1,25 @@
+@startuml 路線追加
+actor User
+
+
+User -> SearchDaialog : 検索対象駅名
+activate SearchDaialog
+SearchDaialog -> Yahoo : 検索
+activate Yahoo
+SearchDaialog <-- Yahoo : 検索結果
+deactivate Yahoo
+User <-- SearchDaialog
+StationList <-- SearchDaialog : 駅リスト
+deactivate SearchDaialog
+activate StationList
+StationList -> StationList : 駅リスト表示
+User -> StationList : 駅選択
+StationList -> StationList : 時刻表情報収集
+StationList -> DB : 登録
+activate DB
+StationList <-- DB
+deactivate DB
+User <-- StationList : 結果ダイアログ表示(成功/失敗)
+deactivate StationList
+
+@enduml

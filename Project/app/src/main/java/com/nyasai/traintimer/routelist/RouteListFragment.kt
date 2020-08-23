@@ -102,7 +102,7 @@ class RouteListFragment : Fragment() {
     }
 
     /**
-     * メニュー生成
+     * onCreateOptionsMenuフック
      */
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater?.inflate(R.menu.route_list_option, menu)
@@ -115,6 +115,10 @@ class RouteListFragment : Fragment() {
         when(item.itemId) {
             R.id.route_add_menu -> {
                 Log.d("Debug","路線検索ボタン押下")
+                true
+            }
+            R.id.setting_menu -> {
+                Log.d("Debug","設定ボタン押下")
                 true
             }
             else -> {
