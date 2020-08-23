@@ -11,7 +11,7 @@ import com.nyasai.traintimer.databinding.ListItemRouteInfoBinding
 class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(RouteInfoDiffCallback()){
 
     // 表示アイテム
-    private var _items: MutableList<RouteDetails>? = null
+    private var _items: List<RouteDetails>? = null
 
     /**
      * ViewHolderに表示するデータを設定
@@ -31,7 +31,7 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
     /**
      * 表示データ設定
      */
-    override fun submitList(list: MutableList<RouteDetails>?) {
+    override fun submitList(list: List<RouteDetails>?) {
         super.submitList(list)
         _items = list
     }

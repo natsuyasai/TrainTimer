@@ -91,26 +91,29 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * 表示用路線詳細アイテム取得
      */
-    fun getDisplayRouteDetailsItems(useCache: Boolean = false): MutableList<RouteDetails> {
+    fun getDisplayRouteDetailsItems(useCache: Boolean = false): List<RouteDetails> {
         if(useCache && _displayRouteDetailsItemCache != null) {
-            return _displayRouteDetailsItemCache as MutableList<RouteDetails>
+            return _displayRouteDetailsItemCache!!
         }
         return if(routeItems.value == null){
-            mutableListOf()
+            listOf()
         } else {
             val filter = routeItems.value?.filter {it ->
                 it.diagramType == currentDiagramType.value?.ordinal
             }
             // 時刻順ソート
-            _displayRouteDetailsItemCache = filter?.sortedWith(Comparator<RouteDetails>{ v1,v2 ->
-                var diff = ChronoUnit.SECONDS.between(LocalTime.parse(v1.departureTime), LocalTime.parse(v2.departureTime))
+            _displayRouteDetailsItemCache = filter?.sortedWith { v1, v2 ->
+                var diff = ChronoUnit.SECONDS.between(
+                    LocalTime.parse(v1.departureTime),
+                    LocalTime.parse(v2.departureTime)
+                )
                 when {
                     diff < 0 -> 1
                     diff > 0 -> -1
                     else -> 0
                 }
-            })
-            _displayRouteDetailsItemCache as MutableList<RouteDetails>? ?: mutableListOf()
+            }
+            _displayRouteDetailsItemCache ?: listOf()
         }
     }
 
