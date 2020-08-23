@@ -4,9 +4,11 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
-import android.view.View
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProviders
 import com.nyasai.traintimer.R
+import com.nyasai.traintimer.databinding.DialogSearchTargetInputBinding
 
 /**
  * 検索対象入力用ダイアログ
@@ -19,29 +21,40 @@ class SearchTargetInputDialogFragment: DialogFragment() {
     // Noボタン押下時コールバック
     var onClickNegativeButtonCallback: (() -> Unit)? = null
 
+    // ViewModel
+    private lateinit var _searchTargetInputViewModel: SearchTargetInputViewModel
+
     /**
      * ダイアログ生成
      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
-            val inflater = requireActivity().layoutInflater
-            builder.setView(inflater.inflate(R.layout.dialog_search_target_input, null))
+            val binding = DataBindingUtil.inflate<DialogSearchTargetInputBinding>(requireActivity().layoutInflater,
+                R.layout.dialog_search_target_input, null, false)
+            val viewModelFactory = SearchTargetInputViewModelFactory(requireNotNull(this.activity).application)
+            _searchTargetInputViewModel = ViewModelProviders.of(this, viewModelFactory)
+                .get(SearchTargetInputViewModel::class.java)
+            binding.searchTargetInputVM = _searchTargetInputViewModel
+
+            builder.setView(binding.root)
                 .setMessage(R.string.search_input_message)
                 .setPositiveButton(
                     R.string.search_input_yes
                 ) { dialogInterface, id ->
-                    Log.d("Debug", "Yes")
+                    Log.d("Debug", "検索開始")
                     onClickPositiveButtonCallback?.invoke()
                 }
                 .setNegativeButton(
                     R.string.search_input_no
                 ) { dialogInterface, id ->
-                    Log.d("Debug", "No")
+                    Log.d("Debug", "キャンセル")
                     onClickNegativeButtonCallback?.invoke()
                 }
             builder.create()
         }!!
     }
+
+    fun getInputText() = _searchTargetInputViewModel.getStationName()
 
 }

@@ -19,7 +19,6 @@ import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
-
 /**
  * A simple [Fragment] subclass.
  * Use the [RouteListFragment.newInstance] factory method to
@@ -187,6 +186,10 @@ class RouteListFragment : Fragment() {
         // ダイアログ表示
         var dialog = SearchTargetInputDialogFragment()
         dialog.onClickPositiveButtonCallback = {
+            Log.d("Debug", dialog.getInputText())
+            GlobalScope.async {
+                // TODO: 駅名より検索実行．実行結果から駅名リストダイアログ表示
+            }
         }
         dialog.onClickNegativeButtonCallback = {
         }

@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <EditText
-        android:id="@+id/target_input"
+    <data>
+        <variable
+            name="searchTargetInputVM"
+            type="com.nyasai.traintimer.routesearch.SearchTargetInputViewModel" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:inputType="text"
-        tools:text="駅名入力" />
+        android:layout_height="match_parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <EditText
+            android:id="@+id/target_input"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="text"
+            android:text="@={searchTargetInputVM.stationName}"
+            tools:text="駅名入力" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
