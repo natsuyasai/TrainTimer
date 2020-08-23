@@ -29,16 +29,14 @@ class RouteListItemDeleteConfirmDialogFragment: DialogFragment() {
             val targetDataId = arguments?.getLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID)
             val builder = AlertDialog.Builder(it)
             builder.setMessage(R.string.route_list_item_delete_confirm_message)
-                .setPositiveButton(R.string.route_list_item_delete_confirm_yes,
-                    DialogInterface.OnClickListener { dialogInterface, id ->
-                        Log.d("Debug", "Yes")
-                        onClickPositiveButtonCallback?.invoke(targetDataId)
-                    })
-                .setNegativeButton(R.string.route_list_item_delete_confirm_no,
-                    DialogInterface.OnClickListener { dialogInterface, id ->
-                        Log.d("Debug", "No")
-                        onClickNegativeButtonCallback?.invoke(targetDataId)
-                    })
+                .setPositiveButton(R.string.route_list_item_delete_confirm_yes) { _, _ ->
+                    Log.d("Debug", "Yes")
+                    onClickPositiveButtonCallback?.invoke(targetDataId)
+                }
+                .setNegativeButton(R.string.route_list_item_delete_confirm_no) { _, _ ->
+                    Log.d("Debug", "No")
+                    onClickNegativeButtonCallback?.invoke(targetDataId)
+                }
             builder.create()
         }!!
     }
