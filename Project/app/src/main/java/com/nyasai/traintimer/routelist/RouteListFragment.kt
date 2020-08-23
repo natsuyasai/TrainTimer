@@ -15,6 +15,7 @@ import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
+import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -27,8 +28,12 @@ import kotlinx.coroutines.async
 @Suppress("DEPRECATION")
 class RouteListFragment : Fragment() {
 
-    private val ROUTE_LIST_DELETE_CONFIRM_DLG_TAG = "routeListItemDeleteConfirm"
+    // 路線リストアイテム削除確認ダイアログタグ
+    private val ROUTE_LIST_DELETE_CONFIRM_DLG_TAG = "RouteListItemDeleteConfirm"
+    // 路線検索ダイアログタグ
+    private val SEARCH_TARGET_INPUT_DLG_TAG = "SearchTargetInput"
 
+    // DBDao
     private lateinit var _routeDatabaseDao: RouteDatabaseDao
 
     /**
@@ -114,6 +119,7 @@ class RouteListFragment : Fragment() {
         when(item.itemId) {
             R.id.route_add_menu -> {
                 Log.d("Debug","路線検索ボタン押下")
+                showSearchTargetInputDialog()
                 true
             }
             R.id.setting_menu -> {
@@ -125,34 +131,37 @@ class RouteListFragment : Fragment() {
             }
         }
 
-
+    // region ダイアログ関連
     /**
      * ダイアログ初期化
      */
     private fun initDialog() {
         // 画面生成時にダイアログが存在する場合は，コールバックを再登録
-        var dialog = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
-        if(dialog != null && dialog is RouteListItemDeleteConfirmDialogFragment){
-            dialog.onClickPositiveButtonCallback = {
-                onClickDialogYse(it)
+        var deleteConfirmDialog = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        if(deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment){
+            deleteConfirmDialog.onClickPositiveButtonCallback = {
+                onClickDeleteConfirmDialogYse(it)
             }
-            dialog.onClickNegativeButtonCallback = {
-                onClickDialogNo(it)
+            deleteConfirmDialog.onClickNegativeButtonCallback = {
+                onClickDeleteConfirmDialogNo(it)
+            }
+        }
+        var searchTargetInputDialog = requireFragmentManager().findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
+        if(searchTargetInputDialog != null && searchTargetInputDialog is SearchTargetInputDialogFragment){
+            searchTargetInputDialog.onClickPositiveButtonCallback = {
+            }
+            searchTargetInputDialog.onClickNegativeButtonCallback = {
             }
         }
     }
 
     /**
-     * ダイアログ表示
+     * 削除確認ダイアログ表示
      * @param item 選択対象アイテム
      */
-    private fun showDeleteConfirmDialog(item: RouteListItem){
+    private fun showDeleteConfirmDialog(item: RouteListItem) {
         // 前回分削除
-        var prevDlg = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
-        if(prevDlg != null){
-            requireFragmentManager().beginTransaction().remove(prevDlg)
-        }
-        requireFragmentManager().beginTransaction().addToBackStack(null)
+        deletePrevDialog(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
 
         // ダイアログ表示
         var dialog = RouteListItemDeleteConfirmDialogFragment()
@@ -160,20 +169,46 @@ class RouteListFragment : Fragment() {
         bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
         dialog.arguments = bundle
         dialog.onClickPositiveButtonCallback = {
-            onClickDialogYse(it)
+            onClickDeleteConfirmDialogYse(it)
         }
         dialog.onClickNegativeButtonCallback = {
-            onClickDialogNo(it)
+            onClickDeleteConfirmDialogNo(it)
         }
         dialog.showNow(requireFragmentManager(), ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+    }
 
+    /**
+     * 路線検索ダイアログ表示
+     */
+    private fun showSearchTargetInputDialog() {
+        // 前回分削除
+        deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG)
+
+        // ダイアログ表示
+        var dialog = SearchTargetInputDialogFragment()
+        dialog.onClickPositiveButtonCallback = {
+        }
+        dialog.onClickNegativeButtonCallback = {
+        }
+        dialog.showNow(requireFragmentManager(), SEARCH_TARGET_INPUT_DLG_TAG)
+    }
+
+    /**
+     * 前回分ダイアログ削除
+     */
+    private fun deletePrevDialog(tag: String) {
+        var prevDlg = requireFragmentManager().findFragmentByTag(tag)
+        if(prevDlg != null){
+            requireFragmentManager().beginTransaction().remove(prevDlg)
+        }
+        requireFragmentManager().beginTransaction().addToBackStack(null)
     }
 
     /**
      * 削除確認ダイアログYseボタンクリック処理
      * @param targetDataId 対象データID
      */
-    private fun onClickDialogYse(targetDataId: Long?) {
+    private fun onClickDeleteConfirmDialogYse(targetDataId: Long?) {
         if(targetDataId == null){
             return
         }
@@ -186,8 +221,10 @@ class RouteListFragment : Fragment() {
      * 削除確認ダイアログNoボタンクリック処理
      * @param targetDataId 対象データID
      */
-    private fun onClickDialogNo(targetDataId: Long?) {
+    private fun onClickDeleteConfirmDialogNo(targetDataId: Long?) {
     }
+
+    // endregion ダイアログ関連
 
     /**
      * ダミーデータ設定

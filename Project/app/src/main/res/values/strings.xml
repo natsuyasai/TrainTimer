@@ -4,4 +4,8 @@
     <string name="route_list_item_delete_confirm_message">このアイテムを削除しますか？</string>
     <string name="route_list_item_delete_confirm_yes">はい</string>
     <string name="route_list_item_delete_confirm_no">いいえ</string>
+    <!-- 路線検索入力ダイアログ用 -->
+    <string name="search_input_message">駅名を入力してください</string>
+    <string name="search_input_yes">検索開始</string>
+    <string name="search_input_no">キャンセル</string>
 </resources>

@@ -137,7 +137,7 @@ class RouteInfoFragment : Fragment() {
                     }
                     if(diffTime <= 0) {
                         // 次のデータへ遷移
-                        if(_routeInfoViewModel.currentCountItem?.value != null) {
+                        if(_routeInfoViewModel.currentCountItem.value != null) {
                             // リストに変更通知
                             _routeInfoAdapter.notifyItemChanged(
                                 _routeInfoAdapter.indexOf(
