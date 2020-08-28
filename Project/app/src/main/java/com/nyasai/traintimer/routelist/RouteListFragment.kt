@@ -1,6 +1,7 @@
 package com.nyasai.traintimer.routelist
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -15,6 +16,7 @@ import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
+import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -31,9 +33,14 @@ class RouteListFragment : Fragment() {
     private val ROUTE_LIST_DELETE_CONFIRM_DLG_TAG = "RouteListItemDeleteConfirm"
     // 路線検索ダイアログタグ
     private val SEARCH_TARGET_INPUT_DLG_TAG = "SearchTargetInput"
+    // 駅選択ダイアログ
+    private val SELECT_LIST_DLG_TAG = "SelectList"
 
     // DBDao
     private lateinit var _routeDatabaseDao: RouteDatabaseDao
+
+    // UI実行用ハンドラ
+    private val _handler = Handler()
 
     /**
      * ビュー生成
@@ -58,7 +65,7 @@ class RouteListFragment : Fragment() {
 
         binding.routeListViewModel = routeListViewModel
 
-        binding.setLifecycleOwner(this)
+        binding.lifecycleOwner = this
 
 
         // 路線リスト用アダプター設定
@@ -152,6 +159,14 @@ class RouteListFragment : Fragment() {
             searchTargetInputDialog.onClickNegativeButtonCallback = {
             }
         }
+        var selectListDialog = requireFragmentManager().findFragmentByTag(SELECT_LIST_DLG_TAG)
+        if(selectListDialog != null && selectListDialog is ListItemSelectDialogFragment){
+            selectListDialog.onClickPositiveButtonCallback = {
+            }
+            selectListDialog.onClickNegativeButtonCallback = {
+            }
+            selectListDialog.itemList = arrayOf()
+        }
     }
 
     /**
@@ -189,11 +204,46 @@ class RouteListFragment : Fragment() {
             Log.d("Debug", dialog.getInputText())
             GlobalScope.async {
                 // TODO: 駅名より検索実行．実行結果から駅名リストダイアログ表示
+                _handler.post {
+                    showStationSelectDialog(arrayOf())
+                }
             }
         }
         dialog.onClickNegativeButtonCallback = {
         }
         dialog.showNow(requireFragmentManager(), SEARCH_TARGET_INPUT_DLG_TAG)
+    }
+
+    /**
+     * 駅選択ダイアログ表示
+     */
+    private fun showStationSelectDialog(items: Array<String>) {
+        // 前回分削除
+        deletePrevDialog(SELECT_LIST_DLG_TAG)
+
+        // ダイアログ表示
+        var dialog = ListItemSelectDialogFragment(items)
+        dialog.onClickPositiveButtonCallback = {
+        }
+        dialog.onClickNegativeButtonCallback = {
+        }
+        dialog.showNow(requireFragmentManager(), SELECT_LIST_DLG_TAG)
+    }
+
+    /**
+     * 行先選択ダイアログ表示
+     */
+    private fun showDirectionSelectDialog(items: Array<String>) {
+        // 前回分削除
+        deletePrevDialog(SELECT_LIST_DLG_TAG)
+
+        // ダイアログ表示
+        var dialog = ListItemSelectDialogFragment(items)
+        dialog.onClickPositiveButtonCallback = {
+        }
+        dialog.onClickNegativeButtonCallback = {
+        }
+        dialog.showNow(requireFragmentManager(), SELECT_LIST_DLG_TAG)
     }
 
     /**

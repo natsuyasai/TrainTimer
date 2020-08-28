@@ -2,16 +2,15 @@ package com.nyasai.traintimer.routesearch
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
 import com.nyasai.traintimer.R
 
 /**
- * 駅選択ダイアログ
+ * リストアイテム選択ダイアログ
  */
-class StationSelectDialogFragment: DialogFragment() {
+class ListItemSelectDialogFragment(items: Array<String>): DialogFragment() {
 
     // Yesボタン押下時コールバック
     var onClickPositiveButtonCallback: (() -> Unit)? = null
@@ -19,21 +18,27 @@ class StationSelectDialogFragment: DialogFragment() {
     // Noボタン押下時コールバック
     var onClickNegativeButtonCallback: (() -> Unit)? = null
 
+    // アイテム一覧
+    var itemList: Array<String> = items
+
     /**
      * ダイアログ生成
      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
-            builder.setMessage(R.string.route_list_item_delete_confirm_message)
+            builder.setTitle(R.string.select_station_message)
+                .setSingleChoiceItems(itemList,0) { dialogInterface, i ->
+                    Log.d("Debug", "アイテム選択${itemList[i]}")
+                }
                 .setPositiveButton(
-                    R.string.route_list_item_delete_confirm_yes
+                    R.string.select_station_yes
                 ) { dialogInterface, id ->
                     Log.d("Debug", "Yes")
                     onClickPositiveButtonCallback?.invoke()
                 }
                 .setNegativeButton(
-                    R.string.route_list_item_delete_confirm_no
+                    R.string.select_station_no
                 ) { dialogInterface, id ->
                     Log.d("Debug", "No")
                     onClickNegativeButtonCallback?.invoke()
