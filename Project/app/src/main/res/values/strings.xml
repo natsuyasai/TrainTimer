@@ -5,11 +5,11 @@
     <string name="route_list_item_delete_confirm_yes">はい</string>
     <string name="route_list_item_delete_confirm_no">いいえ</string>
     <!-- 路線検索入力ダイアログ用 -->
-    <string name="search_input_message">駅名を入力してください</string>
+    <string name="search_input_message">追加したい駅名を入力してください</string>
     <string name="search_input_yes">検索開始</string>
     <string name="search_input_no">キャンセル</string>
     <!-- 駅選択ダイアログ用 -->
-    <string name="select_station_message">選択してください</string>
+    <string name="select_station_message">追加対象を選択してください</string>
     <string name="select_station_yes">OK</string>
     <string name="select_station_no">Cancel</string>
 </resources>

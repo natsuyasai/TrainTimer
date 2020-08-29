@@ -24,6 +24,11 @@ class ListItemSelectDialogFragment(items: Array<String>): DialogFragment() {
     // アイテム一覧
     var itemList: Array<String> = items
 
+    // 選択したアイテム
+    var selectItem: String = when{
+        itemList.isNotEmpty() -> itemList[0] else -> ""}
+    private set
+
     /**
      * ダイアログ生成
      */
@@ -33,6 +38,7 @@ class ListItemSelectDialogFragment(items: Array<String>): DialogFragment() {
             builder.setTitle(R.string.select_station_message)
                 .setSingleChoiceItems(itemList,0) { _, i ->
                     Log.d("Debug", "アイテム選択${itemList[i]}")
+                    selectItem = itemList[i]
                     onSelectItem?.invoke(itemList[i])
                 }
                 .setPositiveButton(

@@ -18,6 +18,8 @@ import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
+import com.nyasai.traintimer.util.YahooRouteInfoGetter
+import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -43,6 +45,9 @@ class RouteListFragment : Fragment() {
             RouteListViewModelFactory(_routeDatabaseDao, requireNotNull(this.activity).application)
         ).get(RouteListViewModel::class.java)
     }
+
+    // Yahoo路線情報取得用
+    private val _yahooRouteInfoGetter = YahooRouteInfoGetter()
 
     // UI実行用ハンドラ
     private val _handler = Handler()
@@ -155,6 +160,7 @@ class RouteListFragment : Fragment() {
         val searchTargetInputDialog = parentFragmentManager.findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
         if(searchTargetInputDialog != null && searchTargetInputDialog is SearchTargetInputDialogFragment){
             searchTargetInputDialog.onClickPositiveButtonCallback = {
+                searchStation(searchTargetInputDialog.getInputText())
             }
             searchTargetInputDialog.onClickNegativeButtonCallback = {
             }
@@ -204,12 +210,7 @@ class RouteListFragment : Fragment() {
         val dialog = SearchTargetInputDialogFragment()
         dialog.onClickPositiveButtonCallback = {
             Log.d("Debug", dialog.getInputText())
-            GlobalScope.async {
-                // TODO: 駅名より検索実行．実行結果から駅名リストダイアログ表示
-                _handler.post {
-                    showStationSelectDialog(arrayOf())
-                }
-            }
+            searchStation(dialog.getInputText())
         }
         dialog.onClickNegativeButtonCallback = {
         }
@@ -219,17 +220,23 @@ class RouteListFragment : Fragment() {
     /**
      * 駅選択ダイアログ表示
      */
-    private fun showStationSelectDialog(items: Array<String>) {
+    private fun showStationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
         deletePrevDialog(SELECT_LIST_DLG_TAG)
 
+
         // ダイアログ表示
-        val dialog = ListItemSelectDialogFragment(items)
+        val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
         dialog.onClickPositiveButtonCallback = {
+            // 行先リストを取得
+            if(itemsMap[dialog.selectItem] == null){
+                // TODO: エラーハンドリング
+            }
+            else {
+                searchDirectionFromUrl(itemsMap.getValue(dialog.selectItem))
+            }
         }
         dialog.onClickNegativeButtonCallback = {
-        }
-        dialog.onSelectItem = {
         }
         dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
@@ -237,12 +244,12 @@ class RouteListFragment : Fragment() {
     /**
      * 行先選択ダイアログ表示
      */
-    private fun showDirectionSelectDialog(items: Array<String>) {
+    private fun showDirectionSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
         deletePrevDialog(SELECT_LIST_DLG_TAG)
 
         // ダイアログ表示
-        val dialog = ListItemSelectDialogFragment(items)
+        val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
         dialog.onClickPositiveButtonCallback = {
         }
         dialog.onClickNegativeButtonCallback = {
@@ -271,6 +278,54 @@ class RouteListFragment : Fragment() {
         }
         GlobalScope.async {
             _routeDatabaseDao.deleteRouteListItem(targetDataId)
+        }
+    }
+
+    /**
+     * 駅検索
+     */
+    private fun searchStation(stationName: String) {
+        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        GlobalScope.async {
+            // 駅名より検索実行．実行結果から駅名リストダイアログ表示
+            val stationListMap = _yahooRouteInfoGetter.getStationList(stationName)
+            if(stationListMap.isNotEmpty()) {
+                _handler.post {
+                    common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                    showStationSelectDialog(stationListMap)
+                }
+            }
+            else{
+                searchDirectionFromStationName(stationName)
+            }
+        }
+    }
+
+    /**
+     * 行先一覧検索(駅名)
+     */
+    private fun searchDirectionFromStationName(stationName: String) {
+        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        GlobalScope.async {
+            val directionListMap = _yahooRouteInfoGetter.getDirectionFromStationName(stationName)
+            _handler.post {
+                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                showDirectionSelectDialog(directionListMap)
+            }
+        }
+    }
+
+    /**
+     * 行先一覧検索(URL)
+     */
+    private fun searchDirectionFromUrl(url: String) {
+        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        GlobalScope.async {
+            val directionListMap = _yahooRouteInfoGetter.getDirectionFromUrl(url)
+            _handler.post {
+                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                showDirectionSelectDialog(directionListMap)
+            }
         }
     }
 

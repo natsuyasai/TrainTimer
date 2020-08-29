@@ -1,5 +1,6 @@
 package com.nyasai.traintimer.util
 
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
 import org.jsoup.Jsoup
@@ -22,12 +23,16 @@ class YahooRouteInfoGetter {
     private val YAHOO_ROUTE_SEARCH_BASE_URL = "https://transit.yahoo.co.jp"
 
     // キー分割文字
-    private val KEY_DELIMITER_STR = "///"
+    private val KEY_DELIMITER_STR = "::"
 
     // リクエスト総数
     private var _totalRequestCount = 0
     // 前回のリクエスト実施時刻
     private var _prevRequestDatetime = LocalTime.now()
+
+    init {
+        FuelManager.instance.baseHeaders = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36")
+    }
 
     /**
      * 駅リスト取得
@@ -237,8 +242,6 @@ class YahooRouteInfoGetter {
             else{
                 retryCount++
                 Thread.sleep(1000)
-                // android
-                //Handler().postDelayed({}, 1000)
             }
         } while (retryCount <= 10)
         return null
@@ -255,8 +258,6 @@ class YahooRouteInfoGetter {
         // 一定期間未満かつ2回目以降のリクエストなら少し待つ
         if(_totalRequestCount > 0) {
             Thread.sleep(500)
-            // android
-            //Handler().postDelayed({}, 500)
         }
         _totalRequestCount++
         _prevRequestDatetime = LocalTime.now()

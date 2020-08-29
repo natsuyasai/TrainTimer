@@ -14,6 +14,10 @@
         android:layout_height="match_parent"
         tools:context="com.nyasai.traintimer.routelist.RouteListFragment">
 
+        <!-- ローディング用 -->
+        <include
+            layout="@layout/common_loading" />
+
         <!-- 路線一覧 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/route_list_view"
