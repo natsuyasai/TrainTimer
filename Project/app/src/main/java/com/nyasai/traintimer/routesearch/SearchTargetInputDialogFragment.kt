@@ -41,13 +41,13 @@ class SearchTargetInputDialogFragment: DialogFragment() {
                 .setMessage(R.string.search_input_message)
                 .setPositiveButton(
                     R.string.search_input_yes
-                ) { dialogInterface, id ->
+                ) { _, _ ->
                     Log.d("Debug", "検索開始")
                     onClickPositiveButtonCallback?.invoke()
                 }
                 .setNegativeButton(
                     R.string.search_input_no
-                ) { dialogInterface, id ->
+                ) { _, _ ->
                     Log.d("Debug", "キャンセル")
                     onClickNegativeButtonCallback?.invoke()
                 }

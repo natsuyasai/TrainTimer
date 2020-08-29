@@ -15,7 +15,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
-import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import kotlinx.android.synthetic.main.fragment_route_info.*
 import java.time.LocalTime
@@ -127,7 +126,7 @@ class RouteInfoFragment : Fragment() {
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
                     // データが取得できなければ，ハイフン表示とするために-1を設定
-                    var diffTime = when{
+                    val diffTime = when{
                         _routeInfoViewModel.currentCountItem.value != null -> ChronoUnit.SECONDS.between(
                             LocalTime.now(), LocalTime.parse(
                                 _routeInfoViewModel.currentCountItem.value?.departureTime
@@ -147,7 +146,7 @@ class RouteInfoFragment : Fragment() {
                         }
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
-                    var planeText = when{
+                    val planeText = when{
                         diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
                         else -> "Next -- : --"
                     }

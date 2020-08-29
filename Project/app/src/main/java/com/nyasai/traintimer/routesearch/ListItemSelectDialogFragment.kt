@@ -31,19 +31,19 @@ class ListItemSelectDialogFragment(items: Array<String>): DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             builder.setTitle(R.string.select_station_message)
-                .setSingleChoiceItems(itemList,0) { dialogInterface, i ->
+                .setSingleChoiceItems(itemList,0) { _, i ->
                     Log.d("Debug", "アイテム選択${itemList[i]}")
                     onSelectItem?.invoke(itemList[i])
                 }
                 .setPositiveButton(
                     R.string.select_station_yes
-                ) { dialogInterface, id ->
+                ) { _, _ ->
                     Log.d("Debug", "Yes")
                     onClickPositiveButtonCallback?.invoke()
                 }
                 .setNegativeButton(
                     R.string.select_station_no
-                ) { dialogInterface, id ->
+                ) { _, _ ->
                     Log.d("Debug", "No")
                     onClickNegativeButtonCallback?.invoke()
                 }

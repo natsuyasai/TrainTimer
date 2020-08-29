@@ -115,7 +115,7 @@ class RouteListFragment : Fragment() {
      * onCreateOptionsMenuフック
      */
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater?.inflate(R.menu.route_list_option, menu)
+        inflater.inflate(R.menu.route_list_option, menu)
     }
 
     /**
@@ -143,7 +143,7 @@ class RouteListFragment : Fragment() {
      */
     private fun initDialog() {
         // 画面生成時にダイアログが存在する場合は，コールバックを再登録
-        var deleteConfirmDialog = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        val deleteConfirmDialog = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
         if(deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment){
             deleteConfirmDialog.onClickPositiveButtonCallback = {
                 onClickDeleteConfirmDialogYse(it)
@@ -152,14 +152,14 @@ class RouteListFragment : Fragment() {
                 onClickDeleteConfirmDialogNo(it)
             }
         }
-        var searchTargetInputDialog = requireFragmentManager().findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
+        val searchTargetInputDialog = requireFragmentManager().findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
         if(searchTargetInputDialog != null && searchTargetInputDialog is SearchTargetInputDialogFragment){
             searchTargetInputDialog.onClickPositiveButtonCallback = {
             }
             searchTargetInputDialog.onClickNegativeButtonCallback = {
             }
         }
-        var selectListDialog = requireFragmentManager().findFragmentByTag(SELECT_LIST_DLG_TAG)
+        val selectListDialog = requireFragmentManager().findFragmentByTag(SELECT_LIST_DLG_TAG)
         if(selectListDialog != null && selectListDialog is ListItemSelectDialogFragment){
             selectListDialog.onClickPositiveButtonCallback = {
             }
@@ -180,7 +180,7 @@ class RouteListFragment : Fragment() {
         deletePrevDialog(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
 
         // ダイアログ表示
-        var dialog = RouteListItemDeleteConfirmDialogFragment()
+        val dialog = RouteListItemDeleteConfirmDialogFragment()
         val bundle = Bundle()
         bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
         dialog.arguments = bundle
@@ -201,7 +201,7 @@ class RouteListFragment : Fragment() {
         deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG)
 
         // ダイアログ表示
-        var dialog = SearchTargetInputDialogFragment()
+        val dialog = SearchTargetInputDialogFragment()
         dialog.onClickPositiveButtonCallback = {
             Log.d("Debug", dialog.getInputText())
             GlobalScope.async {
@@ -224,7 +224,7 @@ class RouteListFragment : Fragment() {
         deletePrevDialog(SELECT_LIST_DLG_TAG)
 
         // ダイアログ表示
-        var dialog = ListItemSelectDialogFragment(items)
+        val dialog = ListItemSelectDialogFragment(items)
         dialog.onClickPositiveButtonCallback = {
         }
         dialog.onClickNegativeButtonCallback = {
@@ -242,7 +242,7 @@ class RouteListFragment : Fragment() {
         deletePrevDialog(SELECT_LIST_DLG_TAG)
 
         // ダイアログ表示
-        var dialog = ListItemSelectDialogFragment(items)
+        val dialog = ListItemSelectDialogFragment(items)
         dialog.onClickPositiveButtonCallback = {
         }
         dialog.onClickNegativeButtonCallback = {
@@ -254,7 +254,7 @@ class RouteListFragment : Fragment() {
      * 前回分ダイアログ削除
      */
     private fun deletePrevDialog(tag: String) {
-        var prevDlg = requireFragmentManager().findFragmentByTag(tag)
+        val prevDlg = requireFragmentManager().findFragmentByTag(tag)
         if(prevDlg != null){
             requireFragmentManager().beginTransaction().remove(prevDlg)
         }
