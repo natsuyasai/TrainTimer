@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
@@ -23,9 +23,7 @@ import java.util.*
 
 
 /**
- * A simple [Fragment] subclass.
- * Use the [RouteInfoFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * 路線情報表示フラグメント
  */
 class RouteInfoFragment : Fragment() {
 
@@ -36,7 +34,18 @@ class RouteInfoFragment : Fragment() {
     private lateinit var _routeInfoAdapter: RouteInfoAdapter
 
     // 路線情報ViewModel
-    private lateinit var _routeInfoViewModel: RouteInfoViewModel
+    private val _routeInfoViewModel: RouteInfoViewModel by lazy {
+        val application = requireNotNull(this.activity).application
+        val viewModelFactory = RouteInfoViewModelFactory(
+            RouteDatabase.getInstance(application).routeDatabaseDao,
+            application,
+            RouteInfoFragmentArgs.fromBundle(requireArguments()).parentDataId
+        )
+        ViewModelProvider(
+            this,
+            viewModelFactory
+        ).get(RouteInfoViewModel::class.java)
+    }
 
     // タイマ
     private lateinit var _timer: Timer
@@ -59,22 +68,6 @@ class RouteInfoFragment : Fragment() {
         _binding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_route_info, container, false
         )
-
-        val application = requireNotNull(this.activity).application
-
-        // パラメータ取得
-        val arguments = RouteInfoFragmentArgs.fromBundle(requireArguments())
-
-        val dataSource = RouteDatabase.getInstance(application).routeDatabaseDao
-
-        val viewModelFactory = RouteInfoViewModelFactory(
-            dataSource,
-            application,
-            arguments.parentDataId
-        )
-
-        _routeInfoViewModel = ViewModelProviders.of(this, viewModelFactory)
-            .get(RouteInfoViewModel::class.java)
 
         // データバインド
         _binding.routeInfoViewModel = _routeInfoViewModel

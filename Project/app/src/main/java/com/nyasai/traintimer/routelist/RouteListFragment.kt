@@ -7,7 +7,7 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
@@ -22,11 +22,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
 /**
- * A simple [Fragment] subclass.
- * Use the [RouteListFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * 路線一覧表示フラグメント
  */
-@Suppress("DEPRECATION")
 class RouteListFragment : Fragment() {
 
     // 路線リストアイテム削除確認ダイアログタグ
@@ -38,6 +35,14 @@ class RouteListFragment : Fragment() {
 
     // DBDao
     private lateinit var _routeDatabaseDao: RouteDatabaseDao
+
+    // 路線リストViewModel
+    private val _routeListViewModel: RouteListViewModel by lazy {
+        ViewModelProvider(
+            this,
+            RouteListViewModelFactory(_routeDatabaseDao, requireNotNull(this.activity).application)
+        ).get(RouteListViewModel::class.java)
+    }
 
     // UI実行用ハンドラ
     private val _handler = Handler()
@@ -58,12 +63,7 @@ class RouteListFragment : Fragment() {
 
         _routeDatabaseDao = RouteDatabase.getInstance(application).routeDatabaseDao
 
-        val viewModelFactory = RouteListViewModelFactory(_routeDatabaseDao, application)
-
-        val routeListViewModel = ViewModelProviders.of(this, viewModelFactory)
-            .get(RouteListViewModel::class.java)
-
-        binding.routeListViewModel = routeListViewModel
+        binding.routeListViewModel = _routeListViewModel
 
         binding.lifecycleOwner = this
 
@@ -99,11 +99,11 @@ class RouteListFragment : Fragment() {
         setHasOptionsMenu(true)
 
         // 変更監視
-        routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
+        _routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
             it?.let{
                 // リストアイテム設定
                 adapter.submitList(it)
-                Log.d("Debug", "データ更新 : ${routeListViewModel.routeList.value.toString()}")
+                Log.d("Debug", "データ更新 : ${_routeListViewModel.routeList.value.toString()}")
             }
         })
 
