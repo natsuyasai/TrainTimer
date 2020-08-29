@@ -68,6 +68,9 @@ interface RouteDatabaseDao {
     @Query("SELECT * from route_list_item_table ORDER BY dataId")
     fun getAllRouteListItemsSync(): List<RouteListItem>
 
+    @Query("SELECT * from route_list_item_table ORDER BY dataId DESC")
+    fun getDestAllRouteListItemsSync(): List<RouteListItem>
+
     // endregion 路線リストアイテム操作
 
 

@@ -14,8 +14,11 @@ class YahooRouteInfoGetter {
      * 時刻情報
      */
     data class TimeInfo (
+        // 時刻(HH:MM)
         var time: String = "-1",
+        // 種別(普通，快速，etc...)
         var type: String = "取得失敗",
+        // 行先
         var direction: String = "取得失敗"
     )
 
@@ -31,7 +34,7 @@ class YahooRouteInfoGetter {
     private var _prevRequestDatetime = LocalTime.now()
 
     init {
-        FuelManager.instance.baseHeaders = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36")
+        FuelManager.instance.baseHeaders = mapOf("User-Agent" to "Mozilla/5.0 (twitter:@natsuyasai7)")
     }
 
     /**
@@ -114,7 +117,7 @@ class YahooRouteInfoGetter {
 
     /**
      * 時刻表情報取得
-     * @param timeTableUrl 時刻表ページURL
+     * @param timeTableUrl 時刻表ページURL(平日分)
      * @return 時刻データ([平日データリスト,土曜データリスト,日曜・祝日データリスト])
      */
     fun getTimeTableInfo(timeTableUrl: String): List<List<TimeInfo>> {

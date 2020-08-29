@@ -49,6 +49,9 @@ class RouteListFragment : Fragment() {
     // Yahoo路線情報取得用
     private val _yahooRouteInfoGetter = YahooRouteInfoGetter()
 
+    // 検索情報保持領域
+    private var _searchRouteListItem: RouteListItem? = null
+
     // UI実行用ハンドラ
     private val _handler = Handler()
 
@@ -95,7 +98,7 @@ class RouteListFragment : Fragment() {
         })
 
         // ダミーデータ挿入
-        setDummyData()
+        //setDummyData()
 
         // ダイアログ初期化
         initDialog()
@@ -154,7 +157,6 @@ class RouteListFragment : Fragment() {
                 onClickDeleteConfirmDialogYse(it)
             }
             deleteConfirmDialog.onClickNegativeButtonCallback = {
-                onClickDeleteConfirmDialogNo(it)
             }
         }
         val searchTargetInputDialog = parentFragmentManager.findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
@@ -194,7 +196,6 @@ class RouteListFragment : Fragment() {
             onClickDeleteConfirmDialogYse(it)
         }
         dialog.onClickNegativeButtonCallback = {
-            onClickDeleteConfirmDialogNo(it)
         }
         dialog.showNow(parentFragmentManager, ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
     }
@@ -228,15 +229,10 @@ class RouteListFragment : Fragment() {
         // ダイアログ表示
         val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
         dialog.onClickPositiveButtonCallback = {
-            // 行先リストを取得
-            if(itemsMap[dialog.selectItem] == null){
-                // TODO: エラーハンドリング
-            }
-            else {
-                searchDirectionFromUrl(itemsMap.getValue(dialog.selectItem))
-            }
+            searchDirectionFromUrl(itemsMap, dialog.selectItem)
         }
         dialog.onClickNegativeButtonCallback = {
+            _searchRouteListItem = null
         }
         dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
@@ -251,8 +247,10 @@ class RouteListFragment : Fragment() {
         // ダイアログ表示
         val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
         dialog.onClickPositiveButtonCallback = {
+            addRouteInfo(itemsMap, dialog.selectItem)
         }
         dialog.onClickNegativeButtonCallback = {
+            _searchRouteListItem = null
         }
         dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
@@ -296,6 +294,8 @@ class RouteListFragment : Fragment() {
                 }
             }
             else{
+                _searchRouteListItem = RouteListItem()
+                _searchRouteListItem!!.stationName = stationName
                 searchDirectionFromStationName(stationName)
             }
         }
@@ -318,10 +318,20 @@ class RouteListFragment : Fragment() {
     /**
      * 行先一覧検索(URL)
      */
-    private fun searchDirectionFromUrl(url: String) {
+    private fun searchDirectionFromUrl(stationNameMap: Map<String, String>, selectStation: String) {
+
+        if(stationNameMap[selectStation] == null){
+            // TODO: エラーハンドリング
+            _searchRouteListItem = null
+            return
+        }
+        _searchRouteListItem = RouteListItem()
+        _searchRouteListItem!!.stationName = selectStation
+
+        // 行先リストを取得
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
         GlobalScope.async {
-            val directionListMap = _yahooRouteInfoGetter.getDirectionFromUrl(url)
+            val directionListMap = _yahooRouteInfoGetter.getDirectionFromUrl(stationNameMap.getValue(selectStation))
             _handler.post {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 showDirectionSelectDialog(directionListMap)
@@ -330,11 +340,69 @@ class RouteListFragment : Fragment() {
     }
 
     /**
-     * 削除確認ダイアログNoボタンクリック処理
-     * @param targetDataId 対象データID
+     * 路線情報追加
      */
-    private fun onClickDeleteConfirmDialogNo(targetDataId: Long?) {
+    private fun addRouteInfo(directionMap: Map<String, String>, selectDirection: String) {
+        if(directionMap[selectDirection] == null) {
+            // TODO: エラーハンドリング
+            _searchRouteListItem = null
+            return
+        }
+        loading_text.text = "時刻情報取得中……"
+        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        // キーから路線名と行先を分割
+        val splitDirectionKey = _yahooRouteInfoGetter.splitDirectionKey(selectDirection)
+        _searchRouteListItem!!.routeName = splitDirectionKey.first
+        _searchRouteListItem!!.direction = splitDirectionKey.second
+
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        // 時刻データを全取得
+        Log.d("Debug", "データ取得開始")
+        GlobalScope.async {
+            val routeInfo = _yahooRouteInfoGetter.getTimeTableInfo(directionMap.getValue(selectDirection))
+            _handler.post {
+                loading_text.text = "時刻情報登録中……"
+            }
+            // 時刻データが取得できていれば路線一覧情報をDBに追加
+            Log.d("Debug", "データ登録開始")
+            var parentDataId = 0L
+            if(routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
+                _routeDatabaseDao.insertRouteListItem(_searchRouteListItem!!)
+                // 追加したアイテムのIDを取得
+                for (item in _routeDatabaseDao.getDestAllRouteListItemsSync()) {
+                    if(item.stationName == _searchRouteListItem!!.stationName
+                        && item.routeName == _searchRouteListItem!!.routeName
+                        && item.direction == _searchRouteListItem!!.direction){
+                        parentDataId = item.dataId
+                        break
+                    }
+                }
+                _searchRouteListItem = null
+            }
+            for (diagramType in 0..routeInfo.size) {
+                // ダイヤ種別毎のアイテム
+                for (timeInfo in routeInfo[diagramType]) {
+                    // TODO: まとめて登録
+                    // 時刻情報追加
+                    val item = RouteDetails()
+                    item.parentDataId = parentDataId
+                    item.diagramType = diagramType
+                    item.departureTime = timeInfo.time
+                    item.trainType = timeInfo.type
+                    item.destination = timeInfo.direction
+                    _routeDatabaseDao.insertRouteDetailsItem(item)
+                }
+            }
+            Log.d("Debug", "データ登録完了")
+            _handler.post {
+                loading_text.text = ""
+                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+
+        }
     }
+
 
     // endregion ダイアログ関連
 
