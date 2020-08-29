@@ -17,7 +17,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:textAlignment="center"
+        android:background="@color/textGray"
         android:textSize="30dp"
+        android:textColor="@color/textDark"
         tools:text="読み込み中"/>
 
     <ProgressBar

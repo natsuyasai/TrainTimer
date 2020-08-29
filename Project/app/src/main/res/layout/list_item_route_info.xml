@@ -12,49 +12,58 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:foregroundGravity="left"
         android:background="@drawable/list_frame_style" >
 
         <!-- 時刻 -->
+        <!-- 種別 -->
+
         <TextView
             android:id="@+id/departure_time"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textSize="30sp"
+            android:layout_gravity="left"
+            android:gravity="left"
             android:textColor="@color/textDark"
-            app:layout_constraintWidth_percent="0.33"
-            app:layout_constraintEnd_toEndOf="@id/train_type"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="20sp"
+            app:layout_constraintWidth_percent="0.3"
             app:departureTime="@{routeDetails}"
-            tools:text="時刻"/>
-        <!-- 種別 -->
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/train_type"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="時刻" />
+
         <TextView
             android:id="@+id/train_type"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textSize="30sp"
+            android:layout_gravity="left"
+            android:gravity="left"
+            android:textSize="20sp"
             android:textColor="@color/textRed"
-            app:layout_constraintWidth_percent="0.33"
-            app:layout_constraintEnd_toEndOf="@id/destination_name"
-            app:layout_constraintStart_toStartOf="@id/departure_time"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.3"
             app:trainType="@{routeDetails}"
+            app:layout_constraintStart_toEndOf="@id/departure_time"
+            app:layout_constraintEnd_toStartOf="@id/destination_name"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="種別" />
         <!-- 方面 -->
         <TextView
             android:id="@+id/destination_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textSize="30sp"
+            android:layout_gravity="left"
+            android:gravity="left"
+            android:textSize="20sp"
             android:textColor="@color/textDark"
-            app:layout_constraintWidth_percent="0.33"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/train_type"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.3"
             app:destination="@{routeDetails}"
+            app:layout_constraintStart_toEndOf="@id/train_type"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="方面" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

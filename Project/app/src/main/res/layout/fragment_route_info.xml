@@ -20,6 +20,7 @@
         <include
             layout="@layout/route_info_title"
             android:id="@+id/route_info_title"
+            app:layout_constraintHeight_percent="0.1"
             app:routeListItem="@{routeInfoViewModel.routeInfo}"
             app:currentDiagramType="@{routeInfoViewModel.currentDiagramType}"
             app:routeInfoFragment="@{routeInfoFragment}" />
@@ -43,7 +44,7 @@
             android:id="@+id/route_info_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintHeight_percent="0.75"
+            app:layout_constraintHeight_percent="0.74"
             app:layout_constraintTop_toBottomOf="@id/countdown"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

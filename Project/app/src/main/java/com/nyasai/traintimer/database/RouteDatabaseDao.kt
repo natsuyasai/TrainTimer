@@ -83,6 +83,9 @@ interface RouteDatabaseDao {
     @Insert
     fun insertRouteDetailsItem(routeDetails: RouteDetails)
 
+    @Insert
+    fun insertRouteDetailsItems(routeDetails: List<RouteDetails>)
+
     /**
      * 路線詳細アイテム更新
      * @param routeDetails 更新アイテム

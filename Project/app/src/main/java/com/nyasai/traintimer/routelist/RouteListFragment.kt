@@ -132,6 +132,7 @@ class RouteListFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem) =
         when(item.itemId) {
             R.id.route_add_menu -> {
+
                 Log.d("Debug","路線検索ボタン押下")
                 showSearchTargetInputDialog()
                 true
@@ -367,6 +368,7 @@ class RouteListFragment : Fragment() {
             Log.d("Debug", "データ登録開始")
             var parentDataId = 0L
             if(routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
+                Log.d("Debug", "一覧データ登録")
                 _routeDatabaseDao.insertRouteListItem(_searchRouteListItem!!)
                 // 追加したアイテムのIDを取得
                 for (item in _routeDatabaseDao.getDestAllRouteListItemsSync()) {
@@ -379,10 +381,13 @@ class RouteListFragment : Fragment() {
                 }
                 _searchRouteListItem = null
             }
-            for (diagramType in 0..routeInfo.size) {
+
+            Log.d("Debug", "詳細データ作成")
+            val addDatas = mutableListOf<RouteDetails>()
+            val max = routeInfo.size - 1
+            for (diagramType in 0..max) {
                 // ダイヤ種別毎のアイテム
                 for (timeInfo in routeInfo[diagramType]) {
-                    // TODO: まとめて登録
                     // 時刻情報追加
                     val item = RouteDetails()
                     item.parentDataId = parentDataId
@@ -390,9 +395,11 @@ class RouteListFragment : Fragment() {
                     item.departureTime = timeInfo.time
                     item.trainType = timeInfo.type
                     item.destination = timeInfo.direction
-                    _routeDatabaseDao.insertRouteDetailsItem(item)
+                    addDatas.add(item)
                 }
             }
+            Log.d("Debug", "詳細データ登録")
+            _routeDatabaseDao.insertRouteDetailsItems(addDatas)
             Log.d("Debug", "データ登録完了")
             _handler.post {
                 loading_text.text = ""
