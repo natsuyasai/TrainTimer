@@ -18,6 +18,9 @@ class ListItemSelectDialogFragment(items: Array<String>): DialogFragment() {
     // Noボタン押下時コールバック
     var onClickNegativeButtonCallback: (() -> Unit)? = null
 
+    // アイテム選択
+    var onSelectItem:((item: String) -> Unit)? = null
+
     // アイテム一覧
     var itemList: Array<String> = items
 
@@ -30,6 +33,7 @@ class ListItemSelectDialogFragment(items: Array<String>): DialogFragment() {
             builder.setTitle(R.string.select_station_message)
                 .setSingleChoiceItems(itemList,0) { dialogInterface, i ->
                     Log.d("Debug", "アイテム選択${itemList[i]}")
+                    onSelectItem?.invoke(itemList[i])
                 }
                 .setPositiveButton(
                     R.string.select_station_yes

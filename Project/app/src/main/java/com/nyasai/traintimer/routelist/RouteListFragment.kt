@@ -165,6 +165,8 @@ class RouteListFragment : Fragment() {
             }
             selectListDialog.onClickNegativeButtonCallback = {
             }
+            selectListDialog.onSelectItem = {
+            }
             selectListDialog.itemList = arrayOf()
         }
     }
@@ -226,6 +228,8 @@ class RouteListFragment : Fragment() {
         dialog.onClickPositiveButtonCallback = {
         }
         dialog.onClickNegativeButtonCallback = {
+        }
+        dialog.onSelectItem = {
         }
         dialog.showNow(requireFragmentManager(), SELECT_LIST_DLG_TAG)
     }

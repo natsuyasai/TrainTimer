@@ -18,5 +18,7 @@ class Define {
     companion object{
         // 路線リスト削除確認ダイアログ引数(データID)
         const val ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID = "DATA_ID"
+        // 駅検索URL
+        const val STATION_SEARCH_URL_BASE = "https://transit.yahoo.co.jp/station/time/search?q="
     }
 }
