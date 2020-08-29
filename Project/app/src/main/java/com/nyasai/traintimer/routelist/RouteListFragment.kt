@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.*
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -129,22 +130,26 @@ class RouteListFragment : Fragment() {
     /**
      * onOptionsItemSelectedフック
      */
-    override fun onOptionsItemSelected(item: MenuItem) =
-        when(item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // ローディング表示中はメニュー非表示
+        if(common_loading.visibility == android.widget.ProgressBar.VISIBLE) {
+            return false
+        }
+        return when (item.itemId) {
             R.id.route_add_menu -> {
-
-                Log.d("Debug","路線検索ボタン押下")
+                Log.d("Debug", "路線検索ボタン押下")
                 showSearchTargetInputDialog()
                 true
             }
             R.id.setting_menu -> {
-                Log.d("Debug","設定ボタン押下")
+                Log.d("Debug", "設定ボタン押下")
                 true
             }
             else -> {
                 super.onOptionsItemSelected(item)
             }
         }
+    }
 
     // region ダイアログ関連
     /**
