@@ -402,7 +402,7 @@ class RouteListFragment : Fragment() {
             _routeDatabaseDao.insertRouteDetailsItems(addDatas)
             Log.d("Debug", "データ登録完了")
             _handler.post {
-                loading_text.text = ""
+                loading_text.text = "読み込み中……"
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
