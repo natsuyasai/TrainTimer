@@ -4,7 +4,7 @@
     <item
         android:id="@+id/route_add_menu"
         android:title="路線検索"
-        android:icon="@drawable/ic_search_24px"
+        android:icon="@drawable/ic_add_24px"
         app:showAsAction="always"/>
     <item
         android:id="@+id/setting_menu"

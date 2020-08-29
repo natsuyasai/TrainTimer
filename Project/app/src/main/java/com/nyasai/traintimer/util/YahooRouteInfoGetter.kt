@@ -94,9 +94,11 @@ class YahooRouteInfoGetter {
             val routeNameElements = element.select("dl > dt")
             val linkElements = element.select("li > a")
             if (routeNameElements.size > 0 && linkElements.size > 0) {
-                // 路線名，行先をキーとする
-                val key = routeNameElements[0].text() + KEY_DELIMITER_STR + linkElements[0].text()
-                directionList[key] = YAHOO_ROUTE_SEARCH_BASE_URL + linkElements.attr("href").toString()
+                for (linkElement in linkElements){
+                    // 路線名，行先をキーとする
+                    val key = routeNameElements[0].text() + KEY_DELIMITER_STR + linkElement.text()
+                    directionList[key] = YAHOO_ROUTE_SEARCH_BASE_URL + linkElement.attr("href").toString()
+                }
             }
         }
         return directionList
