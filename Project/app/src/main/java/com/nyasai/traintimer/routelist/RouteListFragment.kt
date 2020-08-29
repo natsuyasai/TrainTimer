@@ -383,7 +383,7 @@ class RouteListFragment : Fragment() {
             }
 
             Log.d("Debug", "詳細データ作成")
-            val addDatas = mutableListOf<RouteDetails>()
+            val addDataList = mutableListOf<RouteDetails>()
             val max = routeInfo.size - 1
             for (diagramType in 0..max) {
                 // ダイヤ種別毎のアイテム
@@ -395,11 +395,11 @@ class RouteListFragment : Fragment() {
                     item.departureTime = timeInfo.time
                     item.trainType = timeInfo.type
                     item.destination = timeInfo.direction
-                    addDatas.add(item)
+                    addDataList.add(item)
                 }
             }
             Log.d("Debug", "詳細データ登録")
-            _routeDatabaseDao.insertRouteDetailsItems(addDatas)
+            _routeDatabaseDao.insertRouteDetailsItems(addDataList)
             Log.d("Debug", "データ登録完了")
             _handler.post {
                 loading_text.text = "読み込み中……"
