@@ -143,7 +143,7 @@ class RouteListFragment : Fragment() {
      */
     private fun initDialog() {
         // 画面生成時にダイアログが存在する場合は，コールバックを再登録
-        val deleteConfirmDialog = requireFragmentManager().findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        val deleteConfirmDialog = parentFragmentManager.findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
         if(deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment){
             deleteConfirmDialog.onClickPositiveButtonCallback = {
                 onClickDeleteConfirmDialogYse(it)
@@ -152,14 +152,14 @@ class RouteListFragment : Fragment() {
                 onClickDeleteConfirmDialogNo(it)
             }
         }
-        val searchTargetInputDialog = requireFragmentManager().findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
+        val searchTargetInputDialog = parentFragmentManager.findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
         if(searchTargetInputDialog != null && searchTargetInputDialog is SearchTargetInputDialogFragment){
             searchTargetInputDialog.onClickPositiveButtonCallback = {
             }
             searchTargetInputDialog.onClickNegativeButtonCallback = {
             }
         }
-        val selectListDialog = requireFragmentManager().findFragmentByTag(SELECT_LIST_DLG_TAG)
+        val selectListDialog = parentFragmentManager.findFragmentByTag(SELECT_LIST_DLG_TAG)
         if(selectListDialog != null && selectListDialog is ListItemSelectDialogFragment){
             selectListDialog.onClickPositiveButtonCallback = {
             }
@@ -190,7 +190,7 @@ class RouteListFragment : Fragment() {
         dialog.onClickNegativeButtonCallback = {
             onClickDeleteConfirmDialogNo(it)
         }
-        dialog.showNow(requireFragmentManager(), ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        dialog.showNow(parentFragmentManager, ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
     }
 
     /**
@@ -213,7 +213,7 @@ class RouteListFragment : Fragment() {
         }
         dialog.onClickNegativeButtonCallback = {
         }
-        dialog.showNow(requireFragmentManager(), SEARCH_TARGET_INPUT_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SEARCH_TARGET_INPUT_DLG_TAG)
     }
 
     /**
@@ -231,7 +231,7 @@ class RouteListFragment : Fragment() {
         }
         dialog.onSelectItem = {
         }
-        dialog.showNow(requireFragmentManager(), SELECT_LIST_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
 
     /**
@@ -247,18 +247,18 @@ class RouteListFragment : Fragment() {
         }
         dialog.onClickNegativeButtonCallback = {
         }
-        dialog.showNow(requireFragmentManager(), SELECT_LIST_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
 
     /**
      * 前回分ダイアログ削除
      */
     private fun deletePrevDialog(tag: String) {
-        val prevDlg = requireFragmentManager().findFragmentByTag(tag)
+        val prevDlg = parentFragmentManager.findFragmentByTag(tag)
         if(prevDlg != null){
-            requireFragmentManager().beginTransaction().remove(prevDlg)
+            parentFragmentManager.beginTransaction().remove(prevDlg)
         }
-        requireFragmentManager().beginTransaction().addToBackStack(null)
+        parentFragmentManager.beginTransaction().addToBackStack(null)
     }
 
     /**
