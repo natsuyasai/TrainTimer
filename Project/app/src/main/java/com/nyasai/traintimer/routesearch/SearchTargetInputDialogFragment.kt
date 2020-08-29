@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.databinding.DialogSearchTargetInputBinding
 
@@ -22,7 +22,12 @@ class SearchTargetInputDialogFragment: DialogFragment() {
     var onClickNegativeButtonCallback: (() -> Unit)? = null
 
     // ViewModel
-    private lateinit var _searchTargetInputViewModel: SearchTargetInputViewModel
+    private val _searchTargetInputViewModel: SearchTargetInputViewModel by lazy {
+        ViewModelProvider(
+        this,
+        SearchTargetInputViewModelFactory(requireNotNull(this.activity).application)
+        ).get(SearchTargetInputViewModel::class.java)
+    }
 
     /**
      * ダイアログ生成
@@ -32,9 +37,7 @@ class SearchTargetInputDialogFragment: DialogFragment() {
             val builder = AlertDialog.Builder(it)
             val binding = DataBindingUtil.inflate<DialogSearchTargetInputBinding>(requireActivity().layoutInflater,
                 R.layout.dialog_search_target_input, null, false)
-            val viewModelFactory = SearchTargetInputViewModelFactory(requireNotNull(this.activity).application)
-            _searchTargetInputViewModel = ViewModelProviders.of(this, viewModelFactory)
-                .get(SearchTargetInputViewModel::class.java)
+
             binding.searchTargetInputVM = _searchTargetInputViewModel
 
             builder.setView(binding.root)
