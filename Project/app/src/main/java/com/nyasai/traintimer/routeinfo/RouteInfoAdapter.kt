@@ -8,6 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.databinding.ListItemRouteInfoBinding
 
+/**
+ * 路線情報詳細リスト表示用アダプタ
+ */
 class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(RouteInfoDiffCallback()){
 
     // 表示アイテム

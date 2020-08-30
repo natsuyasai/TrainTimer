@@ -4,6 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * 時刻表詳細ページ用データ
+ */
 @Entity(tableName = "route_details_table")
 data class RouteDetails (
 

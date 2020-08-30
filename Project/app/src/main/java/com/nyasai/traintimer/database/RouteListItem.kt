@@ -4,6 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * 路線一覧用データ
+ */
 @Entity(tableName = "route_list_item_table")
 data class RouteListItem(
 

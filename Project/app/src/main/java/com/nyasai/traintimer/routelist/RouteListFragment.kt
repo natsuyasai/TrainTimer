@@ -57,7 +57,7 @@ class RouteListFragment : Fragment() {
     private val _handler = Handler()
 
     /**
-     * ビュー生成
+     * onCreateViewフック
      */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -84,22 +84,19 @@ class RouteListFragment : Fragment() {
         adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener{
             override fun onItemClickListener(view: View, item: RouteListItem) {
                 // ページ遷移
-                Log.d("Debug", "アイテム選択 : ${item.toString()}")
+                Log.d("Debug", "アイテム選択 : $item")
                 view.findNavController().navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
             }
         })
         adapter.setOnItemLongClickListener(object : RouteListAdapter.OnItemLongClickListener {
             override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
                 // 長押し
-                Log.d("Debug", "アイテム長押し : ${item.toString()}")
+                Log.d("Debug", "アイテム長押し : $item")
                 // 削除確認
                 showDeleteConfirmDialog(item)
                 return true
             }
         })
-
-        // ダミーデータ挿入
-        //setDummyData()
 
         // ダイアログ初期化
         initDialog()
@@ -152,6 +149,7 @@ class RouteListFragment : Fragment() {
     }
 
     // region ダイアログ関連
+
     /**
      * ダイアログ初期化
      */
@@ -226,6 +224,7 @@ class RouteListFragment : Fragment() {
 
     /**
      * 駅選択ダイアログ表示
+     * @param itemsMap 駅一覧情報(key: 駅名, value: URL)
      */
     private fun showStationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
@@ -245,6 +244,7 @@ class RouteListFragment : Fragment() {
 
     /**
      * 行先選択ダイアログ表示
+     * @param itemsMap 行先一覧(key: 路線名::行先, value: URL)
      */
     private fun showDirectionSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
@@ -263,6 +263,7 @@ class RouteListFragment : Fragment() {
 
     /**
      * 前回分ダイアログ削除
+     * @param tag 削除対象ダイアログタグ
      */
     private fun deletePrevDialog(tag: String) {
         val prevDlg = parentFragmentManager.findFragmentByTag(tag)
@@ -287,6 +288,7 @@ class RouteListFragment : Fragment() {
 
     /**
      * 駅検索
+     * @param stationName 検索対象駅名
      */
     private fun searchStation(stationName: String) {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
@@ -309,6 +311,7 @@ class RouteListFragment : Fragment() {
 
     /**
      * 行先一覧検索(駅名)
+     * @param stationName 検索対象駅名
      */
     private fun searchDirectionFromStationName(stationName: String) {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
@@ -323,6 +326,8 @@ class RouteListFragment : Fragment() {
 
     /**
      * 行先一覧検索(URL)
+     * @param stationNameMap 駅名一覧(key: 駅名, value: URL)
+     * @param selectStation 選択した駅名
      */
     private fun searchDirectionFromUrl(stationNameMap: Map<String, String>, selectStation: String) {
 
@@ -347,6 +352,8 @@ class RouteListFragment : Fragment() {
 
     /**
      * 路線情報追加
+     * @param directionMap 行先一覧(key: 路線名::行先, value: URL)
+     * @param selectDirection 選択した行先
      */
     private fun addRouteInfo(directionMap: Map<String, String>, selectDirection: String) {
         if(directionMap[selectDirection] == null) {
@@ -418,78 +425,4 @@ class RouteListFragment : Fragment() {
 
     // endregion ダイアログ関連
 
-    /**
-     * ダミーデータ設定
-     */
-    private fun setDummyData() {
-        // region *************仮データ挿入*************
-        val tmp1 = RouteListItem(0,"1JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp2 = RouteListItem(0,"2JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp3 = RouteListItem(0,"3JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp4 = RouteListItem(0,"4JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp5 = RouteListItem(0,"5JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp6 = RouteListItem(0,"6JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp7 = RouteListItem(0,"7JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp8 = RouteListItem(0,"8JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp9 = RouteListItem(0,"9JR Hoge線", "Fuga駅", "大阪方面")
-        val tmp10 = RouteListItem(0,"10JR Hoge線", "Fuga駅", "大阪方面")
-        GlobalScope.async{
-            _routeDatabaseDao.clearAllRouteListItem()
-            _routeDatabaseDao.insertRouteListItem(tmp1)
-            _routeDatabaseDao.insertRouteListItem(tmp2)
-            _routeDatabaseDao.insertRouteListItem(tmp3)
-            _routeDatabaseDao.insertRouteListItem(tmp4)
-            _routeDatabaseDao.insertRouteListItem(tmp5)
-            _routeDatabaseDao.insertRouteListItem(tmp6)
-            _routeDatabaseDao.insertRouteListItem(tmp7)
-            _routeDatabaseDao.insertRouteListItem(tmp8)
-            _routeDatabaseDao.insertRouteListItem(tmp9)
-            _routeDatabaseDao.insertRouteListItem(tmp10)
-
-            val routeListItems = _routeDatabaseDao.getAllRouteListItemsSync()
-            val tmpDet1 = RouteDetails(0,routeListItems[0].dataId, 0,"01:00","普通", "大阪", "url")
-            val tmpDet2 = RouteDetails(0,routeListItems[0].dataId, 1,"02:00","普通", "大阪", "url")
-            val tmpDet3 = RouteDetails(0,routeListItems[0].dataId, 2,"03:00","普通", "大阪", "url")
-            val tmpDet4 = RouteDetails(0,routeListItems[0].dataId, 0,"04:00","普通", "大阪", "url")
-            val tmpDet5 = RouteDetails(0,routeListItems[0].dataId, 1,"05:00","普通", "大阪", "url")
-            val tmpDet6 = RouteDetails(0,routeListItems[0].dataId, 2,"06:00","普通", "大阪", "url")
-            val tmpDet7 = RouteDetails(0,routeListItems[0].dataId, 0,"07:00","普通", "大阪", "url")
-            val tmpDet8 = RouteDetails(0,routeListItems[0].dataId, 1,"08:00","普通", "大阪", "url")
-            val tmpDet9 = RouteDetails(0,routeListItems[0].dataId, 2,"09:00","普通", "大阪", "url")
-            val tmpDet10 = RouteDetails(0,routeListItems[0].dataId, 0,"15:00","普通", "大阪", "url")
-            val tmpDet11 = RouteDetails(0,routeListItems[0].dataId, 1,"16:00","普通", "大阪", "url")
-            val tmpDet12 = RouteDetails(0,routeListItems[0].dataId, 2,"17:00","普通", "大阪", "url")
-            val tmpDet13 = RouteDetails(0,routeListItems[0].dataId, 0,"18:00","普通", "大阪", "url")
-            val tmpDet14 = RouteDetails(0,routeListItems[0].dataId, 1,"19:00","普通", "大阪", "url")
-            val tmpDet15 = RouteDetails(0,routeListItems[0].dataId, 2,"20:00","普通", "大阪", "url")
-            val tmpDet16 = RouteDetails(0,routeListItems[0].dataId, 0,"23:00","普通", "大阪", "url")
-            val tmpDet17 = RouteDetails(0,routeListItems[0].dataId, 1,"23:00","普通", "大阪", "url")
-            val tmpDet18 = RouteDetails(0,routeListItems[0].dataId, 2,"23:00","普通", "大阪", "url")
-
-            val tmpDet00 = RouteDetails(0,routeListItems[0].dataId, 1,"16:25","普通", "大阪", "url")
-
-            _routeDatabaseDao.clearAllRouteDetailsItem()
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet1)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet2)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet3)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet4)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet5)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet6)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet7)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet8)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet9)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet10)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet11)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet12)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet13)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet14)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet15)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet16)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet17)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet18)
-            _routeDatabaseDao.insertRouteDetailsItem(tmpDet00)
-        }
-
-        // endregion *************仮データ挿入*************
-    }
 }

@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.nyasai.traintimer.define.Define
 
 /**
  * DBDao
@@ -68,6 +67,9 @@ interface RouteDatabaseDao {
     @Query("SELECT * from route_list_item_table ORDER BY dataId")
     fun getAllRouteListItemsSync(): List<RouteListItem>
 
+    /**
+     * 路線アイテム一覧降順取得(同期)
+     */
     @Query("SELECT * from route_list_item_table ORDER BY dataId DESC")
     fun getDestAllRouteListItemsSync(): List<RouteListItem>
 
@@ -83,6 +85,10 @@ interface RouteDatabaseDao {
     @Insert
     fun insertRouteDetailsItem(routeDetails: RouteDetails)
 
+    /**
+     * 路線詳細アイテム追加
+     * @param routeDetails 追加アイテム一覧
+     */
     @Insert
     fun insertRouteDetailsItems(routeDetails: List<RouteDetails>)
 
@@ -92,6 +98,11 @@ interface RouteDatabaseDao {
      */
     @Update
     fun updateRouteDetailsItem(routeDetails: RouteDetails)
+
+    /**
+     * 路線詳細アイテム更新
+     * @param routeDetails 更新アイテム一覧
+     */
     @Update
     fun updateRouteDetailsItems(routeDetails: List<RouteDetails>)
 

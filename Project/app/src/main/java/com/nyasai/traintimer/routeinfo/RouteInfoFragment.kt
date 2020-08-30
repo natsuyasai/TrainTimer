@@ -86,14 +86,14 @@ class RouteInfoFragment : Fragment() {
                 // 表示種別に応じたデータを設定
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
-                Log.d("Debug", "詳細データ更新 : ${it.toString()}")
+                Log.d("Debug", "詳細データ更新 : $it")
             }
         })
 
         _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner, Observer {
             it?.let {
 
-                Log.d("Debug", "詳細データ更新 : ${it.toString()}")
+                Log.d("Debug", "詳細データ更新 : $it")
             }
         })
 
@@ -151,7 +151,7 @@ class RouteInfoFragment : Fragment() {
                 }
             }
 
-        }, 1000, 1000)
+        }, 100, 1000)
     }
 
     /**
