@@ -61,8 +61,8 @@ fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
 /**
  * 時刻情報テキストカラー取得
  */
-fun getTimeTextColor(departureTime: String, defaultColor: Int = Color.BLACK): Int {
-    val departureTime = LocalTime.parse(departureTime)
+fun getTimeTextColor(departureTimeStr: String, defaultColor: Int = Color.BLACK): Int {
+    val departureTime = LocalTime.parse(departureTimeStr)
     val now = LocalTime.now()
     // 0～3時以外は現在時刻未満を無効に設定
     if(departureTime.hour !in 0..3 && departureTime < now){
