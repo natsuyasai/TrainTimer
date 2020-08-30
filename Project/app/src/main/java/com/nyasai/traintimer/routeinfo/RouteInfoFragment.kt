@@ -15,9 +15,7 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
-import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.android.synthetic.main.fragment_route_info.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -43,10 +41,6 @@ class RouteInfoFragment : Fragment() {
     // DBDao
     private lateinit var _routeDatabaseDao: RouteDatabaseDao
 
-    // 親データID
-    private val _parentDataId: Long by lazy {
-        RouteInfoFragmentArgs.fromBundle(requireArguments()).parentDataId
-    }
 
     // 路線情報ViewModel
     private val _routeInfoViewModel: RouteInfoViewModel by lazy {
@@ -54,7 +48,7 @@ class RouteInfoFragment : Fragment() {
         val viewModelFactory = RouteInfoViewModelFactory(
             _routeDatabaseDao,
             application,
-            _parentDataId
+            RouteInfoFragmentArgs.fromBundle(requireArguments()).parentDataId
         )
         ViewModelProvider(
             this,
@@ -97,6 +91,9 @@ class RouteInfoFragment : Fragment() {
         _routeInfoAdapter = RouteInfoAdapter()
         _binding.routeInfoView.adapter = _routeInfoAdapter
 
+        // ダイアログ初期化
+        initDialog()
+
         // メニューボタン表示設定
         setHasOptionsMenu(true)
 
@@ -116,7 +113,15 @@ class RouteInfoFragment : Fragment() {
                 Log.d("Debug", "カウントダウン対象データ更新 : $it")
             }
         })
-        
+
+        _routeInfoViewModel.filterInfo.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+                _routeInfoViewModel.updateCurrentCountItem(true)
+                Log.d("Debug", "フィルタ更新 : $it")
+            }
+        })
+
         return _binding.root
     }
 
@@ -216,6 +221,17 @@ class RouteInfoFragment : Fragment() {
     }
 
     /**
+     * ダイアログ初期化
+     */
+    private fun initDialog() {
+        // 画面生成時にダイアログが存在する場合は，コールバックを再登録
+        val filterSelectDialog = parentFragmentManager.findFragmentByTag(SELECT_FILTER_DLG_TAG)
+        if(filterSelectDialog != null && filterSelectDialog is FilterItemSelectDialogFragment){
+
+        }
+    }
+
+    /**
      * フィルタ選択ダイアログ表示
      */
     private fun showFilterSelectDialog() {
@@ -223,7 +239,7 @@ class RouteInfoFragment : Fragment() {
         FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
 
         GlobalScope.async {
-            val item = _routeDatabaseDao.getFilterInfoItemWithParentIdSync(_parentDataId)
+            val item = _routeDatabaseDao.getFilterInfoItemWithParentIdSync(_routeInfoViewModel.parentDataId)
             _handler.post {
                 // ダイアログ表示
                 val dialog = FilterItemSelectDialogFragment(item)

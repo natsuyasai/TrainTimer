@@ -1,7 +1,6 @@
 package com.nyasai.traintimer.routeinfo
 
 import android.app.Application
-import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 /**
@@ -44,8 +42,14 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     private var _currentDiagramType: MutableLiveData<Define.DiagramType> = MutableLiveData()
     var currentDiagramType: LiveData<Define.DiagramType> = _currentDiagramType
 
+    // フィルタ情報
+    val filterInfo = database.getFilterInfoItemWithParentId(parentId)
+
     // 表示アイテムキャッシュ
     private var _displayRouteDetailsItemCache: List<RouteDetails>? = null
+
+    // 親データID
+    val parentDataId: Long = parentId
 
     init {
         _currentDiagramType.value = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)){
@@ -54,13 +58,6 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             else -> Define.DiagramType.Weekday
         }
         _currentCountItem.value = getNearTimeItem()
-    }
-
-    /**
-     * 表示ダイア更新
-     */
-    fun setCurrentDiagramType(type: Define.DiagramType) {
-        _currentDiagramType.value = type
     }
 
     /**
@@ -81,9 +78,6 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * カウントダウン中アイテム設定
      */
-    fun setCurrentCountItem(item: RouteDetails?) {
-        _currentCountItem.value = item
-    }
     fun updateCurrentCountItem(useCache: Boolean = false) {
         _currentCountItem.value = getNearTimeItem(useCache)
     }
@@ -98,8 +92,10 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
         return if(routeItems.value == null){
             listOf()
         } else {
-            val filter = routeItems.value?.filter {it ->
-                it.diagramType == currentDiagramType.value?.ordinal
+            val filter = routeItems.value?.filter {routeItem ->
+                // 表示中のダイア種別かつフィルタONのものだけ抽出
+                routeItem.diagramType == currentDiagramType.value?.ordinal
+                        && filterInfo.value?.any{it.trainType == routeItem.trainType && it.isShow} ?: true
             }
             // 時刻順ソート
             _displayRouteDetailsItemCache = filter?.sortedWith { v1, v2 ->
