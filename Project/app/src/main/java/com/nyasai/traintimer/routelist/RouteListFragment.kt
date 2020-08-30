@@ -400,15 +400,15 @@ class RouteListFragment : Fragment() {
                     // フィルタ用情報生成
                     filterInfoList.add(FilterInfo(
                         parentDataId = parentDataId,
-                        trainType = timeInfo.type
+                        trainTypeAndDirection = FilterInfo.createFilterKey(timeInfo.type, timeInfo.direction)
                     ))
                 }
             }
 
             Log.d("Debug", "詳細データ登録")
             _routeDatabaseDao.insertRouteDetailsItems(addDataList)
-            // フィルタ情報から重複削除したデータを老徳
-            _routeDatabaseDao.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainType })
+            // フィルタ情報から重複削除したデータを登録
+            _routeDatabaseDao.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDirection })
             Log.d("Debug", "データ登録完了")
             _handler.post {
                 loading_text.text = "読み込み中……"

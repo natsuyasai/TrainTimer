@@ -31,7 +31,7 @@ class FilterItemSelectDialogFragment(items: List<FilterInfo>): DialogFragment() 
             val typeList = mutableListOf<String>()
             val checkList = arrayListOf<Boolean>()
             for (item in filterItemList) {
-                typeList.add(item.trainType)
+                typeList.add(item.trainTypeAndDirection)
                 checkList.add(item.isShow)
             }
 

@@ -18,11 +18,19 @@ data class FilterInfo (
     @ColumnInfo(name = "parent_row_id")
     var parentDataId: Long = 0L,
 
-    // 列車種別(普通，快速，etc...)
-    @ColumnInfo(name = "train_type")
-    var trainType: String = "",
+    // 列車種別(普通，快速，etc...)+行先
+    @ColumnInfo(name = "train_type_and_direction")
+    var trainTypeAndDirection: String = "",
 
     // 表示するか
     @ColumnInfo(name = "is_show")
     var isShow: Boolean = true,
-)
+) {
+    companion object {
+        /**
+         *
+         */
+        fun createFilterKey(trainType: String, direction: String) =
+            "$trainType - $direction"
+    }
+}

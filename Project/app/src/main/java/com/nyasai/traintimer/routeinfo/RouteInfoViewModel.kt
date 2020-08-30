@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.define.Define
@@ -95,7 +96,9 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             val filter = routeItems.value?.filter {routeItem ->
                 // 表示中のダイア種別かつフィルタONのものだけ抽出
                 routeItem.diagramType == currentDiagramType.value?.ordinal
-                        && filterInfo.value?.any{it.trainType == routeItem.trainType && it.isShow} ?: true
+                        && filterInfo.value?.any{
+                            it.trainTypeAndDirection == FilterInfo.createFilterKey(routeItem.trainType, routeItem.destination) && it.isShow
+                        } ?: true
             }
             // 時刻順ソート
             _displayRouteDetailsItemCache = filter?.sortedWith { v1, v2 ->
