@@ -23,7 +23,7 @@ data class RouteListItem(
     var stationName: String = "",
 
     // 方面
-    @ColumnInfo(name = "direction")
-    var direction: String = ""
+    @ColumnInfo(name = "destination")
+    var destination: String = ""
 
 )

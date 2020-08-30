@@ -3,7 +3,7 @@ package com.nyasai.traintimer.routeinfo
 import android.graphics.Color
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
-import com.nyasai.traintimer.database.RouteDetails
+import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
 import java.time.LocalTime
 
@@ -11,7 +11,7 @@ import java.time.LocalTime
  * 時刻
  */
 @BindingAdapter("departureTime")
-fun TextView.setDepartureTime(item: RouteDetails?) {
+fun TextView.setDepartureTime(item: RouteDetail?) {
     item?.let {
         text = item.departureTime
         setTextColor(getTimeTextColor(item.departureTime))
@@ -22,7 +22,7 @@ fun TextView.setDepartureTime(item: RouteDetails?) {
  * 電車種別
  */
 @BindingAdapter("trainType")
-fun TextView.setTrainType(item: RouteDetails?) {
+fun TextView.setTrainType(item: RouteDetail?) {
     item?.let {
         text = item.trainType
         setTextColor(getTimeTextColor(item.departureTime, Color.RED))
@@ -33,7 +33,7 @@ fun TextView.setTrainType(item: RouteDetails?) {
  * 方面
  */
 @BindingAdapter("destination")
-fun TextView.setDestination(item: RouteDetails?) {
+fun TextView.setDestination(item: RouteDetail?) {
     item?.let {
         text = item.destination
         setTextColor(getTimeTextColor(item.departureTime))

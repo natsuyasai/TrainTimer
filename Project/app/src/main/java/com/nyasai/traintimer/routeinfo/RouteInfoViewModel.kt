@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
-import com.nyasai.traintimer.database.RouteDetails
+import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,11 +33,11 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     val routeInfo = database.getRouteListItemWithId(parentId)
 
     // 路線詳細
-    val routeItems = database.getRouteDetailsItemsWithParentId(parentId)
+    val routeItems = database.getRouteDetailItemsWithParentId(parentId)
 
     // 現在カウント中のアイテム
-    private var _currentCountItem: MutableLiveData<RouteDetails> = MutableLiveData()
-    var currentCountItem: LiveData<RouteDetails> = _currentCountItem
+    private var _currentCountItem: MutableLiveData<RouteDetail> = MutableLiveData()
+    var currentCountItem: LiveData<RouteDetail> = _currentCountItem
 
     // 現在の表示ダイア種別
     private var _currentDiagramType: MutableLiveData<Define.DiagramType> = MutableLiveData()
@@ -47,10 +47,10 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     val filterInfo = database.getFilterInfoItemWithParentId(parentId)
 
     // 表示アイテムキャッシュ
-    private var _displayRouteDetailsItemCache: List<RouteDetails>? = null
+    private var _displayRouteDetailItemCache: List<RouteDetail>? = null
 
     // 親データID
-    val parentDataId: Long = parentId
+    private val parentDataId: Long = parentId
 
     init {
         _currentDiagramType.value = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)){
@@ -86,9 +86,9 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * 表示用路線詳細アイテム取得
      */
-    fun getDisplayRouteDetailsItems(useCache: Boolean = false): List<RouteDetails> {
-        if(useCache && _displayRouteDetailsItemCache != null) {
-            return _displayRouteDetailsItemCache!!
+    fun getDisplayRouteDetailItems(useCache: Boolean = false): List<RouteDetail> {
+        if(useCache && _displayRouteDetailItemCache != null) {
+            return _displayRouteDetailItemCache!!
         }
         return if(routeItems.value == null){
             listOf()
@@ -97,11 +97,11 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
                 // 表示中のダイア種別かつフィルタONのものだけ抽出
                 routeItem.diagramType == currentDiagramType.value?.ordinal
                         && filterInfo.value?.any{
-                            it.trainTypeAndDirection == FilterInfo.createFilterKey(routeItem.trainType, routeItem.destination) && it.isShow
+                            it.trainTypeAndDestination == FilterInfo.createFilterKey(routeItem.trainType, routeItem.destination) && it.isShow
                         } ?: true
             }
             // 時刻順ソート
-            _displayRouteDetailsItemCache = filter?.sortedWith { v1, v2 ->
+            _displayRouteDetailItemCache = filter?.sortedWith { v1, v2 ->
                 val correctedV1 = correctDepartureTimeForSort(v1.departureTime)
                 val correctedV2 = correctDepartureTimeForSort(v2.departureTime)
                 val diffHour = correctedV1.first - correctedV2.first
@@ -112,7 +112,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
                     correctedV1.second - correctedV2.second
                 }
             }
-            _displayRouteDetailsItemCache ?: listOf()
+            _displayRouteDetailItemCache ?: listOf()
         }
     }
 
@@ -135,9 +135,9 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * 直近の時刻のアイテムを取得する
      */
-    fun getNearTimeItem(useCache: Boolean = false): RouteDetails? {
+    private fun getNearTimeItem(useCache: Boolean = false): RouteDetail? {
         val now = LocalTime.now()
-        for(item in getDisplayRouteDetailsItems(useCache)) {
+        for(item in getDisplayRouteDetailItems(useCache)) {
             if(LocalTime.parse(item.departureTime) > now){
                 return item
             }
@@ -165,25 +165,25 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      */
     private suspend fun clear() {
         withContext(Dispatchers.IO) {
-            database.clearAllRouteDetailsItem()
+            database.clearAllRouteDetailItem()
         }
     }
 
     /**
      * データ更新
      */
-    private suspend fun update(item: RouteDetails) {
+    private suspend fun update(item: RouteDetail) {
         withContext(Dispatchers.IO) {
-            database.updateRouteDetailsItem(item)
+            database.updateRouteDetailItem(item)
         }
     }
 
     /**
      * データ追加
      */
-    private suspend fun insert(item: RouteDetails) {
+    private suspend fun insert(item: RouteDetail) {
         withContext(Dispatchers.IO) {
-            database.insertRouteDetailsItem(item)
+            database.insertRouteDetailItem(item)
         }
     }
 }

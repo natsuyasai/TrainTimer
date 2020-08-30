@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
-import com.nyasai.traintimer.database.RouteDetails
+import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +41,7 @@ class RouteListViewModel(
     suspend fun deleteListItem(dataId: Long) {
         withContext(Dispatchers.IO) {
             database.deleteRouteListItem(dataId)
-            database.deleteRouteDetailsItemWithParentId(dataId)
+            database.deleteRouteDetailItemWithParentId(dataId)
             database.deleteFilterInfoItemWithParentId(dataId)
         }
     }
@@ -49,9 +49,9 @@ class RouteListViewModel(
     /**
      * 路線詳細情報追加
      */
-    suspend fun insertRouteDetailItems(data: List<RouteDetails>) {
+    suspend fun insertRouteDetailItems(datum: List<RouteDetail>) {
         withContext(Dispatchers.IO) {
-            database.insertRouteDetailsItems(data)
+            database.insertRouteDetailItems(datum)
         }
     }
 

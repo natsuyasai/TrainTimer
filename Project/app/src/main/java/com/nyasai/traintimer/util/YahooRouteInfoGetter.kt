@@ -21,7 +21,7 @@ class YahooRouteInfoGetter {
         // 種別(普通，快速，etc...)
         var type: String = "取得失敗",
         // 行先
-        var direction: String = "取得失敗"
+        var destination: String = "取得失敗"
     )
 
     // 路線検索URLベース部分
@@ -68,9 +68,9 @@ class YahooRouteInfoGetter {
      * @param stationName 検索対象駅名
      * @return key：路線名///行先, value:URL
      */
-    fun getDirectionFromStationName(stationName: String): Map<String, String> {
+    fun getDestinationFromStationName(stationName: String): Map<String, String> {
         val requestUrl = "${YAHOO_ROUTE_SEARCH_BASE_URL}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
-        return getDirectionFromUrl(requestUrl)
+        return getDestinationFromUrl(requestUrl)
     }
 
     /**
@@ -78,32 +78,32 @@ class YahooRouteInfoGetter {
      * @param stationUrl 取得先URL
      * @return key：路線名///行先, value:URL
      */
-    fun getDirectionFromUrl(stationUrl: String): Map<String, String> {
+    fun getDestinationFromUrl(stationUrl: String): Map<String, String> {
         // 検索結果取得
-        val directionList = mutableMapOf<String, String>()
-        val document = getHTMLDocument(stationUrl) ?: return directionList
+        val destinationList = mutableMapOf<String, String>()
+        val document = getHTMLDocument(stationUrl) ?: return destinationList
 
         // 行先一覧箇所を取得
-        val searchResultDiv = document.getElementById("mdSearchLine") ?: return directionList
-        val directionListRootElement = searchResultDiv.getElementsByClass("elmSearchItem")
-        if (directionListRootElement.size < 1) {
-            return directionList
+        val searchResultDiv = document.getElementById("mdSearchLine") ?: return destinationList
+        val destinationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem")
+        if (destinationListRootElement.size < 1) {
+            return destinationList
         }
-        val directionElementsRoot = directionListRootElement[0].select("li > dl")
+        val destinationElementsRoot = destinationListRootElement[0].select("li > dl")
 
         // 路線名，行先，URLを取得
-        for (element in directionElementsRoot) {
+        for (element in destinationElementsRoot) {
             val routeNameElements = element.select("dl > dt")
             val linkElements = element.select("li > a")
             if (routeNameElements.size > 0 && linkElements.size > 0) {
                 for (linkElement in linkElements){
                     // 路線名，行先をキーとする
                     val key = routeNameElements[0].text() + KEY_DELIMITER_STR + linkElement.text()
-                    directionList[key] = YAHOO_ROUTE_SEARCH_BASE_URL + linkElement.attr("href").toString()
+                    destinationList[key] = YAHOO_ROUTE_SEARCH_BASE_URL + linkElement.attr("href").toString()
                 }
             }
         }
-        return directionList
+        return destinationList
     }
 
     /**
@@ -111,7 +111,7 @@ class YahooRouteInfoGetter {
      * @param keyString キー文字列
      * @return <路線名, 行先>
      */
-    fun splitDirectionKey(keyString: String): Pair<String, String>{
+    fun splitDestinationKey(keyString: String): Pair<String, String>{
         val splitStrings = keyString.split(KEY_DELIMITER_STR)
         if(splitStrings.size >= 2){
             return Pair(splitStrings[0], splitStrings[1])
@@ -239,7 +239,7 @@ class YahooRouteInfoGetter {
         if(headerTexts.size >= 3){
             val splitText = headerTexts[1].split("→|行き".toRegex())
             if(splitText.size >= 2) {
-                timeInfo.direction = splitText[1]
+                timeInfo.destination = splitText[1]
             }
         }
 

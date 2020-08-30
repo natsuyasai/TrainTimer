@@ -5,16 +5,16 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.nyasai.traintimer.database.RouteDetails
+import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.databinding.ListItemRouteInfoBinding
 
 /**
  * 路線情報詳細リスト表示用アダプタ
  */
-class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(RouteInfoDiffCallback()){
+class RouteInfoAdapter : ListAdapter<RouteDetail, RouteInfoAdapter.ViewHolder>(RouteInfoDiffCallback()){
 
     // 表示アイテム
-    private var _items: List<RouteDetails>? = null
+    private var _item: List<RouteDetail>? = null
 
     /**
      * ViewHolderに表示するデータを設定
@@ -34,16 +34,16 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
     /**
      * 表示データ設定
      */
-    override fun submitList(list: List<RouteDetails>?) {
+    override fun submitList(list: List<RouteDetail>?) {
         super.submitList(list)
-        _items = list
+        _item = list
     }
 
     /**
      * アイテム位置取得
      */
-    fun indexOf(item: RouteDetails): Int {
-        return _items?.indexOf(item) ?: -1
+    fun indexOf(item: RouteDetail): Int {
+        return _item?.indexOf(item) ?: -1
     }
 
 
@@ -57,8 +57,8 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
         /**
          * バインド実行
          */
-        fun bind(item: RouteDetails) {
-            binding.routeDetails = item
+        fun bind(item: RouteDetail) {
+            binding.routeDetail = item
             binding.executePendingBindings()
         }
 
@@ -75,12 +75,12 @@ class RouteInfoAdapter : ListAdapter<RouteDetails, RouteInfoAdapter.ViewHolder>(
 /**
  * 比較コールバック
  */
-class RouteInfoDiffCallback : DiffUtil.ItemCallback<RouteDetails>() {
-    override fun areItemsTheSame(oldItem: RouteDetails, newItem: RouteDetails): Boolean {
+class RouteInfoDiffCallback : DiffUtil.ItemCallback<RouteDetail>() {
+    override fun areItemsTheSame(oldItem: RouteDetail, newItem: RouteDetail): Boolean {
         return oldItem.dataId == newItem.dataId
     }
 
-    override fun areContentsTheSame(oldItem: RouteDetails, newItem: RouteDetails): Boolean {
+    override fun areContentsTheSame(oldItem: RouteDetail, newItem: RouteDetail): Boolean {
         return oldItem == newItem
     }
 }

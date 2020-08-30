@@ -95,7 +95,7 @@ class RouteInfoFragment : Fragment() {
         _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
             it?.let {
                 // 表示種別に応じたデータを設定
-                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
                 Log.d("Debug", "詳細データ更新 : $it")
             }
@@ -110,7 +110,7 @@ class RouteInfoFragment : Fragment() {
 
         _routeInfoViewModel.filterInfo.observe(viewLifecycleOwner, Observer {
             it?.let {
-                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
                 Log.d("Debug", "フィルタ更新 : $it")
             }
@@ -211,7 +211,7 @@ class RouteInfoFragment : Fragment() {
     fun onClickTitle(view: View) {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
-        _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+        _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
     }
 
     /**

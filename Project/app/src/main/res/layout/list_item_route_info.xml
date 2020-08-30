@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
-            name="routeDetails"
-            type="com.nyasai.traintimer.database.RouteDetails" />
+            name="routeDetail"
+            type="com.nyasai.traintimer.database.RouteDetail" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -25,7 +25,7 @@
             android:textColor="@color/textDark"
             android:autoSizeTextType="uniform"
             app:layout_constraintWidth_percent="0.2"
-            app:departureTime="@{routeDetails}"
+            app:departureTime="@{routeDetail}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/train_type"
             app:layout_constraintTop_toTopOf="parent"
@@ -41,7 +41,7 @@
             android:autoSizeTextType="uniform"
             android:textColor="@color/textRed"
             app:layout_constraintWidth_percent="0.4"
-            app:trainType="@{routeDetails}"
+            app:trainType="@{routeDetail}"
             app:layout_constraintStart_toEndOf="@id/departure_time"
             app:layout_constraintEnd_toStartOf="@id/destination_name"
             app:layout_constraintTop_toTopOf="parent"
@@ -57,7 +57,7 @@
             android:autoSizeTextType="uniform"
             android:textColor="@color/textDark"
             app:layout_constraintWidth_percent="0.3"
-            app:destination="@{routeDetails}"
+            app:destination="@{routeDetail}"
             app:layout_constraintStart_toEndOf="@id/train_type"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"

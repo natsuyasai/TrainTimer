@@ -28,9 +28,9 @@ fun TextView.setStationName(item: RouteListItem?) {
 /**
  * 行先
  */
-@BindingAdapter("direction")
-fun TextView.setDirection(item: RouteListItem?) {
+@BindingAdapter("destination")
+fun TextView.setDestination(item: RouteListItem?) {
     item?.let {
-        text = item.direction
+        text = item.destination
     }
 }

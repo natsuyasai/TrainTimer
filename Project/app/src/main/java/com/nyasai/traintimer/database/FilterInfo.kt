@@ -19,8 +19,8 @@ data class FilterInfo (
     var parentDataId: Long = 0L,
 
     // 列車種別(普通，快速，etc...)+行先
-    @ColumnInfo(name = "train_type_and_direction")
-    var trainTypeAndDirection: String = "",
+    @ColumnInfo(name = "train_type_and_destination")
+    var trainTypeAndDestination: String = "",
 
     // 表示するか
     @ColumnInfo(name = "is_show")
@@ -30,7 +30,7 @@ data class FilterInfo (
         /**
          *
          */
-        fun createFilterKey(trainType: String, direction: String) =
-            "$trainType - $direction"
+        fun createFilterKey(trainType: String, destination: String) =
+            "$trainType - $destination"
     }
 }

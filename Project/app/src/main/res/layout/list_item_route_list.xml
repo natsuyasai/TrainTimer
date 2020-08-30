@@ -47,7 +47,7 @@
             tools:text="駅名" />
         <!-- 方面 -->
         <TextView
-            android:id="@+id/direction_name"
+            android:id="@+id/destination_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
@@ -57,7 +57,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_name"
-            app:direction="@{routeListItem}"
+            app:destination="@{routeListItem}"
             tools:text="方面" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

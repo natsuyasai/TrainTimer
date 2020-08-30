@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.*
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -226,7 +225,7 @@ class RouteListFragment : Fragment() {
         // ダイアログ表示
         val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
         dialog.onClickPositiveButtonCallback = {
-            searchDirectionFromUrl(itemsMap, dialog.selectItem)
+            searchDestinationFromUrl(itemsMap, dialog.selectItem)
         }
         dialog.onClickNegativeButtonCallback = {
             _searchRouteListItem = null
@@ -238,7 +237,7 @@ class RouteListFragment : Fragment() {
      * 行先選択ダイアログ表示
      * @param itemsMap 行先一覧(key: 路線名::行先, value: URL)
      */
-    private fun showDirectionSelectDialog(itemsMap: Map<String, String>) {
+    private fun showDestinationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
 
@@ -284,7 +283,7 @@ class RouteListFragment : Fragment() {
             else{
                 _searchRouteListItem = RouteListItem()
                 _searchRouteListItem!!.stationName = stationName
-                searchDirectionFromStationName(stationName)
+                searchDestinationFromStationName(stationName)
             }
         }
     }
@@ -293,13 +292,13 @@ class RouteListFragment : Fragment() {
      * 行先一覧検索(駅名)
      * @param stationName 検索対象駅名
      */
-    private fun searchDirectionFromStationName(stationName: String) {
+    private fun searchDestinationFromStationName(stationName: String) {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
         GlobalScope.async {
-            val directionListMap = _yahooRouteInfoGetter.getDirectionFromStationName(stationName)
+            val destinationListMap = _yahooRouteInfoGetter.getDestinationFromStationName(stationName)
             _handler.post {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
-                showDirectionSelectDialog(directionListMap)
+                showDestinationSelectDialog(destinationListMap)
             }
         }
     }
@@ -309,7 +308,7 @@ class RouteListFragment : Fragment() {
      * @param stationNameMap 駅名一覧(key: 駅名, value: URL)
      * @param selectStation 選択した駅名
      */
-    private fun searchDirectionFromUrl(stationNameMap: Map<String, String>, selectStation: String) {
+    private fun searchDestinationFromUrl(stationNameMap: Map<String, String>, selectStation: String) {
 
         if(stationNameMap[selectStation] == null){
             // TODO: エラーハンドリング
@@ -322,21 +321,21 @@ class RouteListFragment : Fragment() {
         // 行先リストを取得
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
         GlobalScope.async {
-            val directionListMap = _yahooRouteInfoGetter.getDirectionFromUrl(stationNameMap.getValue(selectStation))
+            val destinationListMap = _yahooRouteInfoGetter.getDestinationFromUrl(stationNameMap.getValue(selectStation))
             _handler.post {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
-                showDirectionSelectDialog(directionListMap)
+                showDestinationSelectDialog(destinationListMap)
             }
         }
     }
 
     /**
      * 路線情報追加
-     * @param directionMap 行先一覧(key: 路線名::行先, value: URL)
-     * @param selectDirection 選択した行先
+     * @param destinationMap 行先一覧(key: 路線名::行先, value: URL)
+     * @param selectDestination 選択した行先
      */
-    private fun addRouteInfo(directionMap: Map<String, String>, selectDirection: String) {
-        if(directionMap[selectDirection] == null) {
+    private fun addRouteInfo(destinationMap: Map<String, String>, selectDestination: String) {
+        if(destinationMap[selectDestination] == null) {
             // TODO: エラーハンドリング
             _searchRouteListItem = null
             return
@@ -344,15 +343,15 @@ class RouteListFragment : Fragment() {
         loading_text.text = "時刻情報取得中……"
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
         // キーから路線名と行先を分割
-        val splitDirectionKey = _yahooRouteInfoGetter.splitDirectionKey(selectDirection)
-        _searchRouteListItem!!.routeName = splitDirectionKey.first
-        _searchRouteListItem!!.direction = splitDirectionKey.second
+        val splitDestinationKey = _yahooRouteInfoGetter.splitDestinationKey(selectDestination)
+        _searchRouteListItem!!.routeName = splitDestinationKey.first
+        _searchRouteListItem!!.destination = splitDestinationKey.second
 
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // 時刻データを全取得
         Log.d("Debug", "データ取得開始")
         GlobalScope.async {
-            val routeInfo = _yahooRouteInfoGetter.getTimeTableInfo(directionMap.getValue(selectDirection))
+            val routeInfo = _yahooRouteInfoGetter.getTimeTableInfo(destinationMap.getValue(selectDestination))
             _handler.post {
                 loading_text.text = "時刻情報登録中……"
             }
@@ -366,7 +365,7 @@ class RouteListFragment : Fragment() {
                 for (item in _routeListViewModel.getListItemsAsync()) {
                     if(item.stationName == _searchRouteListItem!!.stationName
                         && item.routeName == _searchRouteListItem!!.routeName
-                        && item.direction == _searchRouteListItem!!.direction){
+                        && item.destination == _searchRouteListItem!!.destination){
                         parentDataId = item.dataId
                         break
                     }
@@ -375,24 +374,24 @@ class RouteListFragment : Fragment() {
             }
 
             Log.d("Debug", "詳細データ作成")
-            val addDataList = mutableListOf<RouteDetails>()
+            val addDataList = mutableListOf<RouteDetail>()
             val filterInfoList = mutableListOf<FilterInfo>()
             val max = routeInfo.size - 1
             for (diagramType in 0..max) {
                 // ダイヤ種別毎のアイテム
                 for (timeInfo in routeInfo[diagramType]) {
                     // 時刻情報追加
-                    addDataList.add(RouteDetails(
+                    addDataList.add(RouteDetail(
                         parentDataId = parentDataId,
                         diagramType = diagramType,
                         departureTime = timeInfo.time,
                         trainType = timeInfo.type,
-                        destination = timeInfo.direction
+                        destination = timeInfo.destination
                     ))
                     // フィルタ用情報生成
                     filterInfoList.add(FilterInfo(
                         parentDataId = parentDataId,
-                        trainTypeAndDirection = FilterInfo.createFilterKey(timeInfo.type, timeInfo.direction)
+                        trainTypeAndDestination = FilterInfo.createFilterKey(timeInfo.type, timeInfo.destination)
                     ))
                 }
             }
@@ -400,7 +399,7 @@ class RouteListFragment : Fragment() {
             Log.d("Debug", "詳細データ登録")
             _routeListViewModel.insertRouteDetailItems(addDataList)
             // フィルタ情報から重複削除したデータを登録
-            _routeListViewModel.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDirection })
+            _routeListViewModel.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDestination })
             Log.d("Debug", "データ登録完了")
             _handler.post {
                 loading_text.text = "読み込み中……"

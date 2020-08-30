@@ -79,89 +79,89 @@ interface RouteDatabaseDao {
 
     /**
      * 路線詳細アイテム追加
-     * @param routeDetails 追加アイテム
+     * @param routeDetail 追加アイテム
      */
     @Insert
-    fun insertRouteDetailsItem(routeDetails: RouteDetails)
+    fun insertRouteDetailItem(routeDetail: RouteDetail)
 
     /**
      * 路線詳細アイテム追加
-     * @param routeDetails 追加アイテム一覧
+     * @param routeDetail 追加アイテム一覧
      */
     @Insert
-    fun insertRouteDetailsItems(routeDetails: List<RouteDetails>)
+    fun insertRouteDetailItems(routeDetail: List<RouteDetail>)
 
     /**
      * 路線詳細アイテム更新
-     * @param routeDetails 更新アイテム
+     * @param routeDetail 更新アイテム
      */
     @Update
-    fun updateRouteDetailsItem(routeDetails: RouteDetails)
+    fun updateRouteDetailItem(routeDetail: RouteDetail)
 
     /**
      * 路線詳細アイテム更新
-     * @param routeDetails 更新アイテム一覧
+     * @param routeDetail 更新アイテム一覧
      */
     @Update
-    fun updateRouteDetailsItems(routeDetails: List<RouteDetails>)
+    fun updateRouteDetailItems(routeDetail: List<RouteDetail>)
 
     /**
      * 路線詳細アイテム削除
      */
     @Query("DELETE FROM route_details_table WHERE dataId = :id")
-    fun deleteRouteDetailsItem(id: Long)
+    fun deleteRouteDetailItem(id: Long)
 
     /**
      * 路線詳細アイテム削除
      */
     @Query("DELETE FROM route_details_table WHERE parent_row_id = :id")
-    fun deleteRouteDetailsItemWithParentId(id: Long)
+    fun deleteRouteDetailItemWithParentId(id: Long)
 
     /**
      * 路線詳細アイテム全クリア
      */
     @Query("DELETE FROM route_details_table")
-    fun clearAllRouteDetailsItem()
+    fun clearAllRouteDetailItem()
 
     /**
      * 路線詳細アイテム取得
      * @param id 路線データID
      */
     @Query("SELECT * from route_details_table WHERE dataId = :id")
-    fun getRouteDetailsItemWithId(id: Long): RouteDetails?
+    fun getRouteDetailItemWithId(id: Long): RouteDetail?
 
     /**
      * 路線詳細アイテム一覧取得(親アイテムID指定)
      * @param parentId 親アイテムID
      */
     @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId")
-    fun getRouteDetailsItemsWithParentId(parentId: Long): LiveData<List<RouteDetails>>
+    fun getRouteDetailItemsWithParentId(parentId: Long): LiveData<List<RouteDetail>>
 
     /**
      * 路線詳細アイテム一覧取得(親アイテムID指定)
      * @param parentId 親アイテムID
      */
     @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId AND diagram_type = :diagramType ORDER BY dataId")
-    fun getCurrentDiagramRouteDetailsItemsWithParentId(parentId: Long, diagramType: Int): LiveData<List<RouteDetails>>
+    fun getCurrentDiagramRouteDetailItemsWithParentId(parentId: Long, diagramType: Int): LiveData<List<RouteDetail>>
 
     /**
      * 路線詳細アイテム一覧取得(親アイテムID指定)同期
      * @param parentId 親アイテムID
      */
     @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId ORDER BY dataId")
-    fun getRouteDetailsItemsWithParentIdSync(parentId: Long): List<RouteDetails>
+    fun getRouteDetailItemsWithParentIdSync(parentId: Long): List<RouteDetail>
 
     /**
      * 路線詳細アイテム一覧取得
      */
     @Query("SELECT * from route_details_table ORDER BY dataId")
-    fun getAllRouteDetailsItems(): LiveData<List<RouteDetails>>
+    fun getAllRouteDetailItems(): LiveData<List<RouteDetail>>
 
     /**
      * 路線詳細アイテム一覧取得(同期)
      */
     @Query("SELECT * from route_details_table ORDER BY dataId")
-    fun getAllRouteDetailsItemsSync(): List<RouteDetails>
+    fun getAllRouteDetailItemsSync(): List<RouteDetail>
 
     // endregion 路線情報詳細操作
 
@@ -183,7 +183,7 @@ interface RouteDatabaseDao {
 
     /**
      * フィルタ情報アイテム更新
-     * @param routeDetails 更新アイテム
+     * @param routeDetail 更新アイテム
      */
     @Update
     fun updateFilterInfoItem(filterInfo: FilterInfo)

@@ -47,7 +47,7 @@ class RouteDatabaseTest {
         val item = RouteListItem()
         item.routeName = "JR 宝塚線"
         item.stationName = "草野駅"
-        item.direction = "大阪方面"
+        item.destination = "大阪方面"
         routeDao.insertRouteListItem(item)
         val dbItems = routeDao.getAllRouteListItemsSync()
         if(dbItems != null){
