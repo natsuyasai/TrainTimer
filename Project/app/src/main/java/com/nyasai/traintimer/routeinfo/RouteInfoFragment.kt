@@ -17,6 +17,8 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import kotlinx.android.synthetic.main.fragment_route_info.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -92,8 +94,8 @@ class RouteInfoFragment : Fragment() {
 
         _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner, Observer {
             it?.let {
-
-                Log.d("Debug", "詳細データ更新 : $it")
+                updateCountdownTargetInfo()
+                Log.d("Debug", "カウントダウン対象データ更新 : $it")
             }
         })
 
@@ -139,12 +141,6 @@ class RouteInfoFragment : Fragment() {
                         }
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
-                    else {
-                        // カウントダウン対象の時刻情報を設定
-                        next_time_table.text = """|${_routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"}
-                            |${_routeInfoViewModel.currentCountItem.value?.trainType ?: "--"}
-                            |${_routeInfoViewModel.currentCountItem.value?.destination ?: "--"}""".trimMargin()
-                    }
                     val planeText = when{
                         diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
                         else -> "Next -- : --"
@@ -176,5 +172,33 @@ class RouteInfoFragment : Fragment() {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
         _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+    }
+
+    /**
+     * カウントダウン対象情報を更新
+     */
+    private fun updateCountdownTargetInfo() {
+        // カウントダウン対象の時刻情報を設定
+        next_time_table.text = """|${_routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"}
+                            |${_routeInfoViewModel.currentCountItem.value?.trainType ?: "--"}
+                            |${_routeInfoViewModel.currentCountItem.value?.destination ?: "--"}""".trimMargin()
+        // スクロール位置更新
+        updateScrollPosition()
+    }
+
+    /**
+     * スクロール位置更新
+     */
+    private fun updateScrollPosition() {
+        if(_routeInfoViewModel.currentCountItem.value != null) {
+            // リストアイテムの描画を待ってから対象位置までスクロール
+            GlobalScope.async {
+                Thread.sleep(500)
+                _handler.post {
+                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!) + 5)
+                    Log.d("Debug", _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!).toString())
+                }
+            }
+        }
     }
 }
