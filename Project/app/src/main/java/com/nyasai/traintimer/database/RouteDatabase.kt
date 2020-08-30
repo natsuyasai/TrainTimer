@@ -8,7 +8,8 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [
         RouteListItem::class,
-        RouteDetails::class
+        RouteDetails::class,
+        FilterInfo::class
     ],
     version = 1, exportSchema = false)
 abstract class RouteDatabase : RoomDatabase() {

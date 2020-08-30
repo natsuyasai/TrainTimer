@@ -11,10 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.nyasai.traintimer.R
-import com.nyasai.traintimer.database.RouteDatabase
-import com.nyasai.traintimer.database.RouteDatabaseDao
-import com.nyasai.traintimer.database.RouteDetails
-import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.database.*
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
@@ -283,6 +280,8 @@ class RouteListFragment : Fragment() {
         }
         GlobalScope.async {
             _routeDatabaseDao.deleteRouteListItem(targetDataId)
+            _routeDatabaseDao.deleteRouteDetailsItemWithParentId(targetDataId)
+            _routeDatabaseDao.deleteFilterInfoItemWithParentId(targetDataId)
         }
     }
 
@@ -396,22 +395,31 @@ class RouteListFragment : Fragment() {
 
             Log.d("Debug", "詳細データ作成")
             val addDataList = mutableListOf<RouteDetails>()
+            val filterInfoList = mutableListOf<FilterInfo>()
             val max = routeInfo.size - 1
             for (diagramType in 0..max) {
                 // ダイヤ種別毎のアイテム
                 for (timeInfo in routeInfo[diagramType]) {
                     // 時刻情報追加
-                    val item = RouteDetails()
-                    item.parentDataId = parentDataId
-                    item.diagramType = diagramType
-                    item.departureTime = timeInfo.time
-                    item.trainType = timeInfo.type
-                    item.destination = timeInfo.direction
-                    addDataList.add(item)
+                    addDataList.add(RouteDetails(
+                        parentDataId = parentDataId,
+                        diagramType = diagramType,
+                        departureTime = timeInfo.time,
+                        trainType = timeInfo.type,
+                        destination = timeInfo.direction
+                    ))
+                    // フィルタ用情報生成
+                    filterInfoList.add(FilterInfo(
+                        parentDataId = parentDataId,
+                        trainType = timeInfo.type
+                    ))
                 }
             }
+
             Log.d("Debug", "詳細データ登録")
             _routeDatabaseDao.insertRouteDetailsItems(addDataList)
+            // フィルタ情報から重複削除したデータを老徳
+            _routeDatabaseDao.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainType })
             Log.d("Debug", "データ登録完了")
             _handler.post {
                 loading_text.text = "読み込み中……"

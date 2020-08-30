@@ -3,6 +3,8 @@ package com.nyasai.traintimer.util
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.jsoup.Jsoup
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -122,23 +124,36 @@ class YahooRouteInfoGetter {
      * @param timeTableUrl 時刻表ページURL(平日分)
      * @return 時刻データ([平日データリスト,土曜データリスト,日曜・祝日データリスト])
      */
-    fun getTimeTableInfo(timeTableUrl: String): List<List<TimeInfo>> {
+    suspend fun getTimeTableInfo(timeTableUrl: String): List<List<TimeInfo>> {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
-
         val timeTableInfoList = mutableListOf<List<TimeInfo>>()
-        for (tableUrl in tableUrls){
-            // 詳細ページへのURLを取得し，全ページ分解析実行
-            val detailUrls = getTimeDetailsUrlList(tableUrl)
-            val timeInfoList = mutableListOf<TimeInfo>()
-            for (detailUrl in detailUrls) {
-                // 解析して結果を保持
-                timeInfoList.add(getTimeInfo(detailUrl))
-            }
-            timeTableInfoList.add(timeInfoList)
+        if(tableUrls.size == 3) {
+            val task1 = GlobalScope.async { getTimeInfoList(tableUrls[0]) }
+            val task2 = GlobalScope.async { getTimeInfoList(tableUrls[1]) }
+            val task3 = GlobalScope.async { getTimeInfoList(tableUrls[2]) }
+            timeTableInfoList.add(task1.await())
+            timeTableInfoList.add(task2.await())
+            timeTableInfoList.add(task3.await())
         }
 
         return timeTableInfoList
+    }
+
+    /**
+     * 時刻情報リスト取得
+     * @param tableUrl 時刻表ページURL
+     * @return 時刻情報情報
+     */
+    private fun getTimeInfoList(tableUrl: String): List<TimeInfo> {
+        // 詳細ページへのURLを取得し，全ページ分解析実行
+        val detailUrls = getTimeDetailsUrlList(tableUrl)
+        val timeInfoList = mutableListOf<TimeInfo>()
+        for (detailUrl in detailUrls) {
+            // 解析して結果を保持
+            timeInfoList.add(getTimeInfo(detailUrl))
+        }
+        return timeInfoList
     }
 
     /**

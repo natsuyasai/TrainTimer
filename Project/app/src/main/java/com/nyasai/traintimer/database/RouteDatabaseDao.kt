@@ -12,7 +12,6 @@ import androidx.room.Update
 @Dao
 interface RouteDatabaseDao {
 
-
     // region 路線リストアイテム操作
 
     /**
@@ -113,6 +112,12 @@ interface RouteDatabaseDao {
     fun deleteRouteDetailsItem(id: Long)
 
     /**
+     * 路線詳細アイテム削除
+     */
+    @Query("DELETE FROM route_details_table WHERE parent_row_id = :id")
+    fun deleteRouteDetailsItemWithParentId(id: Long)
+
+    /**
      * 路線詳細アイテム全クリア
      */
     @Query("DELETE FROM route_details_table")
@@ -159,4 +164,55 @@ interface RouteDatabaseDao {
     fun getAllRouteDetailsItemsSync(): List<RouteDetails>
 
     // endregion 路線情報詳細操作
+
+    // region フィルタ情報操作
+
+    /**
+     * フィルタ情報アイテム追加
+     * @param filterInfo 追加アイテム
+     */
+    @Insert
+    fun insertFilterInfoItem(filterInfo: FilterInfo)
+
+    /**
+     * フィルタ情報アイテム追加
+     * @param filterInfoList 追加アイテム一覧
+     */
+    @Insert
+    fun insertFilterInfoItems(filterInfoList: List<FilterInfo>)
+
+    /**
+     * フィルタ情報アイテム更新
+     * @param routeDetails 更新アイテム
+     */
+    @Update
+    fun updateFilterInfoItem(filterInfo: FilterInfo)
+
+    /**
+     * フィルタ情報アイテム削除
+     */
+    @Query("DELETE FROM filter_info_table WHERE dataId = :id")
+    fun deleteFilterInfoItem(id: Long)
+
+    /**
+     * フィルタ情報アイテム削除
+     */
+    @Query("DELETE FROM filter_info_table WHERE parent_row_id = :id")
+    fun deleteFilterInfoItemWithParentId(id: Long)
+
+    /**
+     * フィルタ情報アイテム一覧取得(親アイテムID指定)
+     * @param parentId 親アイテムID
+     */
+    @Query("SELECT * from filter_info_table WHERE parent_row_id = :parentId ORDER BY dataId")
+    fun getFilterInfoItemWithParentId(parentId: Long): LiveData<List<FilterInfo>>
+
+    /**
+     * フィルタ情報アイテム一覧取得(親アイテムID指定)同期
+     * @param parentId 親アイテムID
+     */
+    @Query("SELECT * from filter_info_table WHERE parent_row_id = :parentId ORDER BY dataId")
+    fun getFilterInfoItemWithParentIdSync(parentId: Long): List<FilterInfo>
+
+    // endregion フィルタ情報操作
 }

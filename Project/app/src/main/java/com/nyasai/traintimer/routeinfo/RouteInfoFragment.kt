@@ -6,16 +6,16 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.RelativeSizeSpan
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
+import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
+import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.android.synthetic.main.fragment_route_info.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -35,13 +35,21 @@ class RouteInfoFragment : Fragment() {
     // 詳細リストアダプタ
     private lateinit var _routeInfoAdapter: RouteInfoAdapter
 
+    // DBDao
+    private lateinit var _routeDatabaseDao: RouteDatabaseDao
+
+    // 親データID
+    private val _parentDataId: Long by lazy {
+        RouteInfoFragmentArgs.fromBundle(requireArguments()).parentDataId
+    }
+
     // 路線情報ViewModel
     private val _routeInfoViewModel: RouteInfoViewModel by lazy {
         val application = requireNotNull(this.activity).application
         val viewModelFactory = RouteInfoViewModelFactory(
-            RouteDatabase.getInstance(application).routeDatabaseDao,
+            _routeDatabaseDao,
             application,
-            RouteInfoFragmentArgs.fromBundle(requireArguments()).parentDataId
+            _parentDataId
         )
         ViewModelProvider(
             this,
@@ -71,6 +79,8 @@ class RouteInfoFragment : Fragment() {
             inflater, R.layout.fragment_route_info, container, false
         )
 
+        _routeDatabaseDao = RouteDatabase.getInstance(requireNotNull(this.activity).application).routeDatabaseDao
+
         // データバインド
         _binding.routeInfoViewModel = _routeInfoViewModel
         _binding.routeInfoFragment = this
@@ -81,6 +91,9 @@ class RouteInfoFragment : Fragment() {
         // 路線詳細用アダプター設定
         _routeInfoAdapter = RouteInfoAdapter()
         _binding.routeInfoView.adapter = _routeInfoAdapter
+
+        // メニューボタン表示設定
+        setHasOptionsMenu(true)
 
         // 変更監視
         _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
@@ -98,7 +111,7 @@ class RouteInfoFragment : Fragment() {
                 Log.d("Debug", "カウントダウン対象データ更新 : $it")
             }
         })
-
+        
         return _binding.root
     }
 
@@ -163,6 +176,29 @@ class RouteInfoFragment : Fragment() {
         super.onPause()
         // カウントダウンタイマ終了
         _timer.cancel()
+    }
+
+    /**
+     * onCreateOptionsMenuフック
+     */
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.route_info_option, menu)
+    }
+
+    /**
+     * onOptionsItemSelectedフック
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.info_filter_menu -> {
+                Log.d("Debug", "フィルタボタン押下")
+
+                true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
     }
 
     /**
