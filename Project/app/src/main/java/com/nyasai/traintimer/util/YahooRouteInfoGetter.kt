@@ -246,7 +246,7 @@ class YahooRouteInfoGetter {
             }
             else{
                 retryCount++
-                Thread.sleep(1000)
+                Thread.sleep(3000)
             }
         } while (retryCount <= 10)
         return null
@@ -261,7 +261,7 @@ class YahooRouteInfoGetter {
             _totalRequestCount = 0
         }
         // 一定期間未満かつ2回目以降のリクエストなら少し待つ
-        if(_totalRequestCount > 0) {
+        if(_totalRequestCount > 5) {
             Thread.sleep(500)
         }
         _totalRequestCount++
