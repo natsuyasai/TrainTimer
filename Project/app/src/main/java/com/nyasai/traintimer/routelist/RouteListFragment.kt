@@ -16,6 +16,7 @@ import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
+import com.nyasai.traintimer.util.FragmentUtil
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.coroutines.GlobalScope
@@ -186,7 +187,7 @@ class RouteListFragment : Fragment() {
      */
     private fun showDeleteConfirmDialog(item: RouteListItem) {
         // 前回分削除
-        deletePrevDialog(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        FragmentUtil.deletePrevDialog(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG, parentFragmentManager)
 
         // ダイアログ表示
         val dialog = RouteListItemDeleteConfirmDialogFragment()
@@ -206,7 +207,7 @@ class RouteListFragment : Fragment() {
      */
     private fun showSearchTargetInputDialog() {
         // 前回分削除
-        deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG)
+        FragmentUtil.deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG, parentFragmentManager)
 
         // ダイアログ表示
         val dialog = SearchTargetInputDialogFragment()
@@ -225,7 +226,7 @@ class RouteListFragment : Fragment() {
      */
     private fun showStationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
-        deletePrevDialog(SELECT_LIST_DLG_TAG)
+        FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
 
 
         // ダイアログ表示
@@ -245,7 +246,7 @@ class RouteListFragment : Fragment() {
      */
     private fun showDirectionSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
-        deletePrevDialog(SELECT_LIST_DLG_TAG)
+        FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
 
         // ダイアログ表示
         val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
@@ -256,18 +257,6 @@ class RouteListFragment : Fragment() {
             _searchRouteListItem = null
         }
         dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
-    }
-
-    /**
-     * 前回分ダイアログ削除
-     * @param tag 削除対象ダイアログタグ
-     */
-    private fun deletePrevDialog(tag: String) {
-        val prevDlg = parentFragmentManager.findFragmentByTag(tag)
-        if(prevDlg != null){
-            parentFragmentManager.beginTransaction().remove(prevDlg)
-        }
-        parentFragmentManager.beginTransaction().addToBackStack(null)
     }
 
     /**

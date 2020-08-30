@@ -12,4 +12,8 @@
     <string name="select_station_message">追加対象を選択してください</string>
     <string name="select_station_yes">OK</string>
     <string name="select_station_no">Cancel</string>
+    <!-- 駅選択ダイアログ用 -->
+    <string name="select_filter_message">表示対象を選択してください</string>
+    <string name="select_filter_yes">OK</string>
+    <string name="select_filter_no">Cancel</string>
 </resources>

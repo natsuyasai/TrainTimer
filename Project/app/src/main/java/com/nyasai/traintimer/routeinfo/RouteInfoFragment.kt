@@ -15,6 +15,8 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
+import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
+import com.nyasai.traintimer.util.FragmentUtil
 import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.android.synthetic.main.fragment_route_info.*
 import kotlinx.coroutines.GlobalScope
@@ -28,6 +30,9 @@ import java.util.*
  * 路線情報表示フラグメント
  */
 class RouteInfoFragment : Fragment() {
+
+    // フィルタ選択ダイアログ
+    private val SELECT_FILTER_DLG_TAG = "SelectList"
 
     // バインド情報
     private lateinit var _binding: FragmentRouteInfoBinding
@@ -192,7 +197,7 @@ class RouteInfoFragment : Fragment() {
         return when (item.itemId) {
             R.id.info_filter_menu -> {
                 Log.d("Debug", "フィルタボタン押下")
-
+                showFilterSelectDialog()
                 true
             }
             else -> {
@@ -208,6 +213,32 @@ class RouteInfoFragment : Fragment() {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
         _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailsItems())
+    }
+
+    /**
+     * フィルタ選択ダイアログ表示
+     */
+    private fun showFilterSelectDialog() {
+        // 前回分削除
+        FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
+
+        GlobalScope.async {
+            val item = _routeDatabaseDao.getFilterInfoItemWithParentIdSync(_parentDataId)
+            _handler.post {
+                // ダイアログ表示
+                val dialog = FilterItemSelectDialogFragment(item)
+                dialog.onClickPositiveButtonCallback = {
+                    Log.d("Debug", "")
+                    GlobalScope.async {
+                        _routeDatabaseDao.updateFilterInfoListItem(dialog.filterItemList)
+                    }
+
+                }
+                dialog.onClickNegativeButtonCallback = {
+                }
+                dialog.showNow(parentFragmentManager, SELECT_FILTER_DLG_TAG)
+            }
+        }
     }
 
     /**

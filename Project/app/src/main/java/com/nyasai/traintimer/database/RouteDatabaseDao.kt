@@ -188,6 +188,9 @@ interface RouteDatabaseDao {
     @Update
     fun updateFilterInfoItem(filterInfo: FilterInfo)
 
+    @Update
+    fun updateFilterInfoListItem(filterInfoList: List<FilterInfo>)
+
     /**
      * フィルタ情報アイテム削除
      */
