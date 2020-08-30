@@ -2,7 +2,9 @@ package com.nyasai.traintimer.routelist
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
+import com.nyasai.traintimer.database.RouteDetails
 import com.nyasai.traintimer.database.RouteListItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,43 @@ class RouteListViewModel(
     // 路線一覧
     val routeList = database.getAllRouteListItems()
 
+
+    /**
+     * リストアイテム取得(同期)
+     */
+     fun getListItemsAsync(): List<RouteListItem> {
+        return database.getDestAllRouteListItemsSync()
+    }
+
+    /**
+     * リストアイテム削除
+     */
+    suspend fun deleteListItem(dataId: Long) {
+        withContext(Dispatchers.IO) {
+            database.deleteRouteListItem(dataId)
+            database.deleteRouteDetailsItemWithParentId(dataId)
+            database.deleteFilterInfoItemWithParentId(dataId)
+        }
+    }
+
+    /**
+     * 路線詳細情報追加
+     */
+    suspend fun insertRouteDetailItems(data: List<RouteDetails>) {
+        withContext(Dispatchers.IO) {
+            database.insertRouteDetailsItems(data)
+        }
+    }
+
+    /**
+     * フィルタ情報追加
+     */
+    suspend fun insertFilterInfoItems(data: List<FilterInfo>) {
+        withContext(Dispatchers.IO) {
+            database.insertFilterInfoItems(data)
+        }
+    }
+
     /**
      * データクリア
      */
@@ -46,7 +85,7 @@ class RouteListViewModel(
     /**
      * データ追加
      */
-    private suspend fun insert(item: RouteListItem) {
+    suspend fun insert(item: RouteListItem) {
         withContext(Dispatchers.IO) {
             database.insertRouteListItem(item)
         }

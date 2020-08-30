@@ -34,14 +34,12 @@ class RouteListFragment : Fragment() {
     // 駅選択ダイアログ
     private val SELECT_LIST_DLG_TAG = "SelectList"
 
-    // DBDao
-    private lateinit var _routeDatabaseDao: RouteDatabaseDao
-
     // 路線リストViewModel
     private val _routeListViewModel: RouteListViewModel by lazy {
+        val application = requireNotNull(this.activity).application
         ViewModelProvider(
             this,
-            RouteListViewModelFactory(_routeDatabaseDao, requireNotNull(this.activity).application)
+            RouteListViewModelFactory(RouteDatabase.getInstance(application).routeDatabaseDao, application)
         ).get(RouteListViewModel::class.java)
     }
 
@@ -65,10 +63,6 @@ class RouteListFragment : Fragment() {
         // データバインド設定
         val binding: FragmentRouteListBinding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_route_list, container, false)
-
-        val application = requireNotNull(this.activity).application
-
-        _routeDatabaseDao = RouteDatabase.getInstance(application).routeDatabaseDao
 
         binding.routeListViewModel = _routeListViewModel
 
@@ -268,9 +262,7 @@ class RouteListFragment : Fragment() {
             return
         }
         GlobalScope.async {
-            _routeDatabaseDao.deleteRouteListItem(targetDataId)
-            _routeDatabaseDao.deleteRouteDetailsItemWithParentId(targetDataId)
-            _routeDatabaseDao.deleteFilterInfoItemWithParentId(targetDataId)
+            _routeListViewModel.deleteListItem(targetDataId)
         }
     }
 
@@ -369,9 +361,9 @@ class RouteListFragment : Fragment() {
             var parentDataId = 0L
             if(routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
                 Log.d("Debug", "一覧データ登録")
-                _routeDatabaseDao.insertRouteListItem(_searchRouteListItem!!)
+                _routeListViewModel.insert(_searchRouteListItem!!)
                 // 追加したアイテムのIDを取得
-                for (item in _routeDatabaseDao.getDestAllRouteListItemsSync()) {
+                for (item in _routeListViewModel.getListItemsAsync()) {
                     if(item.stationName == _searchRouteListItem!!.stationName
                         && item.routeName == _searchRouteListItem!!.routeName
                         && item.direction == _searchRouteListItem!!.direction){
@@ -406,9 +398,9 @@ class RouteListFragment : Fragment() {
             }
 
             Log.d("Debug", "詳細データ登録")
-            _routeDatabaseDao.insertRouteDetailsItems(addDataList)
+            _routeListViewModel.insertRouteDetailItems(addDataList)
             // フィルタ情報から重複削除したデータを登録
-            _routeDatabaseDao.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDirection })
+            _routeListViewModel.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDirection })
             Log.d("Debug", "データ登録完了")
             _handler.post {
                 loading_text.text = "読み込み中……"

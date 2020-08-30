@@ -38,15 +38,11 @@ class RouteInfoFragment : Fragment() {
     // 詳細リストアダプタ
     private lateinit var _routeInfoAdapter: RouteInfoAdapter
 
-    // DBDao
-    private lateinit var _routeDatabaseDao: RouteDatabaseDao
-
-
     // 路線情報ViewModel
     private val _routeInfoViewModel: RouteInfoViewModel by lazy {
         val application = requireNotNull(this.activity).application
         val viewModelFactory = RouteInfoViewModelFactory(
-            _routeDatabaseDao,
+            RouteDatabase.getInstance(application).routeDatabaseDao,
             application,
             RouteInfoFragmentArgs.fromBundle(requireArguments()).parentDataId
         )
@@ -77,8 +73,6 @@ class RouteInfoFragment : Fragment() {
         _binding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_route_info, container, false
         )
-
-        _routeDatabaseDao = RouteDatabase.getInstance(requireNotNull(this.activity).application).routeDatabaseDao
 
         // データバインド
         _binding.routeInfoViewModel = _routeInfoViewModel
@@ -239,14 +233,14 @@ class RouteInfoFragment : Fragment() {
         FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
 
         GlobalScope.async {
-            val item = _routeDatabaseDao.getFilterInfoItemWithParentIdSync(_routeInfoViewModel.parentDataId)
+            val item = _routeInfoViewModel.getFilterInfoItemWithParentIdSync()
             _handler.post {
                 // ダイアログ表示
                 val dialog = FilterItemSelectDialogFragment(item)
                 dialog.onClickPositiveButtonCallback = {
                     Log.d("Debug", "")
                     GlobalScope.async {
-                        _routeDatabaseDao.updateFilterInfoListItem(dialog.filterItemList)
+                        _routeInfoViewModel.updateFilterInfoListItem(dialog.filterItemList)
                     }
 
                 }

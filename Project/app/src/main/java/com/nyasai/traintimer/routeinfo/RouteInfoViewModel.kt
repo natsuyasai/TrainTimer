@@ -146,6 +146,21 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     }
 
     /**
+     * フィルタ情報取得(同期)
+     */
+    fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
+        return database.getFilterInfoItemWithParentIdSync(parentDataId)
+    }
+
+    /**
+     * フィルタ情報更新
+     */
+    fun updateFilterInfoListItem(data: List<FilterInfo>) {
+        return database.updateFilterInfoListItem(data)
+    }
+
+
+    /**
      * データクリア
      */
     private suspend fun clear() {
