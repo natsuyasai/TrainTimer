@@ -103,14 +103,14 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             }
             // 時刻順ソート
             _displayRouteDetailsItemCache = filter?.sortedWith { v1, v2 ->
-                var diff = ChronoUnit.SECONDS.between(
-                    LocalTime.parse(v1.departureTime),
-                    LocalTime.parse(v2.departureTime)
-                )
-                when {
-                    diff < 0 -> 1
-                    diff > 0 -> -1
-                    else -> 0
+                val correctedV1 = correctDepartureTimeForSort(v1.departureTime)
+                val correctedV2 = correctDepartureTimeForSort(v2.departureTime)
+                val diffHour = correctedV1.first - correctedV2.first
+                if(diffHour != 0){
+                    diffHour
+                }
+                else {
+                    correctedV1.second - correctedV2.second
                 }
             }
             _displayRouteDetailsItemCache ?: listOf()
@@ -118,10 +118,26 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     }
 
     /**
+     * ソート用に時刻情報を補正
+     * @param departureTime 補正前文字列
+     * @return 補正後文字列
+     */
+    private fun correctDepartureTimeForSort(departureTime: String): Pair<Int,Int> {
+        val hour = Integer.parseInt(departureTime.substring(0,2))
+        val minutes = Integer.parseInt(departureTime.substring(3))
+        // 一番遅い終電が2時前かつ一番早い始発が4時台のため，間の3時を区切りとする
+        if(hour in 0..3) {
+            // 0時～3時は24時間表記の24時～27時に変換する
+            return Pair(hour + 24, minutes)
+        }
+        return Pair(hour, minutes)
+    }
+
+    /**
      * 直近の時刻のアイテムを取得する
      */
     fun getNearTimeItem(useCache: Boolean = false): RouteDetails? {
-        var now = LocalTime.now()
+        val now = LocalTime.now()
         for(item in getDisplayRouteDetailsItems(useCache)) {
             if(LocalTime.parse(item.departureTime) > now){
                 return item

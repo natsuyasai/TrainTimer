@@ -14,12 +14,7 @@ import java.time.LocalTime
 fun TextView.setDepartureTime(item: RouteDetails?) {
     item?.let {
         text = item.departureTime
-        if(LocalTime.parse(item.departureTime) < LocalTime.now()){
-            setTextColor(Color.GRAY)
-        }
-        else{
-            setTextColor(Color.BLACK)
-        }
+        setTextColor(getTimeTextColor(item.departureTime))
     }
 }
 
@@ -30,12 +25,7 @@ fun TextView.setDepartureTime(item: RouteDetails?) {
 fun TextView.setTrainType(item: RouteDetails?) {
     item?.let {
         text = item.trainType
-        if(LocalTime.parse(item.departureTime) < LocalTime.now()){
-            setTextColor(Color.GRAY)
-        }
-        else{
-            setTextColor(Color.RED)
-        }
+        setTextColor(getTimeTextColor(item.departureTime, Color.RED))
     }
 }
 
@@ -46,12 +36,7 @@ fun TextView.setTrainType(item: RouteDetails?) {
 fun TextView.setDestination(item: RouteDetails?) {
     item?.let {
         text = item.destination
-        if(LocalTime.parse(item.departureTime) < LocalTime.now()){
-            setTextColor(Color.GRAY)
-        }
-        else{
-            setTextColor(Color.BLACK)
-        }
+        setTextColor(getTimeTextColor(item.departureTime))
     }
 }
 
@@ -71,4 +56,31 @@ fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
         Define.DiagramType.Sunday -> Color.RED
     }
     setTextColor(color)
+}
+
+/**
+ * 時刻情報テキストカラー取得
+ */
+fun getTimeTextColor(departureTime: String, defaultColor: Int = Color.BLACK): Int {
+    val departureTime = LocalTime.parse(departureTime)
+    val now = LocalTime.now()
+    // 0～3時以外は現在時刻未満を無効に設定
+    if(departureTime.hour !in 0..3 && departureTime < now){
+        return Color.GRAY
+    }
+    else if(departureTime.hour in 0..3) {
+        // 0～3時なら日付変更前と後で比較方法変更
+        return if(now.hour in 0..3){
+            if(departureTime < now) {
+                Color.GRAY
+            } else{
+                defaultColor
+            }
+        } else {
+            defaultColor
+        }
+    }
+    else{
+        return defaultColor
+    }
 }
