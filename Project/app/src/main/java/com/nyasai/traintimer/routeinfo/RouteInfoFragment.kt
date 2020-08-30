@@ -195,7 +195,7 @@ class RouteInfoFragment : Fragment() {
             GlobalScope.async {
                 Thread.sleep(500)
                 _handler.post {
-                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!) + 5)
+                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
                     Log.d("Debug", _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!).toString())
                 }
             }
