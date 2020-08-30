@@ -139,6 +139,12 @@ class RouteInfoFragment : Fragment() {
                         }
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
+                    else {
+                        // カウントダウン対象の時刻情報を設定
+                        next_time_table.text = """|${_routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"}
+                            |${_routeInfoViewModel.currentCountItem.value?.trainType ?: "--"}
+                            |${_routeInfoViewModel.currentCountItem.value?.destination ?: "--"}""".trimMargin()
+                    }
                     val planeText = when{
                         diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
                         else -> "Next -- : --"

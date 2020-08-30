@@ -25,19 +25,40 @@
             app:currentDiagramType="@{routeInfoViewModel.currentDiagramType}"
             app:routeInfoFragment="@{routeInfoFragment}" />
 
+        <!-- カウントダウン中の時刻情報 -->
+        <TextView
+            android:id="@+id/next_time_table"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="5dp"
+            android:autoSizeTextType="uniform"
+            android:gravity="center|start"
+            android:textColor="@color/textDark"
+            android:textSize="15sp"
+            app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintWidth_percent="0.2"
+            app:layout_constraintEnd_toStartOf="@id/countdown"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/route_info_title"
+            app:layout_constraintBottom_toTopOf="@+id/route_info_view"
+            tools:text="00:00\n普通\n行き" />
         <!-- カウントダウン -->
         <TextView
             android:id="@+id/countdown"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="0dp"
             android:gravity="center|end"
             android:textSize="50sp"
-            android:layout_marginEnd="10dp"
+            android:autoSizeTextType="uniform"
+            android:layout_marginEnd="5dp"
             android:textColor="@color/textDark"
+            app:layout_constraintWidth_percent="0.78"
             app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintStart_toEndOf="@id/next_time_table"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/route_info_title"
             app:layout_constraintBottom_toTopOf="@id/route_info_view"
-            tools:text="カウントダウン" />
+            tools:text="Next HH:MM" />
 
         <!-- 時刻一覧表示 -->
         <androidx.recyclerview.widget.RecyclerView
