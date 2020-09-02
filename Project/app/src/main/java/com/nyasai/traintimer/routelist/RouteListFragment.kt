@@ -18,13 +18,13 @@ import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
 import com.nyasai.traintimer.util.FragmentUtil
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.android.synthetic.main.common_loading.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 路線一覧表示フラグメント
  */
-class RouteListFragment : Fragment() {
+class RouteListFragment : Fragment(), CoroutineScope {
 
     // 路線リストアイテム削除確認ダイアログタグ
     private val ROUTE_LIST_DELETE_CONFIRM_DLG_TAG = "RouteListItemDeleteConfirm"
@@ -50,6 +50,13 @@ class RouteListFragment : Fragment() {
 
     // UI実行用ハンドラ
     private val _handler = Handler()
+
+    // 本フラグメント用job
+    private val _job = Job()
+    // 本スコープ用のコンテキスト
+    override val coroutineContext: CoroutineContext
+    get() = Dispatchers.Main + _job
+
 
     /**
      * onCreateViewフック
@@ -137,6 +144,15 @@ class RouteListFragment : Fragment() {
                 super.onOptionsItemSelected(item)
             }
         }
+    }
+
+    /**
+     * onDestroyフック
+     */
+    override fun onDestroy() {
+        _yahooRouteInfoGetter.dispose()
+        _job.cancel()
+        super.onDestroy()
     }
 
     // region ダイアログ関連
@@ -260,7 +276,7 @@ class RouteListFragment : Fragment() {
         if(targetDataId == null){
             return
         }
-        GlobalScope.async {
+        launch {
             _routeListViewModel.deleteListItem(targetDataId)
         }
     }
@@ -271,11 +287,11 @@ class RouteListFragment : Fragment() {
      */
     private fun searchStation(stationName: String) {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
-        GlobalScope.async {
+        launch(Dispatchers.Default + _job) {
             // 駅名より検索実行．実行結果から駅名リストダイアログ表示
             val stationListMap = _yahooRouteInfoGetter.getStationList(stationName)
             if(stationListMap.isNotEmpty()) {
-                _handler.post {
+                withContext(Dispatchers.Main) {
                     common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                     showStationSelectDialog(stationListMap)
                 }
@@ -294,9 +310,9 @@ class RouteListFragment : Fragment() {
      */
     private fun searchDestinationFromStationName(stationName: String) {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
-        GlobalScope.async {
+        launch(Dispatchers.Default + _job) {
             val destinationListMap = _yahooRouteInfoGetter.getDestinationFromStationName(stationName)
-            _handler.post {
+            withContext(Dispatchers.Main) {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 showDestinationSelectDialog(destinationListMap)
             }
@@ -320,9 +336,9 @@ class RouteListFragment : Fragment() {
 
         // 行先リストを取得
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
-        GlobalScope.async {
+        launch(Dispatchers.Default + _job) {
             val destinationListMap = _yahooRouteInfoGetter.getDestinationFromUrl(stationNameMap.getValue(selectStation))
-            _handler.post {
+            withContext(Dispatchers.Main) {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 showDestinationSelectDialog(destinationListMap)
             }
@@ -350,7 +366,7 @@ class RouteListFragment : Fragment() {
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // 時刻データを全取得
         Log.d("Debug", "データ取得開始")
-        GlobalScope.async {
+        launch(Dispatchers.Default + _job) {
             val routeInfo = _yahooRouteInfoGetter.getTimeTableInfo(destinationMap.getValue(selectDestination))
             _handler.post {
                 loading_text.text = "時刻情報登録中……"
@@ -401,7 +417,7 @@ class RouteListFragment : Fragment() {
             // フィルタ情報から重複削除したデータを登録
             _routeListViewModel.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDestination })
             Log.d("Debug", "データ登録完了")
-            _handler.post {
+            withContext(Dispatchers.Main) {
                 loading_text.text = "読み込み中……"
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -409,7 +425,6 @@ class RouteListFragment : Fragment() {
 
         }
     }
-
 
     // endregion ダイアログ関連
 

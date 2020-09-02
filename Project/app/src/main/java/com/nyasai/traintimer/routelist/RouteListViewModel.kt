@@ -18,12 +18,6 @@ class RouteListViewModel(
     val database: RouteDatabaseDao,
     application: Application): AndroidViewModel(application) {
 
-    // ジョブ
-    private var viewModelJob = Job()
-
-    //
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
-
     // 路線一覧
     val routeList = database.getAllRouteListItems()
 
@@ -31,8 +25,10 @@ class RouteListViewModel(
     /**
      * リストアイテム取得(同期)
      */
-     fun getListItemsAsync(): List<RouteListItem> {
-        return database.getDestAllRouteListItemsSync()
+    suspend fun getListItemsAsync(): List<RouteListItem> {
+        return withContext(Dispatchers.IO) {
+            database.getDestAllRouteListItemsSync()
+        }
     }
 
     /**

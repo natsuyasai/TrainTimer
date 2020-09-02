@@ -22,13 +22,6 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
                           application: Application,
                           parentId: Long): AndroidViewModel(application) {
 
-
-    // ジョブ
-    private var viewModelJob = Job()
-
-    //
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
-
     // 路線情報
     val routeInfo = database.getRouteListItemWithId(parentId)
 
@@ -148,15 +141,20 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * フィルタ情報取得(同期)
      */
-    fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
-        return database.getFilterInfoItemWithParentIdSync(parentDataId)
+    suspend fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
+        return withContext(Dispatchers.IO){
+            database.getFilterInfoItemWithParentIdSync(parentDataId)
+        }
+
     }
 
     /**
      * フィルタ情報更新
      */
-    fun updateFilterInfoListItem(data: List<FilterInfo>) {
-        return database.updateFilterInfoListItem(data)
+    suspend fun updateFilterInfoListItem(data: List<FilterInfo>) {
+        return withContext(Dispatchers.IO){
+            database.updateFilterInfoListItem(data)
+        }
     }
 
 

@@ -3,14 +3,14 @@ package com.nyasai.traintimer.util
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.jsoup.Jsoup
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
+import kotlin.coroutines.CoroutineContext
 
 
-class YahooRouteInfoGetter {
+class YahooRouteInfoGetter : CoroutineScope {
 
     /**
      * 時刻情報
@@ -34,9 +34,24 @@ class YahooRouteInfoGetter {
     private var _totalRequestCount = 0
     // 前回のリクエスト実施時刻
     private var _prevRequestDatetime = LocalTime.now()
+    // ロック用
+    private val _lock = Any()
+
+    // 本フラグメント用job
+    private val job = Job()
+    // 本スコープ用のコンテキスト
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default + job
 
     init {
         FuelManager.instance.baseHeaders = mapOf("User-Agent" to "Mozilla/5.0 (twitter:@natsuyasai7)")
+    }
+
+    /**
+     * dispose
+     */
+    fun dispose() {
+        job.cancel()
     }
 
     /**
@@ -127,14 +142,15 @@ class YahooRouteInfoGetter {
     suspend fun getTimeTableInfo(timeTableUrl: String): List<List<TimeInfo>> {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
-        val timeTableInfoList = mutableListOf<List<TimeInfo>>()
+        var timeTableInfoList = listOf<List<TimeInfo>>()
         if(tableUrls.size == 3) {
-            val task1 = GlobalScope.async { getTimeInfoList(tableUrls[0]) }
-            val task2 = GlobalScope.async { getTimeInfoList(tableUrls[1]) }
-            val task3 = GlobalScope.async { getTimeInfoList(tableUrls[2]) }
-            timeTableInfoList.add(task1.await())
-            timeTableInfoList.add(task2.await())
-            timeTableInfoList.add(task3.await())
+            coroutineScope {
+                val awaitList = listOf(
+                    async { getTimeInfoList(tableUrls[0]) },
+                    async { getTimeInfoList(tableUrls[1]) },
+                    async { getTimeInfoList(tableUrls[2]) })
+                timeTableInfoList = awaitList.awaitAll()
+            }
         }
 
         return timeTableInfoList
@@ -224,8 +240,8 @@ class YahooRouteInfoGetter {
         if (headerElements.size < 1 || detailElements.size < 1) {
             return timeInfo
         }
-        val headerTexts = headerElements[0].text().split(" |　".toRegex())
-        val detailTexts = detailElements[0].text().split(" |　".toRegex())
+        val headerTexts = headerElements[0].text().split("[ 　]".toRegex())
+        val detailTexts = detailElements[0].text().split("[ 　]".toRegex())
 
         // 文字列からTimeInfo生成
         if(detailTexts.size >= 5) {
@@ -272,14 +288,18 @@ class YahooRouteInfoGetter {
      */
     private fun tryWait() {
         // 一定時間経過していればリセット
-        if(_totalRequestCount != 0 && ChronoUnit.SECONDS.between(_prevRequestDatetime, LocalTime.now()) > 30) {
-            _totalRequestCount = 0
+        synchronized(_lock) {
+            if (_totalRequestCount != 0
+                && ChronoUnit.SECONDS.between(_prevRequestDatetime, LocalTime.now()) > 30) {
+                _totalRequestCount = 0
+            }
+
+            // 一定期間未満かつ2回目以降のリクエストなら少し待つ
+            if (_totalRequestCount > 5) {
+                Thread.sleep(500)
+            }
+            _totalRequestCount++
+            _prevRequestDatetime = LocalTime.now()
         }
-        // 一定期間未満かつ2回目以降のリクエストなら少し待つ
-        if(_totalRequestCount > 5) {
-            Thread.sleep(500)
-        }
-        _totalRequestCount++
-        _prevRequestDatetime = LocalTime.now()
     }
 }

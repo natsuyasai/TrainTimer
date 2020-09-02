@@ -13,21 +13,20 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
-import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import com.nyasai.traintimer.util.FragmentUtil
 import kotlinx.android.synthetic.main.fragment_route_info.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 
 /**
  * 路線情報表示フラグメント
  */
-class RouteInfoFragment : Fragment() {
+class RouteInfoFragment : Fragment(), CoroutineScope {
 
     // フィルタ選択ダイアログ
     private val SELECT_FILTER_DLG_TAG = "SelectList"
@@ -60,6 +59,12 @@ class RouteInfoFragment : Fragment() {
 
     // 文字列装飾用
     private var _spannableStringBuilder = SpannableStringBuilder()
+
+    // 本フラグメント用job
+    private val _job = Job()
+    // 本スコープ用のコンテキスト
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + _job
 
     /**
      * onCreateViewフック
@@ -183,6 +188,14 @@ class RouteInfoFragment : Fragment() {
     }
 
     /**
+     * onDestroyフック
+     */
+    override fun onDestroy() {
+        _job.cancel()
+        super.onDestroy()
+    }
+
+    /**
      * onCreateOptionsMenuフック
      */
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -232,14 +245,14 @@ class RouteInfoFragment : Fragment() {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
 
-        GlobalScope.async {
+        launch {
             val item = _routeInfoViewModel.getFilterInfoItemWithParentIdSync()
             _handler.post {
                 // ダイアログ表示
                 val dialog = FilterItemSelectDialogFragment(item)
                 dialog.onClickPositiveButtonCallback = {
                     Log.d("Debug", "")
-                    GlobalScope.async {
+                    launch {
                         _routeInfoViewModel.updateFilterInfoListItem(dialog.filterItemList)
                     }
 
@@ -269,7 +282,7 @@ class RouteInfoFragment : Fragment() {
     private fun updateScrollPosition() {
         if(_routeInfoViewModel.currentCountItem.value != null) {
             // リストアイテムの描画を待ってから対象位置までスクロール
-            GlobalScope.async {
+            launch {
                 Thread.sleep(500)
                 _handler.post {
                     route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
