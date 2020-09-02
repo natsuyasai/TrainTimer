@@ -14,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import java.time.LocalTime
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 路線詳細情報表示用ViewModel
@@ -21,6 +22,12 @@ import java.util.*
 class RouteInfoViewModel (val database: RouteDatabaseDao,
                           application: Application,
                           parentId: Long): AndroidViewModel(application) {
+
+    // 本VM用job
+    private val _job = Job()
+    // 本スコープ用のコンテキスト
+    private val _ioContext: CoroutineContext
+        get() = Dispatchers.IO + _job
 
     // 路線情報
     val routeInfo = database.getRouteListItemWithId(parentId)
@@ -52,6 +59,14 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
             else -> Define.DiagramType.Weekday
         }
         _currentCountItem.value = getNearTimeItem()
+    }
+
+    /**
+     * onClearedフック
+     */
+    override fun onCleared() {
+        _job.cancel()
+        super.onCleared()
     }
 
     /**
@@ -142,7 +157,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * フィルタ情報取得(同期)
      */
     suspend fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
-        return withContext(Dispatchers.IO){
+        return withContext(_ioContext){
             database.getFilterInfoItemWithParentIdSync(parentDataId)
         }
 
@@ -152,7 +167,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * フィルタ情報更新
      */
     suspend fun updateFilterInfoListItem(data: List<FilterInfo>) {
-        return withContext(Dispatchers.IO){
+        return withContext(_ioContext){
             database.updateFilterInfoListItem(data)
         }
     }
@@ -162,7 +177,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * データクリア
      */
     private suspend fun clear() {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.clearAllRouteDetailItem()
         }
     }
@@ -171,7 +186,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * データ更新
      */
     private suspend fun update(item: RouteDetail) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.updateRouteDetailItem(item)
         }
     }
@@ -180,7 +195,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * データ追加
      */
     private suspend fun insert(item: RouteDetail) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.insertRouteDetailItem(item)
         }
     }

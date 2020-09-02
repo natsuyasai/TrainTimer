@@ -231,11 +231,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      * ダイアログ初期化
      */
     private fun initDialog() {
-        // 画面生成時にダイアログが存在する場合は，コールバックを再登録
-        val filterSelectDialog = parentFragmentManager.findFragmentByTag(SELECT_FILTER_DLG_TAG)
-        if(filterSelectDialog != null && filterSelectDialog is FilterItemSelectDialogFragment){
-
-        }
+        FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
     }
 
     /**
@@ -282,9 +278,9 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     private fun updateScrollPosition() {
         if(_routeInfoViewModel.currentCountItem.value != null) {
             // リストアイテムの描画を待ってから対象位置までスクロール
-            launch {
+            launch(Dispatchers.Default + _job) {
                 Thread.sleep(500)
-                _handler.post {
+                withContext(Dispatchers.Main) {
                     route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
                     Log.d("Debug", _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!).toString())
                 }

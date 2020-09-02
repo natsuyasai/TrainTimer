@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 路線一覧Viewmodel
@@ -18,15 +19,28 @@ class RouteListViewModel(
     val database: RouteDatabaseDao,
     application: Application): AndroidViewModel(application) {
 
+    // 本VM用job
+    private val _job = Job()
+    // 本スコープ用のコンテキスト
+    private val _ioContext: CoroutineContext
+        get() = _ioContext + _job
+    
     // 路線一覧
     val routeList = database.getAllRouteListItems()
 
+    /**
+     * onClearedフック
+     */
+    override fun onCleared() {
+        _job.cancel()
+        super.onCleared()
+    }
 
     /**
      * リストアイテム取得(同期)
      */
     suspend fun getListItemsAsync(): List<RouteListItem> {
-        return withContext(Dispatchers.IO) {
+        return withContext(_ioContext) {
             database.getDestAllRouteListItemsSync()
         }
     }
@@ -35,7 +49,7 @@ class RouteListViewModel(
      * リストアイテム削除
      */
     suspend fun deleteListItem(dataId: Long) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.deleteRouteListItem(dataId)
             database.deleteRouteDetailItemWithParentId(dataId)
             database.deleteFilterInfoItemWithParentId(dataId)
@@ -46,7 +60,7 @@ class RouteListViewModel(
      * 路線詳細情報追加
      */
     suspend fun insertRouteDetailItems(datum: List<RouteDetail>) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.insertRouteDetailItems(datum)
         }
     }
@@ -55,7 +69,7 @@ class RouteListViewModel(
      * フィルタ情報追加
      */
     suspend fun insertFilterInfoItems(data: List<FilterInfo>) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.insertFilterInfoItems(data)
         }
     }
@@ -64,7 +78,7 @@ class RouteListViewModel(
      * データクリア
      */
     private suspend fun clear() {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.clearAllRouteListItem()
         }
     }
@@ -73,7 +87,7 @@ class RouteListViewModel(
      * データ更新
      */
     private suspend fun update(item: RouteListItem) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.updateRouteListItem(item)
         }
     }
@@ -82,7 +96,7 @@ class RouteListViewModel(
      * データ追加
      */
     suspend fun insert(item: RouteListItem) {
-        withContext(Dispatchers.IO) {
+        withContext(_ioContext) {
             database.insertRouteListItem(item)
         }
     }
