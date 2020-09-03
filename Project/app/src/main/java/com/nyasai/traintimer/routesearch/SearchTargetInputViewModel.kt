@@ -1,13 +1,15 @@
 package com.nyasai.traintimer.routesearch
 
-import android.app.Application
-import androidx.databinding.BaseObservable
-import androidx.databinding.Bindable
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 
-class SearchTargetInputViewModel(application: Application): AndroidViewModel(application){
+class SearchTargetInputViewModel: ViewModel(){
+
+    // Yesボタン押下時コールバック
+    var onClickPositiveButtonCallback: (() -> Unit)? = null
+
+    // Noボタン押下時コールバック
+    var onClickNegativeButtonCallback: (() -> Unit)? = null
 
     // 駅名
     private val _stationName: MutableLiveData<String> = MutableLiveData()

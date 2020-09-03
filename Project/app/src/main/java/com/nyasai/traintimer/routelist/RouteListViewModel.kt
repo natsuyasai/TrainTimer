@@ -6,10 +6,7 @@ import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -39,65 +36,61 @@ class RouteListViewModel(
     /**
      * リストアイテム取得(同期)
      */
-    suspend fun getListItemsAsync(): List<RouteListItem> {
-        return withContext(_ioContext) {
-            database.getDestAllRouteListItemsSync()
-        }
-    }
+    fun getListItemsAsync() = database.getDestAllRouteListItemsSync()
 
     /**
      * リストアイテム削除
      */
-    suspend fun deleteListItem(dataId: Long) {
-        withContext(_ioContext) {
+    fun deleteListItem(dataId: Long) {
+        //withContext(_ioContext) {
             database.deleteRouteListItem(dataId)
             database.deleteRouteDetailItemWithParentId(dataId)
             database.deleteFilterInfoItemWithParentId(dataId)
-        }
+        //}
     }
 
     /**
      * 路線詳細情報追加
      */
-    suspend fun insertRouteDetailItems(datum: List<RouteDetail>) {
-        withContext(_ioContext) {
+    fun insertRouteDetailItems(datum: List<RouteDetail>) {
+        //CoroutineScope(_ioContext).launch {
             database.insertRouteDetailItems(datum)
-        }
+        //}
     }
 
     /**
      * フィルタ情報追加
      */
-    suspend fun insertFilterInfoItems(data: List<FilterInfo>) {
-        withContext(_ioContext) {
+    fun insertFilterInfoItems(data: List<FilterInfo>) {
+        //CoroutineScope(_ioContext).launch {
             database.insertFilterInfoItems(data)
-        }
+        //}
     }
 
     /**
      * データクリア
      */
-    private suspend fun clear() {
-        withContext(_ioContext) {
+    private fun clear() {
+        //CoroutineScope(_ioContext).launch {
             database.clearAllRouteListItem()
-        }
+        //}
     }
 
     /**
      * データ更新
      */
-    private suspend fun update(item: RouteListItem) {
-        withContext(_ioContext) {
+    private fun update(item: RouteListItem) {
+        //CoroutineScope(_ioContext).launch {
             database.updateRouteListItem(item)
-        }
+        //}
     }
 
     /**
      * データ追加
      */
-    suspend fun insert(item: RouteListItem) {
-        withContext(_ioContext) {
+    fun insert(item: RouteListItem) {
+        //CoroutineScope(_ioContext).launch {
             database.insertRouteListItem(item)
-        }
+        //}
     }
 }

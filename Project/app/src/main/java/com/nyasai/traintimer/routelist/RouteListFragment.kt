@@ -13,8 +13,7 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.*
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
-import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
-import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
+import com.nyasai.traintimer.routesearch.*
 import com.nyasai.traintimer.util.FragmentUtil
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.android.synthetic.main.common_loading.*
@@ -40,6 +39,22 @@ class RouteListFragment : Fragment(), CoroutineScope {
             this,
             RouteListViewModelFactory(RouteDatabase.getInstance(application).routeDatabaseDao, application)
         ).get(RouteListViewModel::class.java)
+    }
+
+    // ViewModel
+    private val _searchTargetInputViewModel: SearchTargetInputViewModel by lazy {
+        ViewModelProvider(
+            requireActivity(),
+            SearchTargetInputViewModelFactory()
+        ).get(SearchTargetInputViewModel::class.java)
+    }
+
+    // ViewModel
+    private val _istItemSelectViewModel: ListItemSelectViewModel by lazy {
+        ViewModelProvider(
+            requireActivity(),
+            ListItemSelectViewModelFactory()
+        ).get(ListItemSelectViewModel::class.java)
     }
 
     // Yahoo路線情報取得用
@@ -170,24 +185,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
             deleteConfirmDialog.onClickNegativeButtonCallback = {
             }
         }
-        val searchTargetInputDialog = parentFragmentManager.findFragmentByTag(SEARCH_TARGET_INPUT_DLG_TAG)
-        if(searchTargetInputDialog != null && searchTargetInputDialog is SearchTargetInputDialogFragment){
-            searchTargetInputDialog.onClickPositiveButtonCallback = {
-                searchStation(searchTargetInputDialog.getInputText())
-            }
-            searchTargetInputDialog.onClickNegativeButtonCallback = {
-            }
-        }
-        val selectListDialog = parentFragmentManager.findFragmentByTag(SELECT_LIST_DLG_TAG)
-        if(selectListDialog != null && selectListDialog is ListItemSelectDialogFragment){
-            selectListDialog.onClickPositiveButtonCallback = {
-            }
-            selectListDialog.onClickNegativeButtonCallback = {
-            }
-            selectListDialog.onSelectItem = {
-            }
-            selectListDialog.itemList = arrayOf()
-        }
     }
 
     /**
@@ -219,13 +216,11 @@ class RouteListFragment : Fragment(), CoroutineScope {
         FragmentUtil.deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG, parentFragmentManager)
 
         // ダイアログ表示
+        _searchTargetInputViewModel.onClickPositiveButtonCallback = {
+            Log.d("Debug", _searchTargetInputViewModel.getStationName())
+            searchStation(_searchTargetInputViewModel.getStationName())
+        }
         val dialog = SearchTargetInputDialogFragment()
-        dialog.onClickPositiveButtonCallback = {
-            Log.d("Debug", dialog.getInputText())
-            searchStation(dialog.getInputText())
-        }
-        dialog.onClickNegativeButtonCallback = {
-        }
         dialog.showNow(parentFragmentManager, SEARCH_TARGET_INPUT_DLG_TAG)
     }
 
@@ -237,15 +232,15 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
 
-
         // ダイアログ表示
-        val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
-        dialog.onClickPositiveButtonCallback = {
-            searchDestinationFromUrl(itemsMap, dialog.selectItem)
+        _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
+        _istItemSelectViewModel.onClickPositiveButtonCallback = {
+            searchDestinationFromUrl(itemsMap, _istItemSelectViewModel.selectItem)
         }
-        dialog.onClickNegativeButtonCallback = {
+        _istItemSelectViewModel.onClickNegativeButtonCallback = {
             _searchRouteListItem = null
         }
+        val dialog = ListItemSelectDialogFragment()
         dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
 
@@ -258,13 +253,14 @@ class RouteListFragment : Fragment(), CoroutineScope {
         FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
 
         // ダイアログ表示
-        val dialog = ListItemSelectDialogFragment(itemsMap.keys.toTypedArray())
-        dialog.onClickPositiveButtonCallback = {
-            addRouteInfo(itemsMap, dialog.selectItem)
+        _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
+        _istItemSelectViewModel.onClickPositiveButtonCallback = {
+            addRouteInfo(itemsMap, _istItemSelectViewModel.selectItem)
         }
-        dialog.onClickNegativeButtonCallback = {
+        _istItemSelectViewModel.onClickNegativeButtonCallback = {
             _searchRouteListItem = null
         }
+        val dialog = ListItemSelectDialogFragment()
         dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
     }
 
@@ -276,7 +272,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         if(targetDataId == null){
             return
         }
-        launch {
+        launch(Dispatchers.Default + _job) {
             _routeListViewModel.deleteListItem(targetDataId)
         }
     }

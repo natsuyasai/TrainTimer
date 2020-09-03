@@ -4,9 +4,13 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.databinding.DialogSearchTargetInputBinding
 
@@ -15,17 +19,10 @@ import com.nyasai.traintimer.databinding.DialogSearchTargetInputBinding
  */
 class SearchTargetInputDialogFragment: DialogFragment() {
 
-    // Yesボタン押下時コールバック
-    var onClickPositiveButtonCallback: (() -> Unit)? = null
-
-    // Noボタン押下時コールバック
-    var onClickNegativeButtonCallback: (() -> Unit)? = null
-
     // ViewModel
     private val _searchTargetInputViewModel: SearchTargetInputViewModel by lazy {
-        ViewModelProvider(
-        this,
-        SearchTargetInputViewModelFactory(requireNotNull(this.activity).application)
+        ViewModelProvider(requireActivity(),
+        SearchTargetInputViewModelFactory()
         ).get(SearchTargetInputViewModel::class.java)
     }
 
@@ -46,18 +43,15 @@ class SearchTargetInputDialogFragment: DialogFragment() {
                     R.string.search_input_yes
                 ) { _, _ ->
                     Log.d("Debug", "検索開始")
-                    onClickPositiveButtonCallback?.invoke()
+                    _searchTargetInputViewModel.onClickPositiveButtonCallback?.invoke()
                 }
                 .setNegativeButton(
                     R.string.search_input_no
                 ) { _, _ ->
                     Log.d("Debug", "キャンセル")
-                    onClickNegativeButtonCallback?.invoke()
+                    _searchTargetInputViewModel.onClickNegativeButtonCallback?.invoke()
                 }
             builder.create()
         }!!
     }
-
-    fun getInputText() = _searchTargetInputViewModel.getStationName()
-
 }

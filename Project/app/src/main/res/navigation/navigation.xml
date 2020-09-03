@@ -12,6 +12,12 @@
         <action
             android:id="@+id/action_routeList_to_routeInfoFragment"
             app:destination="@id/routeInfoFragment2" />
+        <action
+            android:id="@+id/action_routeList_to_searchTargetInputDialogFragment"
+            app:destination="@id/searchTargetInputDialogFragment" />
+        <action
+            android:id="@+id/action_routeList_to_listItemSelectDialogFragment"
+            app:destination="@id/listItemSelectDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/routeInfoFragment2"
@@ -23,6 +29,22 @@
             app:argType="long" />
         <action
             android:id="@+id/action_routeInfoFragment2_to_routeList"
+            app:destination="@id/routeList" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchTargetInputDialogFragment"
+        android:name="com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment"
+        android:label="SearchTargetInputDialogFragment" >
+        <action
+            android:id="@+id/action_searchTargetInputDialogFragment_to_routeList"
+            app:destination="@id/routeList" />
+    </fragment>
+    <fragment
+        android:id="@+id/listItemSelectDialogFragment"
+        android:name="com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment"
+        android:label="ListItemSelectDialogFragment" >
+        <action
+            android:id="@+id/action_listItemSelectDialogFragment_to_routeList"
             app:destination="@id/routeList" />
     </fragment>
 </navigation>
