@@ -42,55 +42,29 @@ class RouteListViewModel(
      * リストアイテム削除
      */
     fun deleteListItem(dataId: Long) {
-        //withContext(_ioContext) {
-            database.deleteRouteListItem(dataId)
-            database.deleteRouteDetailItemWithParentId(dataId)
-            database.deleteFilterInfoItemWithParentId(dataId)
-        //}
+        database.deleteRouteListItem(dataId)
+        database.deleteRouteDetailItemWithParentId(dataId)
+        database.deleteFilterInfoItemWithParentId(dataId)
     }
 
     /**
      * 路線詳細情報追加
      */
     fun insertRouteDetailItems(datum: List<RouteDetail>) {
-        //CoroutineScope(_ioContext).launch {
-            database.insertRouteDetailItems(datum)
-        //}
+        database.insertRouteDetailItems(datum)
     }
 
     /**
      * フィルタ情報追加
      */
     fun insertFilterInfoItems(data: List<FilterInfo>) {
-        //CoroutineScope(_ioContext).launch {
-            database.insertFilterInfoItems(data)
-        //}
-    }
-
-    /**
-     * データクリア
-     */
-    private fun clear() {
-        //CoroutineScope(_ioContext).launch {
-            database.clearAllRouteListItem()
-        //}
-    }
-
-    /**
-     * データ更新
-     */
-    private fun update(item: RouteListItem) {
-        //CoroutineScope(_ioContext).launch {
-            database.updateRouteListItem(item)
-        //}
+        database.insertFilterInfoItems(data)
     }
 
     /**
      * データ追加
      */
     fun insert(item: RouteListItem) {
-        //CoroutineScope(_ioContext).launch {
-            database.insertRouteListItem(item)
-        //}
+        database.insertRouteListItem(item)
     }
 }

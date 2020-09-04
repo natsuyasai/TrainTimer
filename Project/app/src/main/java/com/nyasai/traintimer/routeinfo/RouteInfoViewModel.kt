@@ -156,47 +156,14 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     /**
      * フィルタ情報取得(同期)
      */
-    suspend fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
-        return withContext(_ioContext){
-            database.getFilterInfoItemWithParentIdSync(parentDataId)
-        }
-
+    fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
+        return database.getFilterInfoItemWithParentIdSync(parentDataId)
     }
 
     /**
      * フィルタ情報更新
      */
-    suspend fun updateFilterInfoListItem(data: List<FilterInfo>) {
-        return withContext(_ioContext){
-            database.updateFilterInfoListItem(data)
-        }
-    }
-
-
-    /**
-     * データクリア
-     */
-    private suspend fun clear() {
-        withContext(_ioContext) {
-            database.clearAllRouteDetailItem()
-        }
-    }
-
-    /**
-     * データ更新
-     */
-    private suspend fun update(item: RouteDetail) {
-        withContext(_ioContext) {
-            database.updateRouteDetailItem(item)
-        }
-    }
-
-    /**
-     * データ追加
-     */
-    private suspend fun insert(item: RouteDetail) {
-        withContext(_ioContext) {
-            database.insertRouteDetailItem(item)
-        }
+    fun updateFilterInfoListItem(data: List<FilterInfo>) {
+        database.updateFilterInfoListItem(data)
     }
 }

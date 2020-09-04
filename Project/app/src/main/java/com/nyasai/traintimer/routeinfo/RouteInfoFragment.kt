@@ -241,14 +241,14 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
 
-        launch {
+        launch(Dispatchers.Default + _job) {
             val item = _routeInfoViewModel.getFilterInfoItemWithParentIdSync()
             _handler.post {
                 // ダイアログ表示
                 val dialog = FilterItemSelectDialogFragment(item)
                 dialog.onClickPositiveButtonCallback = {
                     Log.d("Debug", "")
-                    launch {
+                    launch(Dispatchers.Default + _job) {
                         _routeInfoViewModel.updateFilterInfoListItem(dialog.filterItemList)
                     }
 
