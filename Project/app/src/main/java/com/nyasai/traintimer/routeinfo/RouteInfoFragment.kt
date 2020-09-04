@@ -51,6 +51,11 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         ).get(RouteInfoViewModel::class.java)
     }
 
+    // ViewModel
+    private val _filterItemSelectViewModel: FilterItemSelectViewModel by lazy {
+        ViewModelProvider(requireActivity()).get(FilterItemSelectViewModel::class.java)
+    }
+
     // タイマ
     private lateinit var _timer: Timer
 
@@ -242,19 +247,19 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
 
         launch(Dispatchers.Default + _job) {
-            val item = _routeInfoViewModel.getFilterInfoItemWithParentIdSync()
+            _filterItemSelectViewModel.filterItemList = _routeInfoViewModel.getFilterInfoItemWithParentIdSync().toMutableList()
             _handler.post {
                 // ダイアログ表示
-                val dialog = FilterItemSelectDialogFragment(item)
-                dialog.onClickPositiveButtonCallback = {
+                _filterItemSelectViewModel.onClickPositiveButtonCallback = {
                     Log.d("Debug", "")
                     launch(Dispatchers.Default + _job) {
-                        _routeInfoViewModel.updateFilterInfoListItem(dialog.filterItemList)
+                        _routeInfoViewModel.updateFilterInfoListItem(_filterItemSelectViewModel.filterItemList)
                     }
 
                 }
-                dialog.onClickNegativeButtonCallback = {
+                _filterItemSelectViewModel.onClickNegativeButtonCallback = {
                 }
+                val dialog = FilterItemSelectDialogFragment()
                 dialog.showNow(parentFragmentManager, SELECT_FILTER_DLG_TAG)
             }
         }

@@ -5,22 +5,18 @@ import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.R
-import com.nyasai.traintimer.database.FilterInfo
 
 /**
  * フィルタ対象選択ダイアログ
  */
-class FilterItemSelectDialogFragment(items: List<FilterInfo>): DialogFragment() {
-    // Yesボタン押下時コールバック
-    var onClickPositiveButtonCallback: (() -> Unit)? = null
+class FilterItemSelectDialogFragment(): DialogFragment() {
 
-    // Noボタン押下時コールバック
-    var onClickNegativeButtonCallback: (() -> Unit)? = null
-
-    // アイテム一覧
-    var filterItemList: List<FilterInfo> = items
-    private set
+    // ViewModel
+    private val _viewModel: FilterItemSelectViewModel by lazy {
+        ViewModelProvider(requireActivity()).get(FilterItemSelectViewModel::class.java)
+    }
 
     /**
      * ダイアログ生成
@@ -30,27 +26,27 @@ class FilterItemSelectDialogFragment(items: List<FilterInfo>): DialogFragment() 
             val builder = AlertDialog.Builder(it)
             val typeList = mutableListOf<String>()
             val checkList = arrayListOf<Boolean>()
-            for (item in filterItemList) {
+            for (item in _viewModel.filterItemList) {
                 typeList.add(item.trainTypeAndDestination)
                 checkList.add(item.isShow)
             }
 
             builder.setTitle(R.string.select_filter_message)
                 .setMultiChoiceItems(typeList.toTypedArray(), checkList.toBooleanArray()) { _, i, isChecked ->
-                    Log.d("Debug", "アイテム選択${filterItemList[i]} -> $isChecked")
-                    filterItemList[i].isShow = isChecked
+                    Log.d("Debug", "アイテム選択${_viewModel.filterItemList[i]} -> $isChecked")
+                    _viewModel.filterItemList[i].isShow = isChecked
                 }
                 .setPositiveButton(
                     R.string.select_filter_yes
                 ) { _, _ ->
                     Log.d("Debug", "Yes")
-                    onClickPositiveButtonCallback?.invoke()
+                    _viewModel.onClickPositiveButtonCallback?.invoke()
                 }
                 .setNegativeButton(
                     R.string.select_filter_no
                 ) { _, _ ->
                     Log.d("Debug", "No")
-                    onClickNegativeButtonCallback?.invoke()
+                    _viewModel.onClickNegativeButtonCallback?.invoke()
                 }
             builder.create()
         }!!
