@@ -23,7 +23,7 @@ data class FilterInfo (
     var dataId: Long = 0L,
 
     // 親データID
-    @ColumnInfo(name = "parent_row_id")
+    @ColumnInfo(name = "parent_row_id", index = true)
     var parentDataId: Long = 0L,
 
     // 列車種別(普通，快速，etc...)+行先

@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RouteDetail::class,
         FilterInfo::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true)
 abstract class RouteDatabase : RoomDatabase() {
     /**
@@ -73,6 +73,29 @@ abstract class RouteDatabase : RoomDatabase() {
                     database.execSQL("ALTER TABLE tmp_filter_info_table RENAME TO filter_info_table")
                 }
             }
+            val migration4to5 = object : Migration(4,5) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    // 詳細テーブル新規作成
+                    database.execSQL("CREATE TABLE IF NOT EXISTS route_details_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, diagram_type INTEGER NOT NULL, departure_time TEXT NOT NULL, train_type TEXT NOT NULL, destination TEXT NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
+
+                    // 既にある場合の更新処理
+                    database.execSQL("CREATE TABLE IF NOT EXISTS tmp_route_details_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, diagram_type INTEGER NOT NULL, departure_time TEXT NOT NULL, train_type TEXT NOT NULL, destination TEXT NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
+                    database.execSQL("INSERT OR REPLACE INTO tmp_route_details_table SELECT * FROM route_details_table")
+                    database.execSQL("DROP TABLE route_details_table")
+                    database.execSQL("ALTER TABLE tmp_route_details_table RENAME TO route_details_table")
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_route_details_table_parent_row_id ON route_details_table (parent_row_id)")
+
+                    // 詳細テーブル新規作成
+                    database.execSQL("CREATE TABLE IF NOT EXISTS filter_info_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, train_type_and_destination TEXT NOT NULL, is_show INTEGER NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
+
+                    // 既にある場合の更新処理
+                    database.execSQL("CREATE TABLE IF NOT EXISTS tmp_filter_info_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, train_type_and_destination TEXT NOT NULL, is_show INTEGER NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
+                    database.execSQL("INSERT OR REPLACE INTO tmp_filter_info_table SELECT * FROM filter_info_table")
+                    database.execSQL("DROP TABLE filter_info_table")
+                    database.execSQL("ALTER TABLE tmp_filter_info_table RENAME TO filter_info_table")
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_filter_info_table_parent_row_id ON filter_info_table (parent_row_id)")
+                }
+            }
             synchronized(this) {
                 var instance = INSTANCE
                 if (instance == null) {
@@ -84,6 +107,7 @@ abstract class RouteDatabase : RoomDatabase() {
                         .addMigrations(migration1to2)
                         .addMigrations(migration2to3)
                         .addMigrations(migration3to4)
+                        .addMigrations(migration4to5)
                         .build()
                     INSTANCE = instance
                 }

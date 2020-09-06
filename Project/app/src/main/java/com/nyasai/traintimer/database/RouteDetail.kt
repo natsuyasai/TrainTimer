@@ -23,7 +23,7 @@ data class RouteDetail (
     var dataId: Long = 0L,
 
     // 親データID
-    @ColumnInfo(name = "parent_row_id")
+    @ColumnInfo(name = "parent_row_id", index = true)
     var parentDataId: Long = 0L,
 
     // ダイヤ種別(平日:0，土:1，日祝日:2)
