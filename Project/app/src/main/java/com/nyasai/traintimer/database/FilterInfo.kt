@@ -2,12 +2,20 @@ package com.nyasai.traintimer.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 /**
  * フィルタ情報データ
  */
-@Entity(tableName = "filter_info_table")
+@Entity(tableName = "filter_info_table",
+    foreignKeys = [
+        ForeignKey(
+            entity = RouteListItem::class,
+            parentColumns = arrayOf("dataId"),
+            childColumns = arrayOf("parent_row_id"),
+            onDelete = ForeignKey.CASCADE)]
+)
 data class FilterInfo (
 
     // データID(連番)

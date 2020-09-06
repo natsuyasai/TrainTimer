@@ -24,6 +24,10 @@ data class RouteListItem(
 
     // 方面
     @ColumnInfo(name = "destination")
-    var destination: String = ""
+    var destination: String = "",
+
+    // ソート用インデックス
+    @ColumnInfo(name = "sort_index")
+    var sortIndex: Long = 0L
 
 )
