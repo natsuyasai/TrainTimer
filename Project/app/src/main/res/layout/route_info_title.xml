@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/list_frame_style"
-        android:onClick="@{routeInfoFragment.onClickTitle}" >
+        android:onClick="@{routeInfoFragment::onClickTitle}" >
 
         <!-- 路線名 -->
         <TextView
