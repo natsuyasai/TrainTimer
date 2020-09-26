@@ -19,4 +19,11 @@ class SearchTargetInputViewModel: ViewModel(){
     fun setStationName(value: String) {
         _stationName.value = value
     }
+
+    /**
+     * 画面表示データクリア
+     */
+    fun clearUIData() {
+        _stationName.value = ""
+    }
 }

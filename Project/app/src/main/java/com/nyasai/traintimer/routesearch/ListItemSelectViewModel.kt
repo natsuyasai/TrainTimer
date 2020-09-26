@@ -26,4 +26,11 @@ class ListItemSelectViewModel: ViewModel(){
         getItems().isNotEmpty() -> getItems()[0]
         else -> ""
     }
+
+    /**
+     * 画面表示データクリア
+     */
+    fun clearUIData() {
+        _items.value = arrayOf()
+    }
 }
