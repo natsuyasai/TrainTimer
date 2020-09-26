@@ -57,9 +57,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ).get(ListItemSelectViewModel::class.java)
     }
 
-    // Yahoo路線情報取得用
-    private val _yahooRouteInfoGetter = YahooRouteInfoGetter()
-
     // 検索情報保持領域
     private var _searchRouteListItem: RouteListItem? = null
 
@@ -71,6 +68,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
     // 本スコープ用のコンテキスト
     override val coroutineContext: CoroutineContext
     get() = Dispatchers.Main + _job
+
+    private val _viewModelContext: CoroutineContext
+    get()=Dispatchers.Default + _job
 
 
     /**
@@ -165,7 +165,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * onDestroyフック
      */
     override fun onDestroy() {
-        _yahooRouteInfoGetter.dispose()
         _job.cancel()
         super.onDestroy()
     }
@@ -272,9 +271,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         if(targetDataId == null){
             return
         }
-        launch(Dispatchers.Default + _job) {
-            _routeListViewModel.deleteListItem(targetDataId)
-        }
+        _routeListViewModel.deleteListItem(targetDataId)
     }
 
     /**
@@ -285,7 +282,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
         launch(Dispatchers.Default + _job) {
             // 駅名より検索実行．実行結果から駅名リストダイアログ表示
-            val stationListMap = _yahooRouteInfoGetter.getStationList(stationName)
+            val stationListMap = _routeListViewModel.getStationList(stationName)
             if(stationListMap.isNotEmpty()) {
                 withContext(Dispatchers.Main) {
                     common_loading.visibility = android.widget.ProgressBar.INVISIBLE
@@ -306,8 +303,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun searchDestinationFromStationName(stationName: String) {
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
-        launch(Dispatchers.Default + _job) {
-            val destinationListMap = _yahooRouteInfoGetter.getDestinationFromStationName(stationName)
+        launch(_viewModelContext) {
+            val destinationListMap = _routeListViewModel.getDestinationFromStationName(stationName)
             withContext(Dispatchers.Main) {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 showDestinationSelectDialog(destinationListMap)
@@ -332,8 +329,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
         // 行先リストを取得
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
-        launch(Dispatchers.Default + _job) {
-            val destinationListMap = _yahooRouteInfoGetter.getDestinationFromUrl(stationNameMap.getValue(selectStation))
+        launch(_viewModelContext) {
+            val destinationListMap = _routeListViewModel.getDestinationFromUrl(stationNameMap.getValue(selectStation))
             withContext(Dispatchers.Main) {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
                 showDestinationSelectDialog(destinationListMap)
@@ -355,15 +352,15 @@ class RouteListFragment : Fragment(), CoroutineScope {
         loading_text.text = "時刻情報取得中……"
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
         // キーから路線名と行先を分割
-        val splitDestinationKey = _yahooRouteInfoGetter.splitDestinationKey(selectDestination)
+        val splitDestinationKey = _routeListViewModel.splitDestinationKey(selectDestination)
         _searchRouteListItem!!.routeName = splitDestinationKey.first
         _searchRouteListItem!!.destination = splitDestinationKey.second
 
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // 時刻データを全取得
         Log.d("Debug", "データ取得開始")
-        launch(Dispatchers.Default + _job) {
-            val routeInfo = _yahooRouteInfoGetter.getTimeTableInfo(destinationMap.getValue(selectDestination))
+        launch(_viewModelContext) {
+            val routeInfo = _routeListViewModel.getTimeTableInfo(destinationMap.getValue(selectDestination))
             _handler.post {
                 loading_text.text = "時刻情報登録中……"
             }
