@@ -30,7 +30,6 @@ class ListItemSelectDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
-            _viewModel.clearUIData()
             builder.setTitle(R.string.select_station_message)
                 .setSingleChoiceItems(_viewModel.getItems(),-1) { _, i ->
                     Log.d("Debug", "アイテム選択${_viewModel.getItems()[i]}")
