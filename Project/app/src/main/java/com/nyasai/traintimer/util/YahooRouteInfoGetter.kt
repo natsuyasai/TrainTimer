@@ -167,7 +167,8 @@ class YahooRouteInfoGetter : CoroutineScope {
         val timeInfoList = mutableListOf<TimeInfo>()
         for (detailUrl in detailUrls) {
             // 解析して結果を保持
-            timeInfoList.add(getTimeInfo(detailUrl))
+            val info: TimeInfo? = getTimeInfo(detailUrl) ?: return mutableListOf()
+            timeInfoList.add(info!!)
         }
         return timeInfoList
     }
@@ -228,17 +229,17 @@ class YahooRouteInfoGetter : CoroutineScope {
      * @param timeInfoDetailUrl 時刻詳細ページURL
      * @return 時刻情報
      */
-    private fun getTimeInfo(timeInfoDetailUrl: String): TimeInfo {
+    private fun getTimeInfo(timeInfoDetailUrl: String): TimeInfo? {
         // データ取得
         val timeInfo = TimeInfo()
-        val document = getHTMLDocument(timeInfoDetailUrl) ?: return timeInfo
+        val document = getHTMLDocument(timeInfoDetailUrl) ?: return null
 
         // 時刻情報部分取得
         val timeInfoRootElement = document.getElementById("mdDiaStopSta") ?: return timeInfo
         val headerElements = timeInfoRootElement.select(".labelMedium > .title")
         val detailElements = timeInfoRootElement.getElementsByClass("txtTrainInfo")
         if (headerElements.size < 1 || detailElements.size < 1) {
-            return timeInfo
+            return null
         }
         val headerTexts = headerElements[0].text().split("[ 　]".toRegex())
         val detailTexts = detailElements[0].text().split("[ 　]".toRegex())
