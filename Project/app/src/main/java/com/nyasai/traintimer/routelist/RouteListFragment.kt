@@ -365,8 +365,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 loading_text.text = "時刻情報登録中……"
             }
             // 時刻データが取得できていれば路線一覧情報をDBに追加
-            val parentDataId = registRouteListItem(routeInfo)
-            registRouteInfoDetailItems(routeInfo, parentDataId)
+            val parentDataId = _routeListViewModel.registRouteListItem(routeInfo, _searchRouteListItem!!)
+            _searchRouteListItem = null
+            _routeListViewModel.registRouteInfoDetailItems(routeInfo, parentDataId)
 
             Log.d("Debug", "データ登録完了")
             withContext(Dispatchers.Main) {
@@ -378,75 +379,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
         }
     }
 
-    /**
-     * 路線リストアイテム登録
-     * @param routeInfo 検索した路線情報
-     * @return 登録したID
-     */
-    private fun registRouteListItem(routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>): Long {
-        Log.d("Debug", "データ登録開始")
-        var parentDataId = -1L
-        if(routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
-            Log.d("Debug", "一覧データ登録")
-            _routeListViewModel.insert(_searchRouteListItem!!)
-            // 追加したアイテムのIDを取得
-            for (item in _routeListViewModel.getListItemsAsync()) {
-                if(item.stationName == _searchRouteListItem!!.stationName
-                    && item.routeName == _searchRouteListItem!!.routeName
-                    && item.destination == _searchRouteListItem!!.destination){
-                    parentDataId = item.dataId
-                    break
-                }
-            }
-            _searchRouteListItem = null
-        }
-        return parentDataId
-    }
-
-    /**
-     * 時刻表情報
-     * @param routeInfo 検索した路線情報
-     * @param parentDataId 親データID
-     */
-    private fun registRouteInfoDetailItems(routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>, parentDataId: Long) {
-        Log.d("Debug", "詳細データ作成")
-        if(parentDataId == -1L) {
-            Log.d("Debug", "親データ未設定")
-            return
-        }
-        if(routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty()) {
-            Log.d("Debug", "データのいずれかが取得失敗")
-            _routeListViewModel.deleteListItem(parentDataId)
-            return
-        }
-
-        val max = routeInfo.size - 1
-        val addDataList = mutableListOf<RouteDetail>()
-        val filterInfoList = mutableListOf<FilterInfo>()
-        for (diagramType in 0..max) {
-            // ダイヤ種別毎のアイテム
-            for (timeInfo in routeInfo[diagramType]) {
-                // 時刻情報追加
-                addDataList.add(RouteDetail(
-                    parentDataId = parentDataId,
-                    diagramType = diagramType,
-                    departureTime = timeInfo.time,
-                    trainType = timeInfo.type,
-                    destination = timeInfo.destination
-                ))
-                // フィルタ用情報生成
-                filterInfoList.add(FilterInfo(
-                    parentDataId = parentDataId,
-                    trainTypeAndDestination = FilterInfo.createFilterKey(timeInfo.type, timeInfo.destination)
-                ))
-            }
-        }
-
-        Log.d("Debug", "詳細データ登録")
-        _routeListViewModel.insertRouteDetailItems(addDataList)
-        // フィルタ情報から重複削除したデータを登録
-        _routeListViewModel.insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDestination })
-    }
 
     // endregion ダイアログ関連
 
