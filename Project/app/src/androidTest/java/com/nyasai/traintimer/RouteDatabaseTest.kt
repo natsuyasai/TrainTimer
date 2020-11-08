@@ -42,7 +42,7 @@ class RouteDatabaseTest {
     // endregiuon DB準備，片付け
 
 
-    // region テスト
+    // region 路線リストアイテム操作
 
     /**
      * 路線アイテム追加
@@ -115,5 +115,72 @@ class RouteDatabaseTest {
         Assert.assertEquals(newItems.count(), 0)
     }
 
-    // endregion
+    /**
+     * 路線アイテム全削除
+     */
+    @Test
+    @Throws(Exception::class)
+    fun clearAllRouteListItem() {
+        // 元データ挿入
+        val item = RouteListItem()
+        item.routeName = "JR"
+        item.stationName = "Hoge駅"
+        item.destination = "Fuga方面"
+        routeDao.insertRouteListItem(item)
+
+        routeDao.clearAllRouteListItem()
+
+        val newItems = routeDao.getAllRouteListItemsSync()
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(newItems.count(), 0)
+    }
+
+    /**
+     * 路線アイテム取得
+     */
+    @Test
+    @Throws(Exception::class)
+    fun getRouteListItemWithId() {
+        // 元データ挿入
+        val item = RouteListItem()
+        item.routeName = "JR"
+        item.stationName = "Hoge駅"
+        item.destination = "Fuga方面"
+        routeDao.insertRouteListItem(item)
+
+        val newItems = routeDao.getAllRouteListItemsSync()
+
+        val getItem = routeDao.getRouteListItemWithIdSync(newItems[0].dataId)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(getItem?.routeName, item.routeName)
+        Assert.assertEquals(getItem?.stationName, item.stationName)
+        Assert.assertEquals(getItem?.destination, item.destination)
+    }
+
+    /**
+     * 路線アイテム全取得
+     */
+    @Test
+    @Throws(Exception::class)
+    fun getAllRouteListItems() {
+        // 元データ挿入
+        val item = RouteListItem()
+        item.routeName = "JR"
+        item.stationName = "Hoge駅"
+        item.destination = "Fuga方面"
+        routeDao.insertRouteListItem(item)
+
+        val newItems = routeDao.getAllRouteListItemsSync()
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(newItems[0].routeName, item.routeName)
+        Assert.assertEquals(newItems[0].stationName, item.stationName)
+        Assert.assertEquals(newItems[0].destination, item.destination)
+    }
+
+    // endregion 路線リストアイテム操作
 }
