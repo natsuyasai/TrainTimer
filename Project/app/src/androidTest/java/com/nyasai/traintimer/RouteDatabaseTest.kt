@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDatabaseDao
+import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNull
@@ -39,7 +40,7 @@ class RouteDatabaseTest {
         db.close()
     }
 
-    // endregiuon DB準備，片付け
+    // endregion DB準備，片付け
 
 
     // region 路線リストアイテム操作
@@ -183,4 +184,42 @@ class RouteDatabaseTest {
     }
 
     // endregion 路線リストアイテム操作
+
+    // region 路線情報詳細操作
+
+    /**
+     * 路線詳細アイテム追加
+     */
+    @Test
+    @Throws(Exception::class)
+    fun insertRouteDetailItem() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+
+        routeDao.insertRouteDetailItem(item)
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    // endregion 路線情報詳細操作
+
 }
