@@ -1,0 +1,36 @@
+@startuml
+
+' 路線一覧テーブル
+entity RouteListItem {
+    データID(dataId): Long <<generated>> <<PK>>
+    --
+    路線名(routeName): String
+    駅名(stationName): String
+    行先(destination): String
+    ソート用情報(sortIndex): Long
+}
+
+' 詳細情報
+entity RouteDetail {
+    データID(dataId): Long <<generated>> <<PK>>
+    --
+    親データID(parentDataId): Long <<FK>> <<INDEX>>
+    ダイヤ種別(diagramType): Int
+    発車時刻(departureTime): String
+    列車種別(trainType): String
+    行先(destination): String
+}
+
+' フィルタ情報
+entity FilterInfo {
+    データID(dataId): Long <<generated>> <<PK>>
+    --
+    親データID(parentDataId): Long <<FK>> <<INDEX>>
+    列車種別+行先(trainTypeAndDestination): String
+    表示するか(isShow): Boolean
+}
+
+RouteListItem --|{ RouteDetail
+RouteListItem --|{ FilterInfo
+
+@enduml
