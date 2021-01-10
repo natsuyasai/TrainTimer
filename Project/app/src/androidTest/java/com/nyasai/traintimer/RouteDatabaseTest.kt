@@ -1,6 +1,5 @@
 package com.nyasai.traintimer
 
-import android.util.Log
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -8,8 +7,6 @@ import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNull
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -211,6 +208,356 @@ class RouteDatabaseTest {
 
         routeDao.insertRouteDetailItem(item)
         val dbItems = routeDao.getAllRouteDetailItemsSync()
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム追加
+     */
+    @Test
+    @Throws(Exception::class)
+    fun insertRouteDetailItems() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        val items = listOf(item)
+
+        routeDao.insertRouteDetailItems(items)
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム更新
+     */
+    @Test
+    @Throws(Exception::class)
+    fun updateRouteDetailItem() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+        val items = routeDao.getAllRouteDetailItemsSync()
+
+        item.departureTime = "11:11"
+        item.destination = ""
+        item.diagramType = 2
+        item.trainType = ""
+        item.dataId = items[0].dataId
+        routeDao.updateRouteDetailItem(item)
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム更新
+     */
+    @Test
+    @Throws(Exception::class)
+    fun updateRouteDetailItems() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+        val items = routeDao.getAllRouteDetailItemsSync()
+
+        item.departureTime = "11:11"
+        item.destination = ""
+        item.diagramType = 2
+        item.trainType = ""
+        item.dataId = items[0].dataId
+        routeDao.updateRouteDetailItems(listOf(item))
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム削除
+     */
+    @Test
+    @Throws(Exception::class)
+    fun deleteRouteDetailItem() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+        var dbItems = routeDao.getAllRouteDetailItemsSync()
+
+        routeDao.deleteRouteDetailItem(dbItems[0].dataId)
+
+        dbItems = routeDao.getAllRouteDetailItemsSync()
+        Assert.assertEquals(dbItems.size, 0)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+    }
+
+    /**
+     * 路線詳細アイテム削除
+     */
+    @Test
+    @Throws(Exception::class)
+    fun deleteRouteDetailItemWithParentId() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+
+        routeDao.deleteRouteDetailItemWithParentId(parents[0].dataId)
+
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+        Assert.assertEquals(dbItems.size, 0)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+    }
+
+    /**
+     * 路線詳細アイテム全クリア
+     */
+    @Test
+    @Throws(Exception::class)
+    fun clearAllRouteDetailItem() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+
+        routeDao.clearAllRouteDetailItem()
+
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+        Assert.assertEquals(dbItems.size, 0)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+    }
+
+
+    /**
+     * 路線詳細アイテム取得
+     */
+    @Test
+    @Throws(Exception::class)
+    fun getRouteDetailItemWithId() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+        val items = routeDao.getAllRouteDetailItemsSync()
+
+        val dbItems = routeDao.getRouteDetailItemWithId(items[0].dataId)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertNotNull(dbItems)
+        Assert.assertEquals(dbItems?.departureTime, item.departureTime)
+        Assert.assertEquals(dbItems?.destination, item.destination)
+        Assert.assertEquals(dbItems?.diagramType, item.diagramType)
+        Assert.assertEquals(dbItems?.parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems?.trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム取得
+     */
+    @Test
+    @Throws(Exception::class)
+    fun getRouteDetailItemsWithParentIdSync() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+
+        val dbItems = routeDao.getRouteDetailItemsWithParentIdSync(parents[0].dataId)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム一覧取得
+     */
+    @Test
+    @Throws(Exception::class)
+    fun getCurrentDiagramRouteDetailItemsWithParentIdSync() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+
+        val dbItems = routeDao.getCurrentDiagramRouteDetailItemsWithParentIdSync(parents[0].dataId, 1)
+
+        // 片付け
+        routeDao.clearAllRouteListItem()
+        Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
+        Assert.assertEquals(dbItems[0].destination, item.destination)
+        Assert.assertEquals(dbItems[0].diagramType, item.diagramType)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].trainType, item.trainType)
+    }
+
+    /**
+     * 路線詳細アイテム一覧取得
+     */
+    @Test
+    @Throws(Exception::class)
+    fun getAllRouteDetailItemsSync() {
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        // 引数設定
+        val item = RouteDetail()
+        item.departureTime = "00:00"
+        item.destination = "Fuga方面"
+        item.diagramType = 1
+        item.parentDataId = parents[0].dataId
+        item.trainType = "普通"
+        routeDao.insertRouteDetailItem(item)
+
+        val dbItems = routeDao.getAllRouteDetailItemsSync()
+
         // 片付け
         routeDao.clearAllRouteListItem()
         Assert.assertEquals(dbItems[0].departureTime, item.departureTime)
