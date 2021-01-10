@@ -36,7 +36,6 @@ class SearchTargetInputDialogFragment: DialogFragment() {
                 R.layout.dialog_search_target_input, null, false)
 
             binding.searchTargetInputVM = _searchTargetInputViewModel
-            _searchTargetInputViewModel.clearUIData()
             builder.setView(binding.root)
                 .setMessage(R.string.search_input_message)
                 .setPositiveButton(
@@ -44,12 +43,14 @@ class SearchTargetInputDialogFragment: DialogFragment() {
                 ) { _, _ ->
                     Log.d("Debug", "検索開始")
                     _searchTargetInputViewModel.onClickPositiveButtonCallback?.invoke()
+                    _searchTargetInputViewModel.clearUIData()
                 }
                 .setNegativeButton(
                     R.string.search_input_no
                 ) { _, _ ->
                     Log.d("Debug", "キャンセル")
                     _searchTargetInputViewModel.onClickNegativeButtonCallback?.invoke()
+                    _searchTargetInputViewModel.clearUIData()
                 }
             builder.create()
         }!!
