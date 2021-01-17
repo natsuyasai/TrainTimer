@@ -1,0 +1,24 @@
+@startuml 路線追加
+actor User
+
+User -> Setting : ファイルバックアップ
+activate Setting
+Setting -> User : ストレージアクセス許可確認
+User --> Setting
+alt 許可
+    Setting -> DB : 路線リスト取得
+    activate DB
+    DB --> Setting
+    Setting -> DB : 路線詳細取得
+    DB --> Setting
+    deactivate DB
+    Setting -> Strage: ファイル保存
+    activate Strage
+    Strage --> Setting
+    deactivate Strage
+else 非許可
+    Setting -> Setting : ダイアログ表示
+end
+Setting --> User
+
+@enduml
