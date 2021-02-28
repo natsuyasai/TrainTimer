@@ -51,15 +51,22 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     private var _displayRouteDetailItemCache: List<RouteDetail>? = null
 
     // 親データID
-    private val parentDataId: Long = parentId
+    private val _parentDataId: Long = parentId
+
+    // ダイア種別用モデルクラス
+    private val _diagramTypeModel: DiagramTypeModel = DiagramTypeModel()
 
     init {
-        _currentDiagramType.value = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)){
-            1 -> Define.DiagramType.Sunday
-            7 -> Define.DiagramType.Saturday
-            else -> Define.DiagramType.Weekday
-        }
+        _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(false)
         _currentCountItem.value = getNearTimeItem()
+    }
+
+    /**
+     * 初期化
+     * インスタンス生成以降に初期化したいものの初期化を行う
+     */
+    fun initialize() {
+        trySetPublicHolidayDiagramType()
     }
 
     /**
@@ -71,16 +78,17 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
     }
 
     /**
+     * 祝日ダイア設定
+     */
+    fun trySetPublicHolidayDiagramType() {
+        _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(true)
+    }
+
+    /**
      * 次の表示ダイアに設定
      */
     fun setNextDiagramType() {
-        _currentDiagramType.value = when(_currentDiagramType.value)
-        {
-            Define.DiagramType.Weekday -> Define.DiagramType.Saturday
-            Define.DiagramType.Saturday -> Define.DiagramType.Sunday
-            Define.DiagramType.Sunday -> Define.DiagramType.Weekday
-            else -> Define.DiagramType.Weekday
-        }
+        _currentDiagramType.value = _diagramTypeModel.getNextDiagramType(_currentDiagramType.value)
         // タイマ表示用に対象データを更新しておく
         updateCurrentCountItem()
     }
@@ -158,7 +166,7 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * フィルタ情報取得(同期)
      */
     fun getFilterInfoItemWithParentIdSync(): List<FilterInfo> {
-        return database.getFilterInfoItemWithParentIdSync(parentDataId)
+        return database.getFilterInfoItemWithParentIdSync(_parentDataId)
     }
 
     /**

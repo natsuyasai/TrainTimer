@@ -86,6 +86,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
 
         // データバインド
         _binding.routeInfoViewModel = _routeInfoViewModel
+        _routeInfoViewModel.initialize()
         _binding.routeInfoFragment = this
 
         _binding.lifecycleOwner = this
