@@ -18,5 +18,7 @@ class Define {
     companion object{
         // 路線リスト削除確認ダイアログ引数(データID)
         const val ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID = "DATA_ID"
+        // 路線リストアイテム編集種別結果o
+        const val ROUTE_LIST_ITEM_EDIT_TYPE = "ITEM_EDIT_TYPE"
     }
 }
