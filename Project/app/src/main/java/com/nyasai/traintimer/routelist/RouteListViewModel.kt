@@ -17,14 +17,15 @@ import kotlin.coroutines.CoroutineContext
 class RouteListViewModel(
     val database: RouteDatabaseDao,
     application: Application
-): AndroidViewModel(application),CoroutineScope {
+) : AndroidViewModel(application), CoroutineScope {
 
     // 本VM用job
     private val _job = Job()
+
     // 本スコープ用のコンテキスト
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + _job
-    
+
     // 路線一覧
     val routeList = database.getAllRouteListItems()
 
@@ -66,39 +67,47 @@ class RouteListViewModel(
     /**
      * 行先取得(駅名)
      */
-    fun getDestinationFromStationName(stationName: String) = _yahooRouteInfoGetter.getDestinationFromStationName(stationName)
+    fun getDestinationFromStationName(stationName: String) =
+        _yahooRouteInfoGetter.getDestinationFromStationName(stationName)
 
     /**
      * 行先取得(URL)
      */
-    fun getDestinationFromUrl(stationUrl: String) = _yahooRouteInfoGetter.getDestinationFromUrl(stationUrl)
+    fun getDestinationFromUrl(stationUrl: String) =
+        _yahooRouteInfoGetter.getDestinationFromUrl(stationUrl)
 
     /**
      * 行先キー分割
      */
-    fun splitDestinationKey(keyString: String) = _yahooRouteInfoGetter.splitDestinationKey(keyString)
+    fun splitDestinationKey(keyString: String) =
+        _yahooRouteInfoGetter.splitDestinationKey(keyString)
 
     /**
      * 時刻表情報取得
      */
-    suspend fun getTimeTableInfo(timeTableUrl: String) = _yahooRouteInfoGetter.getTimeTableInfo(timeTableUrl)
+    suspend fun getTimeTableInfo(timeTableUrl: String) =
+        _yahooRouteInfoGetter.getTimeTableInfo(timeTableUrl)
 
     /**
      * 路線リストアイテム登録
      * @param routeInfo 検索した路線情報
      * @return 登録したID
      */
-    fun registRouteListItem(routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>, searchRouteListItem: RouteListItem): Long {
+    fun registRouteListItem(
+        routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
+        searchRouteListItem: RouteListItem
+    ): Long {
         Log.d("Debug", "データ登録開始")
         var parentDataId = -1L
-        if(routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
+        if (routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
             Log.d("Debug", "一覧データ登録")
             insert(searchRouteListItem)
             // 追加したアイテムのIDを取得
             for (item in getListItemsAsync()) {
-                if(item.stationName == searchRouteListItem.stationName
+                if (item.stationName == searchRouteListItem.stationName
                     && item.routeName == searchRouteListItem.routeName
-                    && item.destination == searchRouteListItem.destination){
+                    && item.destination == searchRouteListItem.destination
+                ) {
                     parentDataId = item.dataId
                     break
                 }
@@ -112,18 +121,72 @@ class RouteListViewModel(
      * @param routeInfo 検索した路線情報
      * @param parentDataId 親データID
      */
-    fun registRouteInfoDetailItems(routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>, parentDataId: Long) {
+    fun registRouteInfoDetailItems(
+        routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
+        parentDataId: Long
+    ) {
         Log.d("Debug", "詳細データ作成")
-        if(parentDataId == -1L) {
+        if (parentDataId == -1L) {
             Log.d("Debug", "親データ未設定")
             return
         }
-        if(routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty()) {
+        if (routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty()) {
             Log.d("Debug", "データのいずれかが取得失敗")
             deleteListItem(parentDataId)
             return
         }
+        val registerItem = createRegistRouteInfoDetailItemsAndFilterInfo(routeInfo, parentDataId)
+        Log.d("Debug", "詳細データ登録")
+        insertRouteDetailItems(registerItem.first)
+        // フィルタ情報から重複削除したデータを登録
+        insertFilterInfoItems(registerItem.second.distinctBy { it.trainTypeAndDestination })
+    }
 
+    /**
+     * 路線情報更新
+     * @param item 更新対象アイテム
+     * @return 処理結果
+     */
+    suspend fun updateRouteInfo(item: RouteListItem): Boolean {
+        // 路線アイテム情報に一致する情報を取得する
+        val stationListMap = _yahooRouteInfoGetter.getStationList(item.stationName)
+        val destinationListMap: Map<String, String> = if (stationListMap.isNotEmpty()) {
+            if (stationListMap.containsKey(item.stationName)) {
+                _yahooRouteInfoGetter.getDestinationFromUrl(stationListMap.getValue(item.stationName))
+            } else {
+                mapOf()
+            }
+        } else {
+            _yahooRouteInfoGetter.getDestinationFromStationName(item.stationName)
+        }
+        val destinationKey =
+            item.routeName + YahooRouteInfoGetter.KEY_DELIMITER_STR + item.destination
+        if (!destinationListMap.containsKey(destinationKey)) {
+            // キーが見つからない
+            return false
+        }
+        val routeInfo =
+            _yahooRouteInfoGetter.getTimeTableInfo(destinationListMap.getValue(destinationKey))
+        if (routeInfo.count() <= 0 || (routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty())) {
+            return false
+        }
+        // 既にある路線アイテムを全消去
+        database.deleteRouteDetailItemWithParentId(item.dataId)
+        // 登録
+        val registerItem = createRegistRouteInfoDetailItemsAndFilterInfo(routeInfo, item.dataId)
+        insertRouteDetailItems(registerItem.first)
+        database.updateFilterInfoListItem(registerItem.second.distinctBy { it.trainTypeAndDestination })
+
+        return true
+    }
+
+    /**
+     * 登録する路線情報詳細とフィルタ情報を生成
+     */
+    private fun createRegistRouteInfoDetailItemsAndFilterInfo(
+        routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
+        parentDataId: Long
+    ): Pair<List<RouteDetail>, List<FilterInfo>>{
         val max = routeInfo.size - 1
         val addDataList = mutableListOf<RouteDetail>()
         val filterInfoList = mutableListOf<FilterInfo>()
@@ -131,25 +194,28 @@ class RouteListViewModel(
             // ダイヤ種別毎のアイテム
             for (timeInfo in routeInfo[diagramType]) {
                 // 時刻情報追加
-                addDataList.add(RouteDetail(
-                    parentDataId = parentDataId,
-                    diagramType = diagramType,
-                    departureTime = timeInfo.time,
-                    trainType = timeInfo.type,
-                    destination = timeInfo.destination
-                ))
+                addDataList.add(
+                    RouteDetail(
+                        parentDataId = parentDataId,
+                        diagramType = diagramType,
+                        departureTime = timeInfo.time,
+                        trainType = timeInfo.type,
+                        destination = timeInfo.destination
+                    )
+                )
                 // フィルタ用情報生成
-                filterInfoList.add(FilterInfo(
-                    parentDataId = parentDataId,
-                    trainTypeAndDestination = FilterInfo.createFilterKey(timeInfo.type, timeInfo.destination)
-                ))
+                filterInfoList.add(
+                    FilterInfo(
+                        parentDataId = parentDataId,
+                        trainTypeAndDestination = FilterInfo.createFilterKey(
+                            timeInfo.type,
+                            timeInfo.destination
+                        )
+                    )
+                )
             }
         }
-
-        Log.d("Debug", "詳細データ登録")
-        insertRouteDetailItems(addDataList)
-        // フィルタ情報から重複削除したデータを登録
-        insertFilterInfoItems(filterInfoList.distinctBy{ it.trainTypeAndDestination })
+        return Pair(addDataList, filterInfoList)
     }
 
     /**

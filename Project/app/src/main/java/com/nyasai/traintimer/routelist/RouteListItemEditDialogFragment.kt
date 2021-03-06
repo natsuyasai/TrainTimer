@@ -42,13 +42,13 @@ class RouteListItemEditDialogFragment: DialogFragment() {
             val targetDataId = arguments?.getLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID)
             val builder = AlertDialog.Builder(it)
             var selectItem = EditType.Update
-            builder.setSingleChoiceItems(Types,-1, DialogInterface.OnClickListener { dialog, which ->
-                selectItem = when(which) {
+            builder.setSingleChoiceItems(Types,0) { dialog, which ->
+                selectItem = when (which) {
                     0 -> EditType.Update
                     1 -> EditType.Delete
                     else -> EditType.None
                 }
-            })
+            }
                 .setPositiveButton(R.string.route_list_item_edit_yes) { _, _ ->
                     Log.d("Debug", "Yes")
                     onClickPositiveButtonCallback?.invoke(selectItem, targetDataId)

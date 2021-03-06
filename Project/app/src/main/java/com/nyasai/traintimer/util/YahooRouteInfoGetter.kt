@@ -24,11 +24,13 @@ class YahooRouteInfoGetter : CoroutineScope {
         var destination: String = "取得失敗"
     )
 
+    companion object {
+        // キー分割文字
+        val KEY_DELIMITER_STR = "::"
+    }
+
     // 路線検索URLベース部分
     private val YAHOO_ROUTE_SEARCH_BASE_URL = "https://transit.yahoo.co.jp"
-
-    // キー分割文字
-    private val KEY_DELIMITER_STR = "::"
 
     // リクエスト総数
     private var _totalRequestCount = 0
