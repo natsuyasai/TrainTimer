@@ -45,12 +45,12 @@ fun TextView.setDestination(item: RouteDetail?) {
  */
 @BindingAdapter("diagramType")
 fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
-    text = when(currentDiagramType){
+    text = when (currentDiagramType) {
         Define.DiagramType.Weekday -> "[平日]"
         Define.DiagramType.Saturday -> "[土曜]"
         Define.DiagramType.Sunday -> "[日曜・祝日]"
     }
-    val color = when(currentDiagramType){
+    val color = when (currentDiagramType) {
         Define.DiagramType.Weekday -> Color.BLACK
         Define.DiagramType.Saturday -> Color.BLUE
         Define.DiagramType.Sunday -> Color.RED
@@ -65,22 +65,20 @@ fun getTimeTextColor(departureTimeStr: String, defaultColor: Int = Color.BLACK):
     val departureTime = LocalTime.parse(departureTimeStr)
     val now = LocalTime.now()
     // 0～3時以外は現在時刻未満を無効に設定
-    if(departureTime.hour !in 0..3 && departureTime < now){
+    if (departureTime.hour !in 0..3 && departureTime < now) {
         return Color.GRAY
-    }
-    else if(departureTime.hour in 0..3) {
+    } else if (departureTime.hour in 0..3) {
         // 0～3時なら日付変更前と後で比較方法変更
-        return if(now.hour in 0..3){
-            if(departureTime < now) {
+        return if (now.hour in 0..3) {
+            if (departureTime < now) {
                 Color.GRAY
-            } else{
+            } else {
                 defaultColor
             }
         } else {
             defaultColor
         }
-    }
-    else{
+    } else {
         return defaultColor
     }
 }

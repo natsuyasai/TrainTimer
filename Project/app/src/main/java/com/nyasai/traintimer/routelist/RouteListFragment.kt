@@ -386,6 +386,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         if (stationNameMap[selectStation] == null) {
             // TODO: エラーハンドリング
             _searchRouteListItem = null
+            Toast.makeText(context, "行先一覧に失敗しました", Toast.LENGTH_SHORT).show()
             return
         }
         _searchRouteListItem = RouteListItem()
@@ -412,6 +413,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         if (destinationMap[selectDestination] == null) {
             // TODO: エラーハンドリング
             _searchRouteListItem = null
+            Toast.makeText(context, "時刻表の取得に失敗しました", Toast.LENGTH_SHORT).show()
             return
         }
         loading_text.text = "時刻情報取得中……"

@@ -186,7 +186,7 @@ class RouteListViewModel(
     private fun createRegistRouteInfoDetailItemsAndFilterInfo(
         routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
         parentDataId: Long
-    ): Pair<List<RouteDetail>, List<FilterInfo>>{
+    ): Pair<List<RouteDetail>, List<FilterInfo>> {
         val max = routeInfo.size - 1
         val addDataList = mutableListOf<RouteDetail>()
         val filterInfoList = mutableListOf<FilterInfo>()

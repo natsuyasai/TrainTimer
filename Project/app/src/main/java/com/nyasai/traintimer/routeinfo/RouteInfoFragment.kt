@@ -67,6 +67,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
 
     // 本フラグメント用job
     private val _job = Job()
+
     // 本スコープ用のコンテキスト
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + _job
@@ -145,11 +146,11 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                 // UIスレッドで実行
                 _handler.post {
                     // 画面に一番近いデータへの残り時間を設定する(1秒毎)
-                    if(_routeInfoViewModel.currentCountItem.value == null){
+                    if (_routeInfoViewModel.currentCountItem.value == null) {
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
                     // データが取得できなければ，ハイフン表示とするために-1を設定
-                    val diffTime = when{
+                    val diffTime = when {
                         _routeInfoViewModel.currentCountItem.value != null -> ChronoUnit.SECONDS.between(
                             LocalTime.now(), LocalTime.parse(
                                 _routeInfoViewModel.currentCountItem.value?.departureTime
@@ -157,9 +158,9 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                         )
                         else -> -1L
                     }
-                    if(diffTime <= 0) {
+                    if (diffTime <= 0) {
                         // 次のデータへ遷移
-                        if(_routeInfoViewModel.currentCountItem.value != null) {
+                        if (_routeInfoViewModel.currentCountItem.value != null) {
                             // リストに変更通知
                             _routeInfoAdapter.notifyItemChanged(
                                 _routeInfoAdapter.indexOf(
@@ -169,14 +170,23 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                         }
                         _routeInfoViewModel.updateCurrentCountItem()
                     }
-                    val planeText = when{
-                        diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${"%0,2d".format((diffTime % 60))}"""
+                    val planeText = when {
+                        diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${
+                            "%0,2d".format(
+                                (diffTime % 60)
+                            )
+                        }"""
                         else -> "Next -- : --"
                     }
                     // Next部分を小さく表示させる
                     _spannableStringBuilder.clear()
                     _spannableStringBuilder.append(planeText)
-                    _spannableStringBuilder.setSpan(RelativeSizeSpan(0.5f),0,4,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    _spannableStringBuilder.setSpan(
+                        RelativeSizeSpan(0.5f),
+                        0,
+                        4,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                     countdown.text = _spannableStringBuilder
                 }
             }
@@ -248,7 +258,8 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
 
         launch(Dispatchers.Default + _job) {
-            _filterItemSelectViewModel.filterItemList = _routeInfoViewModel.getFilterInfoItemWithParentIdSync().toMutableList()
+            _filterItemSelectViewModel.filterItemList =
+                _routeInfoViewModel.getFilterInfoItemWithParentIdSync().toMutableList()
             _handler.post {
                 // ダイアログ表示
                 _filterItemSelectViewModel.onClickPositiveButtonCallback = {
@@ -271,7 +282,8 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      */
     private fun updateCountdownTargetInfo() {
         // カウントダウン対象の時刻情報を設定
-        next_time_table.text = """|${_routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"}
+        next_time_table.text =
+            """|${_routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"}
                             |${_routeInfoViewModel.currentCountItem.value?.trainType ?: "--"}
                             |${_routeInfoViewModel.currentCountItem.value?.destination ?: "--"}""".trimMargin()
         // スクロール位置更新
@@ -282,13 +294,17 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      * スクロール位置更新
      */
     private fun updateScrollPosition() {
-        if(_routeInfoViewModel.currentCountItem.value != null) {
+        if (_routeInfoViewModel.currentCountItem.value != null) {
             // リストアイテムの描画を待ってから対象位置までスクロール
             launch(Dispatchers.Default + _job) {
                 Thread.sleep(500)
                 withContext(Dispatchers.Main) {
                     route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
-                    Log.d("Debug", _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!).toString())
+                    Log.d(
+                        "Debug",
+                        _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!)
+                            .toString()
+                    )
                 }
             }
         }

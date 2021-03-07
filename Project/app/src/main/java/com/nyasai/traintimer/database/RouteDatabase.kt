@@ -14,7 +14,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         FilterInfo::class
     ],
     version = 5,
-    exportSchema = true)
+    exportSchema = true
+)
 abstract class RouteDatabase : RoomDatabase() {
     /**
      * Connects the database to the DAO.
@@ -35,7 +36,7 @@ abstract class RouteDatabase : RoomDatabase() {
          */
         fun getInstance(context: Context): RouteDatabase {
             // マイグレーション用
-            val migration1to2 = object : Migration(1,2) {
+            val migration1to2 = object : Migration(1, 2) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // 路線一覧テーブル新規作成
                     database.execSQL("CREATE TABLE IF NOT EXISTS route_list_item_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, route_name TEXT NOT NULL, station_name TEXT NOT NULL, destination TEXT NOT NULL, sort_index INTEGER NOT NULL)")
@@ -49,7 +50,7 @@ abstract class RouteDatabase : RoomDatabase() {
 
                 }
             }
-            val migration2to3 = object : Migration(2,3) {
+            val migration2to3 = object : Migration(2, 3) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // 詳細テーブル新規作成
                     database.execSQL("CREATE TABLE IF NOT EXISTS route_details_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, diagram_type INTEGER NOT NULL, departure_time TEXT NOT NULL, train_type TEXT NOT NULL, destination TEXT NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
@@ -61,7 +62,7 @@ abstract class RouteDatabase : RoomDatabase() {
                     database.execSQL("ALTER TABLE tmp_route_details_table RENAME TO route_details_table")
                 }
             }
-            val migration3to4 = object : Migration(3,4) {
+            val migration3to4 = object : Migration(3, 4) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // 詳細テーブル新規作成
                     database.execSQL("CREATE TABLE IF NOT EXISTS filter_info_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, train_type_and_destination TEXT NOT NULL, is_show INTEGER NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
@@ -73,7 +74,7 @@ abstract class RouteDatabase : RoomDatabase() {
                     database.execSQL("ALTER TABLE tmp_filter_info_table RENAME TO filter_info_table")
                 }
             }
-            val migration4to5 = object : Migration(4,5) {
+            val migration4to5 = object : Migration(4, 5) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // 詳細テーブル新規作成
                     database.execSQL("CREATE TABLE IF NOT EXISTS route_details_table (dataId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent_row_id INTEGER NOT NULL, diagram_type INTEGER NOT NULL, departure_time TEXT NOT NULL, train_type TEXT NOT NULL, destination TEXT NOT NULL, FOREIGN KEY(parent_row_id) REFERENCES route_list_item_table(dataId) ON UPDATE NO ACTION ON DELETE CASCADE )")
@@ -103,7 +104,8 @@ abstract class RouteDatabase : RoomDatabase() {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
                         RouteDatabase::class.java,
-                        "route_database")
+                        "route_database"
+                    )
                         .addMigrations(migration1to2)
                         .addMigrations(migration2to3)
                         .addMigrations(migration3to4)

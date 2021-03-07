@@ -11,11 +11,12 @@ import java.lang.IllegalArgumentException
  */
 class RouteListViewModelFactory(
     private val dataSource: RouteDatabaseDao,
-    private val application: Application): ViewModelProvider.Factory {
+    private val application: Application
+) : ViewModelProvider.Factory {
 
     @Suppress("unchecked_cast")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        if(modelClass.isAssignableFrom(RouteListViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(RouteListViewModel::class.java)) {
             return RouteListViewModel(dataSource, application) as T
         }
         throw IllegalArgumentException("不明なViewModelクラス")

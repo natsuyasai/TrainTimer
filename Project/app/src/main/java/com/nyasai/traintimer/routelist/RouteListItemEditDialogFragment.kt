@@ -13,15 +13,17 @@ import com.nyasai.traintimer.define.Define
  * 路線一覧アイテム編集ダイアログ
  * アイテムの更新/削除を選択させて実行する
  */
-class RouteListItemEditDialogFragment: DialogFragment() {
+class RouteListItemEditDialogFragment : DialogFragment() {
 
     /**
      * 編集種別
      */
     enum class EditType {
         None,
+
         // 更新
         Update,
+
         // 削除
         Delete
     }
@@ -42,7 +44,7 @@ class RouteListItemEditDialogFragment: DialogFragment() {
             val targetDataId = arguments?.getLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID)
             val builder = AlertDialog.Builder(it)
             var selectItem = EditType.Update
-            builder.setSingleChoiceItems(Types,0) { dialog, which ->
+            builder.setSingleChoiceItems(Types, 0) { dialog, which ->
                 selectItem = when (which) {
                     0 -> EditType.Update
                     1 -> EditType.Delete

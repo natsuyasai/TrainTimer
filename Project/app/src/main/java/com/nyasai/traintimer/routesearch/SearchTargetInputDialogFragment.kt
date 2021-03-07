@@ -17,12 +17,13 @@ import com.nyasai.traintimer.databinding.DialogSearchTargetInputBinding
 /**
  * 検索対象入力用ダイアログ
  */
-class SearchTargetInputDialogFragment: DialogFragment() {
+class SearchTargetInputDialogFragment : DialogFragment() {
 
     // ViewModel
     private val _searchTargetInputViewModel: SearchTargetInputViewModel by lazy {
-        ViewModelProvider(requireActivity(),
-        SearchTargetInputViewModelFactory()
+        ViewModelProvider(
+            requireActivity(),
+            SearchTargetInputViewModelFactory()
         ).get(SearchTargetInputViewModel::class.java)
     }
 
@@ -32,8 +33,10 @@ class SearchTargetInputDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
-            val binding = DataBindingUtil.inflate<DialogSearchTargetInputBinding>(requireActivity().layoutInflater,
-                R.layout.dialog_search_target_input, null, false)
+            val binding = DataBindingUtil.inflate<DialogSearchTargetInputBinding>(
+                requireActivity().layoutInflater,
+                R.layout.dialog_search_target_input, null, false
+            )
 
             binding.searchTargetInputVM = _searchTargetInputViewModel
             builder.setView(binding.root)

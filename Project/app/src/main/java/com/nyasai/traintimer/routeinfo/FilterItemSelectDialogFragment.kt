@@ -11,7 +11,7 @@ import com.nyasai.traintimer.R
 /**
  * フィルタ対象選択ダイアログ
  */
-class FilterItemSelectDialogFragment(): DialogFragment() {
+class FilterItemSelectDialogFragment() : DialogFragment() {
 
     // ViewModel
     private val _viewModel: FilterItemSelectViewModel by lazy {
@@ -32,7 +32,10 @@ class FilterItemSelectDialogFragment(): DialogFragment() {
             }
 
             builder.setTitle(R.string.select_filter_message)
-                .setMultiChoiceItems(typeList.toTypedArray(), checkList.toBooleanArray()) { _, i, isChecked ->
+                .setMultiChoiceItems(
+                    typeList.toTypedArray(),
+                    checkList.toBooleanArray()
+                ) { _, i, isChecked ->
                     Log.d("Debug", "アイテム選択${_viewModel.filterItemList[i]} -> $isChecked")
                     _viewModel.filterItemList[i].isShow = isChecked
                 }

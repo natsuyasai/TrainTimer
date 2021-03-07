@@ -12,7 +12,8 @@ import com.nyasai.traintimer.databinding.ListItemRouteListBinding
 /**
  * 路線一覧用アダプタ
  */
-class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>(RouteListItemDiffCallback()){
+class RouteListAdapter :
+    ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>(RouteListItemDiffCallback()) {
 
     // アイテムクリックリスナ
     lateinit var clickListener: OnItemClickListener
@@ -39,7 +40,7 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
     /**
      * アイテムクリックリスナIF
      */
-    interface OnItemClickListener{
+    interface OnItemClickListener {
         fun onItemClickListener(view: View, item: RouteListItem)
     }
 
@@ -71,18 +72,23 @@ class RouteListAdapter : ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>
      * ViewHolder
      */
     class ViewHolder private constructor(
-        private val binding: ListItemRouteListBinding): RecyclerView.ViewHolder(binding.root) {
+        private val binding: ListItemRouteListBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         /**
          * バインド実行
          */
-        fun bind(item: RouteListItem, clickListener: OnItemClickListener, longClickListener: OnItemLongClickListener) {
+        fun bind(
+            item: RouteListItem,
+            clickListener: OnItemClickListener,
+            longClickListener: OnItemLongClickListener
+        ) {
             binding.routeListItem = item
             // クリックイベント登録
-            binding.root.setOnClickListener{
+            binding.root.setOnClickListener {
                 clickListener.onItemClickListener(it, item)
             }
-            binding.root.setOnLongClickListener{
+            binding.root.setOnLongClickListener {
                 longClickListener.onItemLongClickListener(it, item)
             }
             binding.executePendingBindings()

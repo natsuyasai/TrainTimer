@@ -6,8 +6,10 @@ class Define {
     enum class DiagramType {
         // 平日
         Weekday,
+
         // 土曜
         Saturday,
+
         // 日曜祝日
         Sunday
     }
@@ -15,9 +17,10 @@ class Define {
     /**
      * 定数一覧
      */
-    companion object{
+    companion object {
         // 路線リスト削除確認ダイアログ引数(データID)
         const val ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID = "DATA_ID"
+
         // 路線リストアイテム編集種別結果o
         const val ROUTE_LIST_ITEM_EDIT_TYPE = "ITEM_EDIT_TYPE"
     }

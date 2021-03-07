@@ -20,12 +20,15 @@ import kotlin.coroutines.CoroutineContext
 /**
  * 路線詳細情報表示用ViewModel
  */
-class RouteInfoViewModel (val database: RouteDatabaseDao,
-                          application: Application,
-                          parentId: Long): AndroidViewModel(application) {
+class RouteInfoViewModel(
+    val database: RouteDatabaseDao,
+    application: Application,
+    parentId: Long
+) : AndroidViewModel(application) {
 
     // 本VM用job
     private val _job = Job()
+
     // 本スコープ用のコンテキスト
     private val _ioContext: CoroutineContext
         get() = Dispatchers.IO + _job
@@ -104,28 +107,30 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * 表示用路線詳細アイテム取得
      */
     fun getDisplayRouteDetailItems(useCache: Boolean = false): List<RouteDetail> {
-        if(useCache && _displayRouteDetailItemCache != null) {
+        if (useCache && _displayRouteDetailItemCache != null) {
             return _displayRouteDetailItemCache!!
         }
-        return if(routeItems.value == null){
+        return if (routeItems.value == null) {
             listOf()
         } else {
-            val filter = routeItems.value?.filter {routeItem ->
+            val filter = routeItems.value?.filter { routeItem ->
                 // 表示中のダイア種別かつフィルタONのものだけ抽出
                 routeItem.diagramType == currentDiagramType.value?.ordinal
-                        && filterInfo.value?.any{
-                            it.trainTypeAndDestination == FilterInfo.createFilterKey(routeItem.trainType, routeItem.destination) && it.isShow
-                        } ?: true
+                        && filterInfo.value?.any {
+                    it.trainTypeAndDestination == FilterInfo.createFilterKey(
+                        routeItem.trainType,
+                        routeItem.destination
+                    ) && it.isShow
+                } ?: true
             }
             // 時刻順ソート
             _displayRouteDetailItemCache = filter?.sortedWith { v1, v2 ->
                 val correctedV1 = correctDepartureTimeForSort(v1.departureTime)
                 val correctedV2 = correctDepartureTimeForSort(v2.departureTime)
                 val diffHour = correctedV1.first - correctedV2.first
-                if(diffHour != 0){
+                if (diffHour != 0) {
                     diffHour
-                }
-                else {
+                } else {
                     correctedV1.second - correctedV2.second
                 }
             }
@@ -138,11 +143,11 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      * @param departureTime 補正前文字列
      * @return 補正後文字列
      */
-    private fun correctDepartureTimeForSort(departureTime: String): Pair<Int,Int> {
-        val hour = Integer.parseInt(departureTime.substring(0,2))
+    private fun correctDepartureTimeForSort(departureTime: String): Pair<Int, Int> {
+        val hour = Integer.parseInt(departureTime.substring(0, 2))
         val minutes = Integer.parseInt(departureTime.substring(3))
         // 一番遅い終電が2時前かつ一番早い始発が4時台のため，間の3時を区切りとする
-        if(hour in 0..3) {
+        if (hour in 0..3) {
             // 0時～3時は24時間表記の24時～27時に変換する
             return Pair(hour + 24, minutes)
         }
@@ -154,8 +159,8 @@ class RouteInfoViewModel (val database: RouteDatabaseDao,
      */
     private fun getNearTimeItem(useCache: Boolean = false): RouteDetail? {
         val now = LocalTime.now()
-        for(item in getDisplayRouteDetailItems(useCache)) {
-            if(LocalTime.parse(item.departureTime) > now){
+        for (item in getDisplayRouteDetailItems(useCache)) {
+            if (LocalTime.parse(item.departureTime) > now) {
                 return item
             }
         }

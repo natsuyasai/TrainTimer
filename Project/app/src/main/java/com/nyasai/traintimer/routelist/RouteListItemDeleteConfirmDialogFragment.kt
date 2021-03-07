@@ -13,7 +13,7 @@ import com.nyasai.traintimer.define.Define
 /**
  * 路線リストアイテム削除確認ダイアログ
  */
-class RouteListItemDeleteConfirmDialogFragment: DialogFragment() {
+class RouteListItemDeleteConfirmDialogFragment : DialogFragment() {
 
     // Yesボタン押下時コールバック
     var onClickPositiveButtonCallback: ((dataId: Long?) -> Unit)? = null
