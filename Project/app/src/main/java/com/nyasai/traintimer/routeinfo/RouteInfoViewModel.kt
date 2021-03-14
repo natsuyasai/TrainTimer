@@ -4,17 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
 import java.time.LocalTime
-import java.util.*
+import java.time.temporal.ChronoUnit
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -135,6 +132,25 @@ class RouteInfoViewModel(
                 }
             }
             _displayRouteDetailItemCache ?: listOf()
+        }
+    }
+
+    /**
+     * 次に表示するアイテムの現在時刻からの差分時間取得
+     */
+    fun getNextDiffTime() : Long {
+        // 画面に一番近いデータへの残り時間を設定する(1秒毎)
+        if (currentCountItem.value == null) {
+            updateCurrentCountItem()
+        }
+        // データが取得できなければ，ハイフン表示とするために-1を設定
+        return when {
+            currentCountItem.value != null -> ChronoUnit.SECONDS.between(
+                LocalTime.now(), LocalTime.parse(
+                    currentCountItem.value?.departureTime
+                )
+            )
+            else -> -1L
         }
     }
 

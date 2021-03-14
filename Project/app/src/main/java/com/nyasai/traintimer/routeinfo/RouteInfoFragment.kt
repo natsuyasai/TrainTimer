@@ -11,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
@@ -145,19 +146,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
             override fun run() {
                 // UIスレッドで実行
                 _handler.post {
-                    // 画面に一番近いデータへの残り時間を設定する(1秒毎)
-                    if (_routeInfoViewModel.currentCountItem.value == null) {
-                        _routeInfoViewModel.updateCurrentCountItem()
-                    }
-                    // データが取得できなければ，ハイフン表示とするために-1を設定
-                    val diffTime = when {
-                        _routeInfoViewModel.currentCountItem.value != null -> ChronoUnit.SECONDS.between(
-                            LocalTime.now(), LocalTime.parse(
-                                _routeInfoViewModel.currentCountItem.value?.departureTime
-                            )
-                        )
-                        else -> -1L
-                    }
+                    val diffTime = _routeInfoViewModel.getNextDiffTime()
                     if (diffTime <= 0) {
                         // 次のデータへ遷移
                         if (_routeInfoViewModel.currentCountItem.value != null) {
@@ -167,8 +156,8 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                                     _routeInfoViewModel.currentCountItem.value!!
                                 )
                             )
+                            _routeInfoViewModel.updateCurrentCountItem()
                         }
-                        _routeInfoViewModel.updateCurrentCountItem()
                     }
                     val planeText = when {
                         diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${
@@ -299,7 +288,8 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
             launch(Dispatchers.Default + _job) {
                 Thread.sleep(500)
                 withContext(Dispatchers.Main) {
-                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
+                    (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),0)
+//                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
                     Log.d(
                         "Debug",
                         _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!)
