@@ -14,10 +14,8 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.*
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
-import com.nyasai.traintimer.define.Define.Companion.ROUTE_LIST_ITEM_EDIT_TYPE
 import com.nyasai.traintimer.routesearch.*
 import com.nyasai.traintimer.util.FragmentUtil
-import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -118,7 +116,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 // 長押し
                 Log.d("Debug", "アイテム長押し : $item")
                 // 編集操作選択
-                showItemEditDaialog(item)
+                showItemEditDialog(item)
                 return true
             }
         })
@@ -203,7 +201,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * 路線アイテム編集ダイアログ表示
      * @param item 選択対象アイテム
      */
-    private fun showItemEditDaialog(item: RouteListItem) {
+    private fun showItemEditDialog(item: RouteListItem) {
         // 前回分削除
         FragmentUtil.deletePrevDialog(ROUTE_LIST_ITEM_EDIT_DLG_TAG, parentFragmentManager)
 
@@ -325,10 +323,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private fun updateRouteItemInfo(item: RouteListItem) {
         Log.d("Debug", "Update" + item.routeName)
         common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         launch(_viewModelContext) {
             val ret = _routeListViewModel.updateRouteInfo(item)
             withContext(Dispatchers.Main) {
                 common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 if (!ret) {
                     Toast.makeText(context, "更新に失敗しました", Toast.LENGTH_SHORT).show()
                 }
