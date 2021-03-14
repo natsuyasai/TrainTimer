@@ -7,4 +7,5 @@
     <color name="textRed">#ff6347</color>
     <color name="textGray">#808080</color>
     <color name="shade">#80808080</color>
+    <color name="actionBar">#696969</color>
 </resources>
