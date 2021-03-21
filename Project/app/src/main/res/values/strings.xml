@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TrainTimer</string>
+    <string name="app_name">時刻表</string>
     <!-- 路線アイテム削除確認ダイアログ用 -->
     <string name="route_list_item_delete_confirm_message">このアイテムを削除しますか？</string>
     <string name="route_list_item_delete_confirm_yes">はい</string>
