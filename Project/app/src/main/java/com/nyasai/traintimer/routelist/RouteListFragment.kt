@@ -10,13 +10,15 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.*
+import com.nyasai.traintimer.databinding.CommonLoadingBinding
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.routesearch.*
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -48,7 +50,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ).get(RouteListViewModel::class.java)
     }
 
-    // ViewModel
+    // 検索用インプットダイアログViewModel
     private val _searchTargetInputViewModel: SearchTargetInputViewModel by lazy {
         ViewModelProvider(
             requireActivity(),
@@ -56,12 +58,19 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ).get(SearchTargetInputViewModel::class.java)
     }
 
-    // ViewModel
+    // リストアイテム選択ViewModel
     private val _istItemSelectViewModel: ListItemSelectViewModel by lazy {
         ViewModelProvider(
             requireActivity(),
             ListItemSelectViewModelFactory()
         ).get(ListItemSelectViewModel::class.java)
+    }
+
+    // 共通ローディングViewModel
+    private val _commonLoadingViewModel: CommonLoadingViewModel by lazy {
+        ViewModelProvider(requireActivity(), CommonLoadingViewModelFactory()).get(
+            CommonLoadingViewModel::class.java
+        )
     }
 
     // 検索情報保持領域
@@ -80,7 +89,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private val _viewModelContext: CoroutineContext
         get() = Dispatchers.Default + _job
 
-
     /**
      * onCreateViewフック
      */
@@ -90,13 +98,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
     ): View? {
 
         // データバインド設定
-        val binding: FragmentRouteListBinding = DataBindingUtil.inflate(
+        val binding = DataBindingUtil.inflate<FragmentRouteListBinding>(
             inflater, R.layout.fragment_route_list, container, false
         )
 
         binding.routeListViewModel = _routeListViewModel
-
         binding.lifecycleOwner = this
+        binding.commonLoadingViewModel = _commonLoadingViewModel
 
 
         // 路線リスト用アダプター設定
@@ -152,7 +160,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // ローディング表示中はメニュー非表示
-        if (common_loading.visibility == android.widget.ProgressBar.VISIBLE) {
+        if (_commonLoadingViewModel.isVisible()) {
             return false
         }
         return when (item.itemId) {
@@ -322,13 +330,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun updateRouteItemInfo(item: RouteListItem) {
         Log.d("Debug", "Update" + item.routeName)
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         launch(_viewModelContext) {
             val ret = _routeListViewModel.updateRouteInfo(item)
             withContext(Dispatchers.Main) {
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                _commonLoadingViewModel.closeLoading()
                 activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 if (!ret) {
                     Toast.makeText(context, "更新に失敗しました", Toast.LENGTH_SHORT).show()
@@ -342,13 +350,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchStation(stationName: String) {
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         launch(Dispatchers.Default + _job) {
             // 駅名より検索実行．実行結果から駅名リストダイアログ表示
             val stationListMap = _routeListViewModel.getStationList(stationName)
             if (stationListMap.isNotEmpty()) {
                 withContext(Dispatchers.Main) {
-                    common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                    _commonLoadingViewModel.closeLoading()
                     showStationSelectDialog(stationListMap)
                 }
             } else {
@@ -364,11 +372,11 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchDestinationFromStationName(stationName: String) {
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         launch(_viewModelContext) {
             val destinationListMap = _routeListViewModel.getDestinationFromStationName(stationName)
             withContext(Dispatchers.Main) {
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                _commonLoadingViewModel.closeLoading()
                 showDestinationSelectDialog(destinationListMap)
             }
         }
@@ -394,12 +402,12 @@ class RouteListFragment : Fragment(), CoroutineScope {
         _searchRouteListItem!!.stationName = selectStation
 
         // 行先リストを取得
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         launch(_viewModelContext) {
             val destinationListMap =
                 _routeListViewModel.getDestinationFromUrl(stationNameMap.getValue(selectStation))
             withContext(Dispatchers.Main) {
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                _commonLoadingViewModel.closeLoading()
                 showDestinationSelectDialog(destinationListMap)
             }
         }
@@ -417,8 +425,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             Toast.makeText(context, "時刻表の取得に失敗しました", Toast.LENGTH_SHORT).show()
             return
         }
-        loading_text.text = "時刻情報取得中……"
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading("時刻情報取得中……")
         // キーから路線名と行先を分割
         val splitDestinationKey = _routeListViewModel.splitDestinationKey(selectDestination)
         _searchRouteListItem!!.routeName = splitDestinationKey.first
@@ -431,7 +438,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             val routeInfo =
                 _routeListViewModel.getTimeTableInfo(destinationMap.getValue(selectDestination))
             _handler.post {
-                loading_text.text = "時刻情報登録中……"
+                _commonLoadingViewModel.changeText("時刻情報登録中……")
             }
             // 時刻データが取得できていれば路線一覧情報をDBに追加
             val parentDataId =
@@ -441,8 +448,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
             Log.d("Debug", "データ登録完了")
             withContext(Dispatchers.Main) {
-                loading_text.text = "読み込み中……"
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                _commonLoadingViewModel.closeLoading()
                 activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
 
