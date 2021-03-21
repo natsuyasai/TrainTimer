@@ -18,8 +18,6 @@ import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import com.nyasai.traintimer.util.FragmentUtil
 import kotlinx.android.synthetic.main.fragment_route_info.*
 import kotlinx.coroutines.*
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
@@ -288,7 +286,10 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
             launch(Dispatchers.Default + _job) {
                 Thread.sleep(500)
                 withContext(Dispatchers.Main) {
-                    (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),0)
+                    (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                        _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),
+                        0
+                    )
 //                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
                     Log.d(
                         "Debug",

@@ -1,8 +1,8 @@
 package com.nyasai.traintimer.routeinfo
 
+import com.github.kittinunf.fuel.httpGet
 import com.nyasai.traintimer.define.Define
 import java.util.*
-import com.github.kittinunf.fuel.httpGet
 
 class DiagramTypeModel {
 

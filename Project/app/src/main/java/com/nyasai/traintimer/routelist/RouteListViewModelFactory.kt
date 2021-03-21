@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.nyasai.traintimer.database.RouteDatabaseDao
-import java.lang.IllegalArgumentException
 
 /**
  * 路線一覧ViewModelファクトリ

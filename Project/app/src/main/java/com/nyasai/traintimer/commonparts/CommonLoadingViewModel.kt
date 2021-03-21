@@ -46,7 +46,7 @@ class CommonLoadingViewModel : ViewModel() {
     /**
      * 表示中か
      */
-    fun isVisible() : Boolean {
+    fun isVisible(): Boolean {
         return _isVisible.value == true
     }
 

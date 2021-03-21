@@ -138,7 +138,7 @@ class RouteInfoViewModel(
     /**
      * 次に表示するアイテムの現在時刻からの差分時間取得
      */
-    fun getNextDiffTime() : Long {
+    fun getNextDiffTime(): Long {
         // 画面に一番近いデータへの残り時間を設定する(1秒毎)
         if (currentCountItem.value == null) {
             updateCurrentCountItem()
