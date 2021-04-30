@@ -192,7 +192,7 @@ interface RouteDatabaseDao {
 
     /**
      * フィルタ情報アイテム更新
-     * @param routeDetail 更新アイテム
+     * @param filterInfo 更新アイテム
      */
     @Update
     fun updateFilterInfoItem(filterInfo: FilterInfo)

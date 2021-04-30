@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nyasai.traintimer.R
@@ -27,8 +26,11 @@ import kotlin.coroutines.CoroutineContext
  */
 class RouteInfoFragment : Fragment(), CoroutineScope {
 
-    // フィルタ選択ダイアログ
-    private val SELECT_FILTER_DLG_TAG = "SelectList"
+    companion object{
+        // フィルタ選択ダイアログ
+        const val SelectFilterDialogTag = "SelectList"
+    }
+
 
     // バインド情報
     private lateinit var _binding: FragmentRouteInfoBinding
@@ -77,7 +79,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         // データバインド設定
         _binding = DataBindingUtil.inflate(
@@ -103,7 +105,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         setHasOptionsMenu(true)
 
         // 変更監視
-        _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, Observer {
+        _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, {
             it?.let {
                 // 表示種別に応じたデータを設定
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
@@ -112,14 +114,14 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
             }
         })
 
-        _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner, Observer {
+        _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner, {
             it?.let {
                 updateCountdownTargetInfo()
                 Log.d("Debug", "カウントダウン対象データ更新 : $it")
             }
         })
 
-        _routeInfoViewModel.filterInfo.observe(viewLifecycleOwner, Observer {
+        _routeInfoViewModel.filterInfo.observe(viewLifecycleOwner, {
             it?.let {
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
@@ -224,7 +226,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     /**
      * タイトルクリック
      */
-    fun onClickTitle(view: View) {
+    fun onClickTitle() {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
         _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
@@ -234,7 +236,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      * ダイアログ初期化
      */
     private fun initDialog() {
-        FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SelectFilterDialogTag, parentFragmentManager)
     }
 
     /**
@@ -242,7 +244,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      */
     private fun showFilterSelectDialog() {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SELECT_FILTER_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SelectFilterDialogTag, parentFragmentManager)
 
         launch(Dispatchers.Default + _job) {
             _filterItemSelectViewModel.filterItemList =
@@ -259,7 +261,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                 _filterItemSelectViewModel.onClickNegativeButtonCallback = {
                 }
                 val dialog = FilterItemSelectDialogFragment()
-                dialog.showNow(parentFragmentManager, SELECT_FILTER_DLG_TAG)
+                dialog.showNow(parentFragmentManager, SelectFilterDialogTag)
             }
         }
     }
@@ -269,10 +271,11 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      */
     private fun updateCountdownTargetInfo() {
         // カウントダウン対象の時刻情報を設定
-        next_time_table.text =
-            """|${_routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"}
-                            |${_routeInfoViewModel.currentCountItem.value?.trainType ?: "--"}
-                            |${_routeInfoViewModel.currentCountItem.value?.destination ?: "--"}""".trimMargin()
+        val departureTimeStr = _routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"
+        val trainTypeStr = _routeInfoViewModel.currentCountItem.value?.trainType ?: "--"
+        val destinationStr = _routeInfoViewModel.currentCountItem.value?.destination ?: "--"
+        val text = """|${departureTimeStr}|${trainTypeStr}|${destinationStr}""".trimMargin()
+        next_time_table.text = text
         // スクロール位置更新
         updateScrollPosition()
     }
@@ -284,13 +287,12 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         if (_routeInfoViewModel.currentCountItem.value != null) {
             // リストアイテムの描画を待ってから対象位置までスクロール
             launch(Dispatchers.Default + _job) {
-                Thread.sleep(500)
+                Thread.sleep(50)
                 withContext(Dispatchers.Main) {
                     (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),
                         0
                     )
-//                    route_info_view.scrollToPosition(_routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!))
                     Log.d(
                         "Debug",
                         _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!)

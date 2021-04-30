@@ -16,9 +16,9 @@ class RouteListAdapter :
     ListAdapter<RouteListItem, RouteListAdapter.ViewHolder>(RouteListItemDiffCallback()) {
 
     // アイテムクリックリスナ
-    lateinit var clickListener: OnItemClickListener
+    private lateinit var clickListener: OnItemClickListener
 
-    lateinit var longClickListener: OnItemLongClickListener
+    private lateinit var longClickListener: OnItemLongClickListener
 
     /**
      * ViewHolderに表示するデータを設定

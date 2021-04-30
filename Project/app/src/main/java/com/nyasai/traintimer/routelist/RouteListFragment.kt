@@ -7,7 +7,6 @@ import android.view.*
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.nyasai.traintimer.R
@@ -27,16 +26,16 @@ import kotlin.coroutines.CoroutineContext
  */
 class RouteListFragment : Fragment(), CoroutineScope {
 
-    // 路線リストアイテム削除確認ダイアログタグ
-    private val ROUTE_LIST_DELETE_CONFIRM_DLG_TAG = "RouteListItemDeleteConfirm"
-
-    private val ROUTE_LIST_ITEM_EDIT_DLG_TAG = "RouteListItemEdit"
-
-    // 路線検索ダイアログタグ
-    private val SEARCH_TARGET_INPUT_DLG_TAG = "SearchTargetInput"
-
-    // 駅選択ダイアログ
-    private val SELECT_LIST_DLG_TAG = "SelectList"
+    companion object{
+        // 路線リストアイテム削除確認ダイアログタグ
+        const val RouteListDeleteConfirmDialogTag = "RouteListItemDeleteConfirm"
+        // 路線リストアイテム編集ダイアログ
+        const val RouteListItemEditDialogTag = "RouteListItemEdit"
+        // 路線検索ダイアログタグ
+        const val SearchTargetInputDialogTag = "SearchTargetInput"
+        // 駅選択ダイアログ
+        const val SelectListDialogTag = "SelectList"
+    }
 
     // 路線リストViewModel
     private val _routeListViewModel: RouteListViewModel by lazy {
@@ -95,7 +94,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         // データバインド設定
         val binding = DataBindingUtil.inflate<FragmentRouteListBinding>(
@@ -136,7 +135,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         setHasOptionsMenu(true)
 
         // 変更監視
-        _routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
+        _routeListViewModel.routeList.observe(viewLifecycleOwner, {
             it?.let {
                 // リストアイテム設定
                 adapter.submitList(it)
@@ -195,7 +194,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private fun initDialog() {
         // 画面生成時にダイアログが存在する場合は，コールバックを再登録
         val deleteConfirmDialog =
-            parentFragmentManager.findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+            parentFragmentManager.findFragmentByTag(RouteListDeleteConfirmDialogTag)
         if (deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment) {
             deleteConfirmDialog.onClickPositiveButtonCallback = {
                 onClickDeleteConfirmDialogYse(it)
@@ -211,15 +210,15 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showItemEditDialog(item: RouteListItem) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(ROUTE_LIST_ITEM_EDIT_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(RouteListItemEditDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         val dialog = RouteListItemEditDialogFragment()
         val bundle = Bundle()
-        bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
+        bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
         dialog.arguments = bundle
         dialog.onClickPositiveButtonCallback =
-            { editType: RouteListItemEditDialogFragment.EditType, l: Long? ->
+            { editType: RouteListItemEditDialogFragment.EditType, _: Long? ->
                 when (editType) {
                     RouteListItemEditDialogFragment.EditType.Update -> {
                         updateRouteItemInfo(item)
@@ -233,7 +232,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             { _: RouteListItemEditDialogFragment.EditType, _: Long? ->
 
             }
-        dialog.showNow(parentFragmentManager, ROUTE_LIST_ITEM_EDIT_DLG_TAG)
+        dialog.showNow(parentFragmentManager, RouteListItemEditDialogTag)
     }
 
     /**
@@ -242,19 +241,19 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showDeleteConfirmDialog(item: RouteListItem) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(RouteListDeleteConfirmDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         val dialog = RouteListItemDeleteConfirmDialogFragment()
         val bundle = Bundle()
-        bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
+        bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
         dialog.arguments = bundle
         dialog.onClickPositiveButtonCallback = {
             onClickDeleteConfirmDialogYse(it)
         }
         dialog.onClickNegativeButtonCallback = {
         }
-        dialog.showNow(parentFragmentManager, ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        dialog.showNow(parentFragmentManager, RouteListDeleteConfirmDialogTag)
     }
 
     /**
@@ -262,7 +261,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showSearchTargetInputDialog() {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SearchTargetInputDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         _searchTargetInputViewModel.onClickPositiveButtonCallback = {
@@ -270,7 +269,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             searchStation(_searchTargetInputViewModel.getStationName())
         }
         val dialog = SearchTargetInputDialogFragment()
-        dialog.showNow(parentFragmentManager, SEARCH_TARGET_INPUT_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SearchTargetInputDialogTag)
     }
 
     /**
@@ -279,7 +278,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showStationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SelectListDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
@@ -290,7 +289,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             _searchRouteListItem = null
         }
         val dialog = ListItemSelectDialogFragment()
-        dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SelectListDialogTag)
     }
 
     /**
@@ -299,7 +298,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showDestinationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SelectListDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
@@ -310,7 +309,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             _searchRouteListItem = null
         }
         val dialog = ListItemSelectDialogFragment()
-        dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SelectListDialogTag)
     }
 
     /**

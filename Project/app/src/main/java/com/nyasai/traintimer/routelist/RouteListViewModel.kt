@@ -163,7 +163,7 @@ class RouteListViewModel(
             _yahooRouteInfoGetter.getDestinationFromStationName(item.stationName)
         }
         val destinationKey =
-            item.routeName + YahooRouteInfoGetter.KEY_DELIMITER_STR + item.destination
+            item.routeName + YahooRouteInfoGetter.KeyDelimiterSir + item.destination
         if (!destinationListMap.containsKey(destinationKey)) {
             // キーが見つからない
             return false

@@ -26,10 +26,6 @@ class RouteInfoViewModel(
     // 本VM用job
     private val _job = Job()
 
-    // 本スコープ用のコンテキスト
-    private val _ioContext: CoroutineContext
-        get() = Dispatchers.IO + _job
-
     // 路線情報
     val routeInfo = database.getRouteListItemWithId(parentId)
 
@@ -80,7 +76,7 @@ class RouteInfoViewModel(
     /**
      * 祝日ダイア設定
      */
-    fun trySetPublicHolidayDiagramType() {
+    private fun trySetPublicHolidayDiagramType() {
         _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(true)
     }
 

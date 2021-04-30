@@ -26,11 +26,11 @@ class YahooRouteInfoGetter : CoroutineScope {
 
     companion object {
         // キー分割文字
-        val KEY_DELIMITER_STR = "::"
-    }
+        const val KeyDelimiterSir = "::"
 
-    // 路線検索URLベース部分
-    private val YAHOO_ROUTE_SEARCH_BASE_URL = "https://transit.yahoo.co.jp"
+        // 路線検索URLベース部分
+        const val YahooRouteSearchBaseUrl = "https://transit.yahoo.co.jp"
+    }
 
     // リクエスト総数
     private var _totalRequestCount = 0
@@ -68,7 +68,7 @@ class YahooRouteInfoGetter : CoroutineScope {
     fun getStationList(stationName: String): Map<String, String> {
         // 駅名検索結果を取得
         val requestUrl =
-            "${YAHOO_ROUTE_SEARCH_BASE_URL}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
+            "${YahooRouteSearchBaseUrl}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
         val stationList = mutableMapOf<String, String>()
         val document = getHTMLDocument(requestUrl) ?: return stationList
         // 駅一覧箇所を取得
@@ -81,7 +81,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         val stationInfoElements = stationListRootElement[0].select("li > a")
         for (element in stationInfoElements) {
             stationList[element.text()] =
-                YAHOO_ROUTE_SEARCH_BASE_URL + element.attr("href").toString()
+                YahooRouteSearchBaseUrl + element.attr("href").toString()
         }
         return stationList
     }
@@ -93,7 +93,7 @@ class YahooRouteInfoGetter : CoroutineScope {
      */
     fun getDestinationFromStationName(stationName: String): Map<String, String> {
         val requestUrl =
-            "${YAHOO_ROUTE_SEARCH_BASE_URL}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
+            "${YahooRouteSearchBaseUrl}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
         return getDestinationFromUrl(requestUrl)
     }
 
@@ -122,9 +122,9 @@ class YahooRouteInfoGetter : CoroutineScope {
             if (routeNameElements.size > 0 && linkElements.size > 0) {
                 for (linkElement in linkElements) {
                     // 路線名，行先をキーとする
-                    val key = routeNameElements[0].text() + KEY_DELIMITER_STR + linkElement.text()
+                    val key = routeNameElements[0].text() + KeyDelimiterSir + linkElement.text()
                     destinationList[key] =
-                        YAHOO_ROUTE_SEARCH_BASE_URL + linkElement.attr("href").toString()
+                        YahooRouteSearchBaseUrl + linkElement.attr("href").toString()
                 }
             }
         }
@@ -137,7 +137,7 @@ class YahooRouteInfoGetter : CoroutineScope {
      * @return <路線名, 行先>
      */
     fun splitDestinationKey(keyString: String): Pair<String, String> {
-        val splitStrings = keyString.split(KEY_DELIMITER_STR)
+        val splitStrings = keyString.split(KeyDelimiterSir)
         if (splitStrings.size >= 2) {
             return Pair(splitStrings[0], splitStrings[1])
         }
@@ -177,8 +177,8 @@ class YahooRouteInfoGetter : CoroutineScope {
         val timeInfoList = mutableListOf<TimeInfo>()
         for (detailUrl in detailUrls) {
             // 解析して結果を保持
-            val info: TimeInfo? = getTimeInfo(detailUrl) ?: return mutableListOf()
-            timeInfoList.add(info!!)
+            val info: TimeInfo = getTimeInfo(detailUrl) ?: return mutableListOf()
+            timeInfoList.add(info)
         }
         if (timeInfoList.count() != detailUrls.count()) {
             // 件数が一致しないため失敗
@@ -206,7 +206,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         timeTableUrls.add(timeTableUrl)
         val dateInfoElements = dateSwitchElements[0].select("li > a")
         for (element in dateInfoElements) {
-            timeTableUrls.add(YAHOO_ROUTE_SEARCH_BASE_URL + element.attr("href").toString())
+            timeTableUrls.add(YahooRouteSearchBaseUrl + element.attr("href").toString())
         }
 
         return timeTableUrls
@@ -232,7 +232,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         val timeTableCells = timeTableRootElements[0].getElementsByClass("timeNumb")
         for (cell in timeTableCells) {
             for (element in cell.select("a")) {
-                urlList.add(YAHOO_ROUTE_SEARCH_BASE_URL + element.attr("href").toString())
+                urlList.add(YahooRouteSearchBaseUrl + element.attr("href").toString())
             }
         }
         return urlList

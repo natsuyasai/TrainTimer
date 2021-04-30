@@ -27,7 +27,7 @@ class RouteListItemEditDialogFragment : DialogFragment() {
         Delete
     }
 
-    val Types: Array<String> = arrayOf("更新", "削除")
+    private val Types: Array<String> = arrayOf("更新", "削除")
 
     // Yesボタン押下時コールバック
     var onClickPositiveButtonCallback: ((type: EditType, dataId: Long?) -> Unit)? = null
@@ -40,10 +40,10 @@ class RouteListItemEditDialogFragment : DialogFragment() {
      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
-            val targetDataId = arguments?.getLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID)
+            val targetDataId = arguments?.getLong(Define.RouteListDeleteConfirmArgentDataId)
             val builder = AlertDialog.Builder(it)
             var selectItem = EditType.Update
-            builder.setSingleChoiceItems(Types, 0) { dialog, which ->
+            builder.setSingleChoiceItems(Types, 0) { _, which ->
                 selectItem = when (which) {
                     0 -> EditType.Update
                     1 -> EditType.Delete
