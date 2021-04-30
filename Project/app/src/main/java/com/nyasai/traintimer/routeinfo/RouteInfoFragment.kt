@@ -226,7 +226,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     /**
      * タイトルクリック
      */
-    fun onClickTitle() {
+    fun onClickTitle(view: View) {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
         _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
@@ -252,7 +252,6 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
             _handler.post {
                 // ダイアログ表示
                 _filterItemSelectViewModel.onClickPositiveButtonCallback = {
-                    Log.d("Debug", "")
                     launch(Dispatchers.Default + _job) {
                         _routeInfoViewModel.updateFilterInfoListItem(_filterItemSelectViewModel.filterItemList)
                     }
@@ -274,8 +273,11 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         val departureTimeStr = _routeInfoViewModel.currentCountItem.value?.departureTime ?: "--:--"
         val trainTypeStr = _routeInfoViewModel.currentCountItem.value?.trainType ?: "--"
         val destinationStr = _routeInfoViewModel.currentCountItem.value?.destination ?: "--"
-        val text = """|${departureTimeStr}|${trainTypeStr}|${destinationStr}""".trimMargin()
+        val text = """|${departureTimeStr}
+                      |${trainTypeStr}
+                      |${destinationStr}""".trimMargin()
         next_time_table.text = text
+
         // スクロール位置更新
         updateScrollPosition()
     }
@@ -287,7 +289,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         if (_routeInfoViewModel.currentCountItem.value != null) {
             // リストアイテムの描画を待ってから対象位置までスクロール
             launch(Dispatchers.Default + _job) {
-                Thread.sleep(50)
+                delay(500)
                 withContext(Dispatchers.Main) {
                     (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),
