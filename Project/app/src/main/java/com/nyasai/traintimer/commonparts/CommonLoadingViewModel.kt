@@ -103,7 +103,7 @@ class CommonLoadingViewModel : ViewModel() {
      * デフォルトテキスト設定
      */
     private fun setDefaultText() {
-        _loadingText.value = "読み込み中……"
+        _loadingText.value = "読み込み中"
     }
 
     /**

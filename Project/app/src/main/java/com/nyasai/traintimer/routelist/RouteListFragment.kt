@@ -332,7 +332,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun updateRouteItemInfo(item: RouteListItem) {
         Log.d("Debug", "Update" + item.routeName)
-        _commonLoadingViewModel.showLoading()
+        _commonLoadingViewModel.showLoading("時刻情報更新中")
         setKeepScreenOn()
 
         launch(_viewModelContext) {
@@ -430,7 +430,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             Toast.makeText(context, "時刻表の取得に失敗しました", Toast.LENGTH_SHORT).show()
             return
         }
-        _commonLoadingViewModel.showLoading("時刻情報取得中……")
+        _commonLoadingViewModel.showLoading("時刻情報取得中")
         // キーから路線名と行先を分割
         val splitDestinationKey = _routeListViewModel.splitDestinationKey(selectDestination)
         _searchRouteListItem!!.routeName = splitDestinationKey.first
@@ -446,7 +446,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                     { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
                     { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
             _handler.post {
-                _commonLoadingViewModel.changeText("時刻情報登録中……")
+                _commonLoadingViewModel.changeText("時刻情報登録中")
             }
             // 時刻データが取得できていれば路線一覧情報をDBに追加
             val parentDataId =
@@ -466,14 +466,14 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * スクリーンON維持
      */
     private fun setKeepScreenOn() {
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        requireActivity().window!!.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     /**
      * スクリーンON維持解除
      */
     private fun setKeepScreenOff() {
-        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        requireActivity().window!!.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     // endregion ダイアログ関連
