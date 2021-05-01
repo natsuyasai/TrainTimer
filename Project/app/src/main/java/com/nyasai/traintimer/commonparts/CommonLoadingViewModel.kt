@@ -27,8 +27,8 @@ class CommonLoadingViewModel : ViewModel() {
     var currentCount: LiveData<Int> = _currentCount
 
     // 排他用オブジェクト
-    private val _maxCountLockObj = java.util.concurrent.locks.ReentrantLock()
-    private val _currentCountLockObj = java.util.concurrent.locks.ReentrantLock()
+    private val _maxCountLockObj = ReentrantLock()
+    private val _currentCountLockObj = ReentrantLock()
 
 
     init {
@@ -106,6 +106,9 @@ class CommonLoadingViewModel : ViewModel() {
         _loadingText.value = "読み込み中……"
     }
 
+    /**
+     * 排他更新
+     */
     private fun exclusiveUpdate(lockObj: ReentrantLock, func: () -> Unit) {
         lockObj.lock()
         try {

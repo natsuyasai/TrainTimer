@@ -333,7 +333,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private fun updateRouteItemInfo(item: RouteListItem) {
         Log.d("Debug", "Update" + item.routeName)
         _commonLoadingViewModel.showLoading()
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        setKeepScreenOn()
 
         launch(_viewModelContext) {
             val ret = _routeListViewModel.updateRouteInfo(
@@ -342,7 +342,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
             withContext(Dispatchers.Main) {
                 _commonLoadingViewModel.closeLoading()
-                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                setKeepScreenOff()
                 if (!ret) {
                     Toast.makeText(context, "更新に失敗しました", Toast.LENGTH_SHORT).show()
                 }
@@ -436,7 +436,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         _searchRouteListItem!!.routeName = splitDestinationKey.first
         _searchRouteListItem!!.destination = splitDestinationKey.second
 
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        setKeepScreenOn()
         // 時刻データを全取得
         Log.d("Debug", "データ取得開始")
         launch(_viewModelContext) {
@@ -457,12 +457,18 @@ class RouteListFragment : Fragment(), CoroutineScope {
             Log.d("Debug", "データ登録完了")
             withContext(Dispatchers.Main) {
                 _commonLoadingViewModel.closeLoading()
-                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                setKeepScreenOff()
             }
-
         }
     }
 
+    private fun setKeepScreenOn() {
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    private fun setKeepScreenOff() {
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
 
     // endregion ダイアログ関連
 
