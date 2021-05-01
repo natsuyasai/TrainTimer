@@ -1,5 +1,6 @@
 package com.nyasai.traintimer.routeinfo
 
+import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
 import com.nyasai.traintimer.define.Define
 import java.util.*
@@ -37,7 +38,7 @@ class DiagramTypeModel {
         if (judgePublicHoliday) {
 
             val response = PublicHolidayJudgeAPIUrl.httpGet().response()
-            if (response.second.responseMessage == "holiday") {
+            if (response.second.isSuccessful && String(response.second.data) == "holiday") {
                 type = Define.DiagramType.Sunday
             }
         }
