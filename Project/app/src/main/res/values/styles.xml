@@ -5,6 +5,16 @@
         <item name="colorPrimary">@color/actionBar</item>
         <item name="colorPrimaryDark">@color/actionBar</item>
         <item name="colorAccent">@color/actionBar</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+
+        <!-- ダイアログ用 -->
+        <item name="android:dialogTheme">@style/AppDialogTheme</item>
+        <item name="android:alertDialogTheme">@style/AppDialogTheme</item>
+        <!-- ダイアログ内のチェックボックスアイテムのテキスト用定義 -->
+        <item name="android:textColorAlertDialogListItem">@color/textColor</item>
     </style>
 
 </resources>

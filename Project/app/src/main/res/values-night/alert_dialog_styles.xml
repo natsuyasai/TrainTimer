@@ -1,0 +1,12 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppDialogTheme" parent="ThemeOverlay.AppCompat.DayNight.ActionBar">
+        <item name="android:textColor">@color/textColor</item>
+        <item name="textColorAlertDialogListItem">@color/textColor</item>
+        <item name="android:colorAccent">@color/textColor</item>
+        <item name="colorAccent">@color/textColor</item>
+        <item name="android:textColorSecondary">@color/textColor</item>
+        <item name="android:headerBackground">@color/actionBar</item>
+    </style>
+
+</resources>

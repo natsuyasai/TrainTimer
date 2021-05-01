@@ -3,6 +3,7 @@ package com.nyasai.traintimer.routeinfo
 import android.graphics.Color
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
 import java.time.LocalTime
@@ -14,7 +15,7 @@ import java.time.LocalTime
 fun TextView.setDepartureTime(item: RouteDetail?) {
     item?.let {
         text = item.departureTime
-        setTextColor(getTimeTextColor(item.departureTime))
+        setTextColor(resources.getColor(getTimeTextColor(item.departureTime)))
     }
 }
 
@@ -25,7 +26,7 @@ fun TextView.setDepartureTime(item: RouteDetail?) {
 fun TextView.setTrainType(item: RouteDetail?) {
     item?.let {
         text = item.trainType
-        setTextColor(getTimeTextColor(item.departureTime, Color.RED))
+        setTextColor(resources.getColor(getTimeTextColor(item.departureTime, R.color.textRed)))
     }
 }
 
@@ -36,7 +37,7 @@ fun TextView.setTrainType(item: RouteDetail?) {
 fun TextView.setDestination(item: RouteDetail?) {
     item?.let {
         text = item.destination
-        setTextColor(getTimeTextColor(item.departureTime))
+        setTextColor(resources.getColor(getTimeTextColor(item.departureTime)))
     }
 }
 
@@ -51,27 +52,27 @@ fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
         Define.DiagramType.Sunday -> "[日曜・祝日]"
     }
     val color = when (currentDiagramType) {
-        Define.DiagramType.Weekday -> Color.BLACK
-        Define.DiagramType.Saturday -> Color.BLUE
-        Define.DiagramType.Sunday -> Color.RED
+        Define.DiagramType.Weekday -> R.color.weekday
+        Define.DiagramType.Saturday -> R.color.saturday
+        Define.DiagramType.Sunday -> R.color.sunday
     }
-    setTextColor(color)
+    setTextColor(resources.getColor(color))
 }
 
 /**
  * 時刻情報テキストカラー取得
  */
-fun getTimeTextColor(departureTimeStr: String, defaultColor: Int = Color.BLACK): Int {
+fun getTimeTextColor(departureTimeStr: String, defaultColor: Int = R.color.textColor): Int {
     val departureTime = LocalTime.parse(departureTimeStr)
     val now = LocalTime.now()
     // 0～3時以外は現在時刻未満を無効に設定
     if (departureTime.hour !in 0..3 && departureTime < now) {
-        return Color.GRAY
+        return R.color.textGray
     } else if (departureTime.hour in 0..3) {
         // 0～3時なら日付変更前と後で比較方法変更
         return if (now.hour in 0..3) {
             if (departureTime < now) {
-                Color.GRAY
+                R.color.textGray
             } else {
                 defaultColor
             }
