@@ -462,10 +462,16 @@ class RouteListFragment : Fragment(), CoroutineScope {
         }
     }
 
+    /**
+     * スクリーンON維持
+     */
     private fun setKeepScreenOn() {
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
+    /**
+     * スクリーンON維持解除
+     */
     private fun setKeepScreenOff() {
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
