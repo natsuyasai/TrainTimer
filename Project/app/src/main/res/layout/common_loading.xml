@@ -16,6 +16,7 @@
         android:background="@color/shade"
         android:visibility="@{commonLoadingViewModel.isVisible}">
 
+        <!-- メッセージ -->
         <TextView
             android:id="@+id/loading_text"
             android:layout_width="match_parent"
@@ -30,7 +31,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="読み込み中" />
-
+        <!-- 進捗表示 -->
+        <TextView
+            android:visibility="@{commonLoadingViewModel.maxCount > 0}"
+            android:id="@+id/loading_current_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/textGray"
+            android:text="@{commonLoadingViewModel.currentCount.toString() + '/' + commonLoadingViewModel.maxCount.toString()}"
+            android:textAlignment="center"
+            android:textColor="@color/textDark"
+            android:textSize="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/loading_text"
+            app:layout_constraintVertical_bias="0.163"
+            tools:text="0" />
+        <!-- プログレス -->
         <ProgressBar
             android:id="@+id/progressBar"
             style="@android:style/Widget.ProgressBar.Large"

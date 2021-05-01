@@ -147,18 +147,24 @@ class YahooRouteInfoGetter : CoroutineScope {
     /**
      * 時刻表情報取得
      * @param timeTableUrl 時刻表ページURL(平日分)
+     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
+     * @param notifyCountCallback カウント通知コールバック関数
      * @return 時刻データ([平日データリスト,土曜データリスト,日曜・祝日データリスト])
      */
-    suspend fun getTimeTableInfo(timeTableUrl: String): List<List<TimeInfo>> {
+    suspend fun getTimeTableInfo(
+        timeTableUrl: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): List<List<TimeInfo>> {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
         var timeTableInfoList = listOf<List<TimeInfo>>()
         if (tableUrls.size == 3) {
             coroutineScope {
                 val awaitList = listOf(
-                    async { getTimeInfoList(tableUrls[0]) },
-                    async { getTimeInfoList(tableUrls[1]) },
-                    async { getTimeInfoList(tableUrls[2]) })
+                    async { getTimeInfoList(tableUrls[0], notifyMaxCountCallback, notifyCountCallback) },
+                    async { getTimeInfoList(tableUrls[1], notifyMaxCountCallback, notifyCountCallback) },
+                    async { getTimeInfoList(tableUrls[2], notifyMaxCountCallback, notifyCountCallback) })
                 timeTableInfoList = awaitList.awaitAll()
             }
         }
@@ -169,16 +175,24 @@ class YahooRouteInfoGetter : CoroutineScope {
     /**
      * 時刻情報リスト取得
      * @param tableUrl 時刻表ページURL
+     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
+     * @param notifyCountCallback カウント通知コールバック関数
      * @return 時刻情報情報
      */
-    private fun getTimeInfoList(tableUrl: String): List<TimeInfo> {
+    private fun getTimeInfoList(
+        tableUrl: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): List<TimeInfo> {
         // 詳細ページへのURLを取得し，全ページ分解析実行
         val detailUrls = getTimeDetailsUrlList(tableUrl)
+        notifyMaxCountCallback(detailUrls.count())
         val timeInfoList = mutableListOf<TimeInfo>()
         for (detailUrl in detailUrls) {
             // 解析して結果を保持
             val info: TimeInfo = getTimeInfo(detailUrl) ?: return mutableListOf()
             timeInfoList.add(info)
+            notifyCountCallback()
         }
         if (timeInfoList.count() != detailUrls.count()) {
             // 件数が一致しないため失敗

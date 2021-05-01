@@ -3,6 +3,7 @@ package com.nyasai.traintimer.commonparts
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.concurrent.locks.ReentrantLock
 
 /**
  * 共通ローディング用ViewModel
@@ -17,9 +18,23 @@ class CommonLoadingViewModel : ViewModel() {
     private val _loadingText: MutableLiveData<String> = MutableLiveData()
     var loadingText: LiveData<String> = _loadingText
 
+    // 最大件数
+    private val _maxCount: MutableLiveData<Int> = MutableLiveData()
+    var maxCount: LiveData<Int> = _maxCount
+
+    // 現在件数
+    private val _currentCount: MutableLiveData<Int> = MutableLiveData()
+    var currentCount: LiveData<Int> = _currentCount
+
+    // 排他用オブジェクト
+    private val _maxCountLockObj = java.util.concurrent.locks.ReentrantLock()
+    private val _currentCountLockObj = java.util.concurrent.locks.ReentrantLock()
+
 
     init {
         _isVisible.value = false
+        _maxCount.value = 0
+        _currentCount.value = 0
         setDefaultText()
     }
 
@@ -40,7 +55,34 @@ class CommonLoadingViewModel : ViewModel() {
      */
     fun closeLoading() {
         _isVisible.value = false
+        _maxCount.value = 0
+        _currentCount.value = 0
         setDefaultText()
+    }
+
+    /**
+     * 最大件数更新
+     */
+    fun updateMaxCountFromBackgroundTask(count: Int) {
+        exclusiveUpdate(_maxCountLockObj) { _maxCount.postValue(count) }
+    }
+
+    /**
+     * 最大件数インクリメント
+     */
+    fun incrementMaxCountFromBackgroundTask(count: Int) {
+        exclusiveUpdate(_maxCountLockObj) {
+            _maxCount.postValue(if (maxCount.value != null) maxCount.value!! + count else count)
+        }
+    }
+
+    /**
+     * 現在件数インクリメント
+     */
+    fun incrementCurrentCountFromBackgroundTask(count: Int) {
+        exclusiveUpdate(_currentCountLockObj) {
+            _currentCount.postValue(if (currentCount.value != null) currentCount.value!! + count else count)
+        }
     }
 
     /**
@@ -64,4 +106,12 @@ class CommonLoadingViewModel : ViewModel() {
         _loadingText.value = "読み込み中……"
     }
 
+    private fun exclusiveUpdate(lockObj: ReentrantLock, func: () -> Unit) {
+        lockObj.lock()
+        try {
+            func()
+        } finally {
+            lockObj.unlock()
+        }
+    }
 }

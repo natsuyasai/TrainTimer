@@ -87,9 +87,15 @@ class RouteListViewModel(
 
     /**
      * 時刻表情報取得
+     * @param timeTableUrl 時刻表情報ページURL
+     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
+     * @param notifyCountCallback カウント通知コールバック関数
      */
-    suspend fun getTimeTableInfo(timeTableUrl: String) =
-        _yahooRouteInfoGetter.getTimeTableInfo(timeTableUrl)
+    suspend fun getTimeTableInfo(
+        timeTableUrl: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ) = _yahooRouteInfoGetter.getTimeTableInfo(timeTableUrl, notifyMaxCountCallback, notifyCountCallback)
 
     /**
      * 路線リストアイテム登録
@@ -148,9 +154,15 @@ class RouteListViewModel(
     /**
      * 路線情報更新
      * @param item 更新対象アイテム
+     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
+     * @param notifyCountCallback カウント通知コールバック関数
      * @return 処理結果
      */
-    suspend fun updateRouteInfo(item: RouteListItem): Boolean {
+    suspend fun updateRouteInfo(
+        item: RouteListItem,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): Boolean {
         // 路線アイテム情報に一致する情報を取得する
         val stationListMap = _yahooRouteInfoGetter.getStationList(item.stationName)
         val destinationListMap: Map<String, String> = if (stationListMap.isNotEmpty()) {
@@ -169,7 +181,11 @@ class RouteListViewModel(
             return false
         }
         val routeInfo =
-            _yahooRouteInfoGetter.getTimeTableInfo(destinationListMap.getValue(destinationKey))
+            _yahooRouteInfoGetter.getTimeTableInfo(
+                destinationListMap.getValue(destinationKey),
+                notifyMaxCountCallback,
+                notifyCountCallback
+            )
         if (routeInfo.count() <= 0 || (routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty())) {
             return false
         }

@@ -26,13 +26,16 @@ import kotlin.coroutines.CoroutineContext
  */
 class RouteListFragment : Fragment(), CoroutineScope {
 
-    companion object{
+    companion object {
         // 路線リストアイテム削除確認ダイアログタグ
         const val RouteListDeleteConfirmDialogTag = "RouteListItemDeleteConfirm"
+
         // 路線リストアイテム編集ダイアログ
         const val RouteListItemEditDialogTag = "RouteListItemEdit"
+
         // 路線検索ダイアログタグ
         const val SearchTargetInputDialogTag = "SearchTargetInput"
+
         // 駅選択ダイアログ
         const val SelectListDialogTag = "SelectList"
     }
@@ -333,7 +336,10 @@ class RouteListFragment : Fragment(), CoroutineScope {
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         launch(_viewModelContext) {
-            val ret = _routeListViewModel.updateRouteInfo(item)
+            val ret = _routeListViewModel.updateRouteInfo(
+                item,
+                { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
             withContext(Dispatchers.Main) {
                 _commonLoadingViewModel.closeLoading()
                 activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -435,7 +441,10 @@ class RouteListFragment : Fragment(), CoroutineScope {
         Log.d("Debug", "データ取得開始")
         launch(_viewModelContext) {
             val routeInfo =
-                _routeListViewModel.getTimeTableInfo(destinationMap.getValue(selectDestination))
+                _routeListViewModel.getTimeTableInfo(
+                    destinationMap.getValue(selectDestination),
+                    { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                    { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
             _handler.post {
                 _commonLoadingViewModel.changeText("時刻情報登録中……")
             }
