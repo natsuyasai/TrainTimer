@@ -15,7 +15,7 @@ class YahooRouteInfoGetter : CoroutineScope {
     /**
      * 時刻情報
      */
-    data class TimeInfo (
+    data class TimeInfo(
         // 時刻(HH:MM)
         var time: String = "-1",
         // 種別(普通，快速，etc...)
@@ -24,27 +24,33 @@ class YahooRouteInfoGetter : CoroutineScope {
         var destination: String = "取得失敗"
     )
 
-    // 路線検索URLベース部分
-    private val YAHOO_ROUTE_SEARCH_BASE_URL = "https://transit.yahoo.co.jp"
+    companion object {
+        // キー分割文字
+        const val KeyDelimiterSir = "::"
 
-    // キー分割文字
-    private val KEY_DELIMITER_STR = "::"
+        // 路線検索URLベース部分
+        const val YahooRouteSearchBaseUrl = "https://transit.yahoo.co.jp"
+    }
 
     // リクエスト総数
     private var _totalRequestCount = 0
+
     // 前回のリクエスト実施時刻
     private var _prevRequestDatetime = LocalTime.now()
+
     // ロック用
     private val _lock = Any()
 
     // 本フラグメント用job
     private val job = Job()
+
     // 本スコープ用のコンテキスト
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
     init {
-        FuelManager.instance.baseHeaders = mapOf("User-Agent" to "Mozilla/5.0 (twitter:@natsuyasai7)")
+        FuelManager.instance.baseHeaders =
+            mapOf("User-Agent" to "Mozilla/5.0 (twitter:@natsuyasai7)")
     }
 
     /**
@@ -61,7 +67,8 @@ class YahooRouteInfoGetter : CoroutineScope {
      */
     fun getStationList(stationName: String): Map<String, String> {
         // 駅名検索結果を取得
-        val requestUrl = "${YAHOO_ROUTE_SEARCH_BASE_URL}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
+        val requestUrl =
+            "${YahooRouteSearchBaseUrl}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
         val stationList = mutableMapOf<String, String>()
         val document = getHTMLDocument(requestUrl) ?: return stationList
         // 駅一覧箇所を取得
@@ -73,7 +80,8 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 駅名と遷移先URLをmapにつめる
         val stationInfoElements = stationListRootElement[0].select("li > a")
         for (element in stationInfoElements) {
-            stationList[element.text()] = YAHOO_ROUTE_SEARCH_BASE_URL + element.attr("href").toString()
+            stationList[element.text()] =
+                YahooRouteSearchBaseUrl + element.attr("href").toString()
         }
         return stationList
     }
@@ -84,7 +92,8 @@ class YahooRouteInfoGetter : CoroutineScope {
      * @return key：路線名///行先, value:URL
      */
     fun getDestinationFromStationName(stationName: String): Map<String, String> {
-        val requestUrl = "${YAHOO_ROUTE_SEARCH_BASE_URL}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
+        val requestUrl =
+            "${YahooRouteSearchBaseUrl}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
         return getDestinationFromUrl(requestUrl)
     }
 
@@ -111,10 +120,11 @@ class YahooRouteInfoGetter : CoroutineScope {
             val routeNameElements = element.select("dl > dt")
             val linkElements = element.select("li > a")
             if (routeNameElements.size > 0 && linkElements.size > 0) {
-                for (linkElement in linkElements){
+                for (linkElement in linkElements) {
                     // 路線名，行先をキーとする
-                    val key = routeNameElements[0].text() + KEY_DELIMITER_STR + linkElement.text()
-                    destinationList[key] = YAHOO_ROUTE_SEARCH_BASE_URL + linkElement.attr("href").toString()
+                    val key = routeNameElements[0].text() + KeyDelimiterSir + linkElement.text()
+                    destinationList[key] =
+                        YahooRouteSearchBaseUrl + linkElement.attr("href").toString()
                 }
             }
         }
@@ -126,9 +136,9 @@ class YahooRouteInfoGetter : CoroutineScope {
      * @param keyString キー文字列
      * @return <路線名, 行先>
      */
-    fun splitDestinationKey(keyString: String): Pair<String, String>{
-        val splitStrings = keyString.split(KEY_DELIMITER_STR)
-        if(splitStrings.size >= 2){
+    fun splitDestinationKey(keyString: String): Pair<String, String> {
+        val splitStrings = keyString.split(KeyDelimiterSir)
+        if (splitStrings.size >= 2) {
             return Pair(splitStrings[0], splitStrings[1])
         }
         return Pair("", "")
@@ -137,18 +147,24 @@ class YahooRouteInfoGetter : CoroutineScope {
     /**
      * 時刻表情報取得
      * @param timeTableUrl 時刻表ページURL(平日分)
+     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
+     * @param notifyCountCallback カウント通知コールバック関数
      * @return 時刻データ([平日データリスト,土曜データリスト,日曜・祝日データリスト])
      */
-    suspend fun getTimeTableInfo(timeTableUrl: String): List<List<TimeInfo>> {
+    suspend fun getTimeTableInfo(
+        timeTableUrl: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): List<List<TimeInfo>> {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
         var timeTableInfoList = listOf<List<TimeInfo>>()
-        if(tableUrls.size == 3) {
+        if (tableUrls.size == 3) {
             coroutineScope {
                 val awaitList = listOf(
-                    async { getTimeInfoList(tableUrls[0]) },
-                    async { getTimeInfoList(tableUrls[1]) },
-                    async { getTimeInfoList(tableUrls[2]) })
+                    async { getTimeInfoList(tableUrls[0], notifyMaxCountCallback, notifyCountCallback) },
+                    async { getTimeInfoList(tableUrls[1], notifyMaxCountCallback, notifyCountCallback) },
+                    async { getTimeInfoList(tableUrls[2], notifyMaxCountCallback, notifyCountCallback) })
                 timeTableInfoList = awaitList.awaitAll()
             }
         }
@@ -159,16 +175,28 @@ class YahooRouteInfoGetter : CoroutineScope {
     /**
      * 時刻情報リスト取得
      * @param tableUrl 時刻表ページURL
+     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
+     * @param notifyCountCallback カウント通知コールバック関数
      * @return 時刻情報情報
      */
-    private fun getTimeInfoList(tableUrl: String): List<TimeInfo> {
+    private fun getTimeInfoList(
+        tableUrl: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): List<TimeInfo> {
         // 詳細ページへのURLを取得し，全ページ分解析実行
         val detailUrls = getTimeDetailsUrlList(tableUrl)
+        notifyMaxCountCallback(detailUrls.count())
         val timeInfoList = mutableListOf<TimeInfo>()
         for (detailUrl in detailUrls) {
             // 解析して結果を保持
-            val info: TimeInfo? = getTimeInfo(detailUrl) ?: return mutableListOf()
-            timeInfoList.add(info!!)
+            val info: TimeInfo = getTimeInfo(detailUrl) ?: return mutableListOf()
+            timeInfoList.add(info)
+            notifyCountCallback()
+        }
+        if (timeInfoList.count() != detailUrls.count()) {
+            // 件数が一致しないため失敗
+            return mutableListOf()
         }
         return timeInfoList
     }
@@ -190,9 +218,9 @@ class YahooRouteInfoGetter : CoroutineScope {
         }
         // 平日は引数でもらうURLのため，そのまま保持
         timeTableUrls.add(timeTableUrl)
-        val dateInfoElements= dateSwitchElements[0].select("li > a")
+        val dateInfoElements = dateSwitchElements[0].select("li > a")
         for (element in dateInfoElements) {
-            timeTableUrls.add(YAHOO_ROUTE_SEARCH_BASE_URL + element.attr("href").toString())
+            timeTableUrls.add(YahooRouteSearchBaseUrl + element.attr("href").toString())
         }
 
         return timeTableUrls
@@ -200,7 +228,7 @@ class YahooRouteInfoGetter : CoroutineScope {
 
     /**
      * 時刻詳細URLリスト取得
-     * @param tableUrl 時刻表URL
+     * @param timeTableUrl 時刻表URL
      * @return 時刻情報詳細ページURLリスト
      */
     private fun getTimeDetailsUrlList(timeTableUrl: String): List<String> {
@@ -218,7 +246,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         val timeTableCells = timeTableRootElements[0].getElementsByClass("timeNumb")
         for (cell in timeTableCells) {
             for (element in cell.select("a")) {
-                urlList.add(YAHOO_ROUTE_SEARCH_BASE_URL + element.attr("href").toString())
+                urlList.add(YahooRouteSearchBaseUrl + element.attr("href").toString())
             }
         }
         return urlList
@@ -245,17 +273,17 @@ class YahooRouteInfoGetter : CoroutineScope {
         val detailTexts = detailElements[0].text().split("[ 　]".toRegex())
 
         // 文字列からTimeInfo生成
-        if(detailTexts.size >= 5) {
+        if (detailTexts.size >= 5) {
             // HH:MM形式に合わせるため，2文字目にコロンがあれば0追加
-            timeInfo.time = when{
-                (detailTexts[0].substring(1,2) == ":") -> "0" + detailTexts[0]
+            timeInfo.time = when {
+                (detailTexts[0].substring(1, 2) == ":") -> "0" + detailTexts[0]
                 else -> detailTexts[0]
             }
             timeInfo.type = detailTexts[3]
         }
-        if(headerTexts.size >= 3){
+        if (headerTexts.size >= 3) {
             val splitText = headerTexts[1].split("→|行き".toRegex())
-            if(splitText.size >= 2) {
+            if (splitText.size >= 2) {
                 timeInfo.destination = splitText[1]
             }
         }
@@ -275,8 +303,7 @@ class YahooRouteInfoGetter : CoroutineScope {
             val syncResponse = url.httpGet().response()
             if (syncResponse.second.isSuccessful) {
                 return Jsoup.parse(String(syncResponse.second.data))
-            }
-            else{
+            } else {
                 retryCount++
                 Thread.sleep(3000)
             }
@@ -291,7 +318,8 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 一定時間経過していればリセット
         synchronized(_lock) {
             if (_totalRequestCount != 0
-                && ChronoUnit.SECONDS.between(_prevRequestDatetime, LocalTime.now()) > 30) {
+                && ChronoUnit.SECONDS.between(_prevRequestDatetime, LocalTime.now()) > 30
+            ) {
                 _totalRequestCount = 0
             }
 

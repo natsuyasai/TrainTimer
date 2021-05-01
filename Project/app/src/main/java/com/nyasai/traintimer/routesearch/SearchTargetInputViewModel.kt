@@ -3,7 +3,7 @@ package com.nyasai.traintimer.routesearch
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class SearchTargetInputViewModel: ViewModel(){
+class SearchTargetInputViewModel : ViewModel() {
 
     // Yesボタン押下時コールバック
     var onClickPositiveButtonCallback: (() -> Unit)? = null

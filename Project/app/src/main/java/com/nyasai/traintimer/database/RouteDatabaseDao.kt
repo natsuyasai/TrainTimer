@@ -149,10 +149,16 @@ interface RouteDatabaseDao {
      * @param parentId 親アイテムID
      */
     @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId AND diagram_type = :diagramType ORDER BY dataId")
-    fun getCurrentDiagramRouteDetailItemsWithParentId(parentId: Long, diagramType: Int): LiveData<List<RouteDetail>>
+    fun getCurrentDiagramRouteDetailItemsWithParentId(
+        parentId: Long,
+        diagramType: Int
+    ): LiveData<List<RouteDetail>>
 
     @Query("SELECT * from route_details_table WHERE parent_row_id = :parentId AND diagram_type = :diagramType ORDER BY dataId")
-    fun getCurrentDiagramRouteDetailItemsWithParentIdSync(parentId: Long, diagramType: Int): List<RouteDetail>
+    fun getCurrentDiagramRouteDetailItemsWithParentIdSync(
+        parentId: Long,
+        diagramType: Int
+    ): List<RouteDetail>
 
     /**
      * 路線詳細アイテム一覧取得
@@ -186,7 +192,7 @@ interface RouteDatabaseDao {
 
     /**
      * フィルタ情報アイテム更新
-     * @param routeDetail 更新アイテム
+     * @param filterInfo 更新アイテム
      */
     @Update
     fun updateFilterInfoItem(filterInfo: FilterInfo)

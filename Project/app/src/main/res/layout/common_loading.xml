@@ -1,36 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/shade"
-    android:visibility="invisible"
-    android:id="@+id/common_loading">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/loading_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/progressBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:textAlignment="center"
-        android:background="@color/textGray"
-        android:textSize="30dp"
-        android:textColor="@color/textDark"
-        android:text="読み込み中……"
-        tools:text="読み込み中"/>
+    <data>
+        <variable
+            name="commonLoadingViewModel"
+            type="com.nyasai.traintimer.commonparts.CommonLoadingViewModel" />
+    </data>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="@android:style/Widget.ProgressBar.Large"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/common_loading"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:indeterminate="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="match_parent"
+        android:background="@color/shade"
+        android:visibility="@{commonLoadingViewModel.isVisible}">
+
+        <!-- メッセージ -->
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/textGray"
+            android:text="@{commonLoadingViewModel.loadingText}"
+            android:textAlignment="center"
+            android:textColor="@color/textColor"
+            android:textSize="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="読み込み中" />
+        <!-- 進捗表示 -->
+        <TextView
+            android:visibility="@{commonLoadingViewModel.maxCount > 0}"
+            android:id="@+id/loading_current_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/textGray"
+            android:text="@{commonLoadingViewModel.currentCount.toString() + '/' + commonLoadingViewModel.maxCount.toString()}"
+            android:textAlignment="center"
+            android:textColor="@color/textColor"
+            android:textSize="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/loading_text"
+            app:layout_constraintVertical_bias="0.163"
+            tools:text="0" />
+        <!-- プログレス -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@android:style/Widget.ProgressBar.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

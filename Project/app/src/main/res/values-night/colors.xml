@@ -8,14 +8,14 @@
     <color name="textGray">#808080</color>
     <color name="shade">#80808080</color>
     <color name="actionBar">#696969</color>
-    <color name="textColor">#000000</color>
-    <color name="textColorPrimary">#000000</color>
-    <color name="textColorSecondary">#808080</color>
-    <color name="colorBackground">#FFFFFF</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="textColorSecondary">#fffafa</color>
+    <color name="colorBackground">#313131</color>
     <color name="colorCardBackground">@color/colorPrimary</color>
     <color name="colorBackgroundBottomAppBar">#353535</color>
 
-    <color name="weekday">#000000</color>
-    <color name="saturday">#0000ff</color>
+    <color name="weekday">#FFFFFF</color>
+    <color name="saturday">#00bfff</color>
     <color name="sunday">#ff6347</color>
 </resources>

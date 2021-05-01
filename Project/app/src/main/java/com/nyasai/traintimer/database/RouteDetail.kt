@@ -8,15 +8,17 @@ import androidx.room.PrimaryKey
 /**
  * 時刻表詳細ページ用データ
  */
-@Entity(tableName = "route_details_table",
+@Entity(
+    tableName = "route_details_table",
     foreignKeys = [
         ForeignKey(
             entity = RouteListItem::class,
             parentColumns = arrayOf("dataId"),
             childColumns = arrayOf("parent_row_id"),
-            onDelete = ForeignKey.CASCADE)]
+            onDelete = ForeignKey.CASCADE
+        )]
 )
-data class RouteDetail (
+data class RouteDetail(
 
     // データID(連番)
     @PrimaryKey(autoGenerate = true)
@@ -42,4 +44,4 @@ data class RouteDetail (
     @ColumnInfo(name = "destination")
     var destination: String = "",
 
-)
+    )

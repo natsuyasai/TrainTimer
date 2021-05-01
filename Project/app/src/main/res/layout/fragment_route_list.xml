@@ -7,6 +7,9 @@
         <variable
             name="routeListViewModel"
             type="com.nyasai.traintimer.routelist.RouteListViewModel" />
+        <variable
+            name="commonLoadingViewModel"
+            type="com.nyasai.traintimer.commonparts.CommonLoadingViewModel" />
 
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,7 +19,8 @@
 
         <!-- ローディング用 -->
         <include
-            layout="@layout/common_loading" />
+            layout="@layout/common_loading"
+            app:commonLoadingViewModel="@{commonLoadingViewModel}"/>
 
         <!-- 路線一覧 -->
         <androidx.recyclerview.widget.RecyclerView

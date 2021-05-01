@@ -2,7 +2,6 @@ package com.nyasai.traintimer.routelist
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
@@ -13,7 +12,7 @@ import com.nyasai.traintimer.define.Define
 /**
  * 路線リストアイテム削除確認ダイアログ
  */
-class RouteListItemDeleteConfirmDialogFragment: DialogFragment() {
+class RouteListItemDeleteConfirmDialogFragment : DialogFragment() {
 
     // Yesボタン押下時コールバック
     var onClickPositiveButtonCallback: ((dataId: Long?) -> Unit)? = null
@@ -26,7 +25,7 @@ class RouteListItemDeleteConfirmDialogFragment: DialogFragment() {
      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
-            val targetDataId = arguments?.getLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID)
+            val targetDataId = arguments?.getLong(Define.RouteListDeleteConfirmArgentDataId)
             val builder = AlertDialog.Builder(it)
             builder.setMessage(R.string.route_list_item_delete_confirm_message)
                 .setPositiveButton(R.string.route_list_item_delete_confirm_yes) { _, _ ->

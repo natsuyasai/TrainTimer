@@ -1,14 +1,13 @@
-package com.nyasai.traintimer.routesearch
+package com.nyasai.traintimer.commonparts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
-class ListItemSelectViewModelFactory : ViewModelProvider.Factory {
-
+class CommonLoadingViewModelFactory : ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ListItemSelectViewModel::class.java)) {
-            return ListItemSelectViewModel() as T
+        if (modelClass.isAssignableFrom(CommonLoadingViewModel::class.java)) {
+            return CommonLoadingViewModel() as T
         }
         throw IllegalArgumentException("不明なViewModelクラス")
     }

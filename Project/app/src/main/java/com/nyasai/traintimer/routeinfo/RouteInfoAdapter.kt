@@ -11,7 +11,8 @@ import com.nyasai.traintimer.databinding.ListItemRouteInfoBinding
 /**
  * 路線情報詳細リスト表示用アダプタ
  */
-class RouteInfoAdapter : ListAdapter<RouteDetail, RouteInfoAdapter.ViewHolder>(RouteInfoDiffCallback()){
+class RouteInfoAdapter :
+    ListAdapter<RouteDetail, RouteInfoAdapter.ViewHolder>(RouteInfoDiffCallback()) {
 
     // 表示アイテム
     private var _item: List<RouteDetail>? = null
@@ -52,7 +53,7 @@ class RouteInfoAdapter : ListAdapter<RouteDetail, RouteInfoAdapter.ViewHolder>(R
      */
     class ViewHolder private constructor(
         private val binding: ListItemRouteInfoBinding
-    ): RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         /**
          * バインド実行

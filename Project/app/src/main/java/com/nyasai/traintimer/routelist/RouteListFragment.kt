@@ -4,19 +4,20 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.*
-import androidx.fragment.app.Fragment
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.nyasai.traintimer.R
-import com.nyasai.traintimer.database.*
+import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
+import com.nyasai.traintimer.database.RouteDatabase
+import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.routesearch.*
 import com.nyasai.traintimer.util.FragmentUtil
-import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import kotlinx.android.synthetic.main.common_loading.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -25,23 +26,33 @@ import kotlin.coroutines.CoroutineContext
  */
 class RouteListFragment : Fragment(), CoroutineScope {
 
-    // 路線リストアイテム削除確認ダイアログタグ
-    private val ROUTE_LIST_DELETE_CONFIRM_DLG_TAG = "RouteListItemDeleteConfirm"
-    // 路線検索ダイアログタグ
-    private val SEARCH_TARGET_INPUT_DLG_TAG = "SearchTargetInput"
-    // 駅選択ダイアログ
-    private val SELECT_LIST_DLG_TAG = "SelectList"
+    companion object {
+        // 路線リストアイテム削除確認ダイアログタグ
+        const val RouteListDeleteConfirmDialogTag = "RouteListItemDeleteConfirm"
+
+        // 路線リストアイテム編集ダイアログ
+        const val RouteListItemEditDialogTag = "RouteListItemEdit"
+
+        // 路線検索ダイアログタグ
+        const val SearchTargetInputDialogTag = "SearchTargetInput"
+
+        // 駅選択ダイアログ
+        const val SelectListDialogTag = "SelectList"
+    }
 
     // 路線リストViewModel
     private val _routeListViewModel: RouteListViewModel by lazy {
         val application = requireNotNull(this.activity).application
         ViewModelProvider(
             this,
-            RouteListViewModelFactory(RouteDatabase.getInstance(application).routeDatabaseDao, application)
+            RouteListViewModelFactory(
+                RouteDatabase.getInstance(application).routeDatabaseDao,
+                application
+            )
         ).get(RouteListViewModel::class.java)
     }
 
-    // ViewModel
+    // 検索用インプットダイアログViewModel
     private val _searchTargetInputViewModel: SearchTargetInputViewModel by lazy {
         ViewModelProvider(
             requireActivity(),
@@ -49,12 +60,19 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ).get(SearchTargetInputViewModel::class.java)
     }
 
-    // ViewModel
+    // リストアイテム選択ViewModel
     private val _istItemSelectViewModel: ListItemSelectViewModel by lazy {
         ViewModelProvider(
             requireActivity(),
             ListItemSelectViewModelFactory()
         ).get(ListItemSelectViewModel::class.java)
+    }
+
+    // 共通ローディングViewModel
+    private val _commonLoadingViewModel: CommonLoadingViewModel by lazy {
+        ViewModelProvider(requireActivity(), CommonLoadingViewModelFactory()).get(
+            CommonLoadingViewModel::class.java
+        )
     }
 
     // 検索情報保持領域
@@ -65,13 +83,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
     // 本フラグメント用job
     private val _job = Job()
+
     // 本スコープ用のコンテキスト
     override val coroutineContext: CoroutineContext
-    get() = Dispatchers.Main + _job
+        get() = Dispatchers.Main + _job
 
     private val _viewModelContext: CoroutineContext
-    get()=Dispatchers.Default + _job
-
+        get() = Dispatchers.Default + _job
 
     /**
      * onCreateViewフック
@@ -79,34 +97,36 @@ class RouteListFragment : Fragment(), CoroutineScope {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         // データバインド設定
-        val binding: FragmentRouteListBinding = DataBindingUtil.inflate(
-            inflater, R.layout.fragment_route_list, container, false)
+        val binding = DataBindingUtil.inflate<FragmentRouteListBinding>(
+            inflater, R.layout.fragment_route_list, container, false
+        )
 
         binding.routeListViewModel = _routeListViewModel
-
         binding.lifecycleOwner = this
+        binding.commonLoadingViewModel = _commonLoadingViewModel
 
 
         // 路線リスト用アダプター設定
         val adapter = RouteListAdapter()
         binding.routeListView.adapter = adapter
         // 操作イベント登録
-        adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener{
+        adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener {
             override fun onItemClickListener(view: View, item: RouteListItem) {
                 // ページ遷移
                 Log.d("Debug", "アイテム選択 : $item")
-                view.findNavController().navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
+                view.findNavController()
+                    .navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
             }
         })
         adapter.setOnItemLongClickListener(object : RouteListAdapter.OnItemLongClickListener {
             override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
                 // 長押し
                 Log.d("Debug", "アイテム長押し : $item")
-                // 削除確認
-                showDeleteConfirmDialog(item)
+                // 編集操作選択
+                showItemEditDialog(item)
                 return true
             }
         })
@@ -118,8 +138,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         setHasOptionsMenu(true)
 
         // 変更監視
-        _routeListViewModel.routeList.observe(viewLifecycleOwner, Observer {
-            it?.let{
+        _routeListViewModel.routeList.observe(viewLifecycleOwner, {
+            it?.let {
                 // リストアイテム設定
                 adapter.submitList(it)
                 Log.d("Debug", "データ更新 : ${_routeListViewModel.routeList.value.toString()}")
@@ -142,7 +162,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // ローディング表示中はメニュー非表示
-        if(common_loading.visibility == android.widget.ProgressBar.VISIBLE) {
+        if (_commonLoadingViewModel.isVisible()) {
             return false
         }
         return when (item.itemId) {
@@ -176,8 +196,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun initDialog() {
         // 画面生成時にダイアログが存在する場合は，コールバックを再登録
-        val deleteConfirmDialog = parentFragmentManager.findFragmentByTag(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
-        if(deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment){
+        val deleteConfirmDialog =
+            parentFragmentManager.findFragmentByTag(RouteListDeleteConfirmDialogTag)
+        if (deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment) {
             deleteConfirmDialog.onClickPositiveButtonCallback = {
                 onClickDeleteConfirmDialogYse(it)
             }
@@ -187,24 +208,55 @@ class RouteListFragment : Fragment(), CoroutineScope {
     }
 
     /**
+     * 路線アイテム編集ダイアログ表示
+     * @param item 選択対象アイテム
+     */
+    private fun showItemEditDialog(item: RouteListItem) {
+        // 前回分削除
+        FragmentUtil.deletePrevDialog(RouteListItemEditDialogTag, parentFragmentManager)
+
+        // ダイアログ表示
+        val dialog = RouteListItemEditDialogFragment()
+        val bundle = Bundle()
+        bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
+        dialog.arguments = bundle
+        dialog.onClickPositiveButtonCallback =
+            { editType: RouteListItemEditDialogFragment.EditType, _: Long? ->
+                when (editType) {
+                    RouteListItemEditDialogFragment.EditType.Update -> {
+                        updateRouteItemInfo(item)
+                    }
+                    else -> {
+                        showDeleteConfirmDialog(item)
+                    }
+                }
+            }
+        dialog.onClickNegativeButtonCallback =
+            { _: RouteListItemEditDialogFragment.EditType, _: Long? ->
+
+            }
+        dialog.showNow(parentFragmentManager, RouteListItemEditDialogTag)
+    }
+
+    /**
      * 削除確認ダイアログ表示
      * @param item 選択対象アイテム
      */
     private fun showDeleteConfirmDialog(item: RouteListItem) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(ROUTE_LIST_DELETE_CONFIRM_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(RouteListDeleteConfirmDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         val dialog = RouteListItemDeleteConfirmDialogFragment()
         val bundle = Bundle()
-        bundle.putLong(Define.ROUTE_LIST_DELETE_CONFIRM_ARGMENT_DATAID, item.dataId)
+        bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
         dialog.arguments = bundle
         dialog.onClickPositiveButtonCallback = {
             onClickDeleteConfirmDialogYse(it)
         }
         dialog.onClickNegativeButtonCallback = {
         }
-        dialog.showNow(parentFragmentManager, ROUTE_LIST_DELETE_CONFIRM_DLG_TAG)
+        dialog.showNow(parentFragmentManager, RouteListDeleteConfirmDialogTag)
     }
 
     /**
@@ -212,7 +264,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showSearchTargetInputDialog() {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SEARCH_TARGET_INPUT_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SearchTargetInputDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         _searchTargetInputViewModel.onClickPositiveButtonCallback = {
@@ -220,7 +272,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             searchStation(_searchTargetInputViewModel.getStationName())
         }
         val dialog = SearchTargetInputDialogFragment()
-        dialog.showNow(parentFragmentManager, SEARCH_TARGET_INPUT_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SearchTargetInputDialogTag)
     }
 
     /**
@@ -229,7 +281,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showStationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SelectListDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
@@ -240,7 +292,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             _searchRouteListItem = null
         }
         val dialog = ListItemSelectDialogFragment()
-        dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SelectListDialogTag)
     }
 
     /**
@@ -249,7 +301,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun showDestinationSelectDialog(itemsMap: Map<String, String>) {
         // 前回分削除
-        FragmentUtil.deletePrevDialog(SELECT_LIST_DLG_TAG, parentFragmentManager)
+        FragmentUtil.deletePrevDialog(SelectListDialogTag, parentFragmentManager)
 
         // ダイアログ表示
         _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
@@ -260,7 +312,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             _searchRouteListItem = null
         }
         val dialog = ListItemSelectDialogFragment()
-        dialog.showNow(parentFragmentManager, SELECT_LIST_DLG_TAG)
+        dialog.showNow(parentFragmentManager, SelectListDialogTag)
     }
 
     /**
@@ -268,10 +320,34 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param targetDataId 対象データID
      */
     private fun onClickDeleteConfirmDialogYse(targetDataId: Long?) {
-        if(targetDataId == null){
+        if (targetDataId == null) {
             return
         }
         _routeListViewModel.deleteListItem(targetDataId)
+    }
+
+    /**
+     * アイテム情報更新
+     * @param item 選択対象アイテム
+     */
+    private fun updateRouteItemInfo(item: RouteListItem) {
+        Log.d("Debug", "Update" + item.routeName)
+        _commonLoadingViewModel.showLoading("時刻情報更新中")
+        setKeepScreenOn()
+
+        launch(_viewModelContext) {
+            val ret = _routeListViewModel.updateRouteInfo(
+                item,
+                { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
+            withContext(Dispatchers.Main) {
+                _commonLoadingViewModel.closeLoading()
+                setKeepScreenOff()
+                if (!ret) {
+                    Toast.makeText(context, "更新に失敗しました", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     /**
@@ -279,17 +355,16 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchStation(stationName: String) {
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         launch(Dispatchers.Default + _job) {
             // 駅名より検索実行．実行結果から駅名リストダイアログ表示
             val stationListMap = _routeListViewModel.getStationList(stationName)
-            if(stationListMap.isNotEmpty()) {
+            if (stationListMap.isNotEmpty()) {
                 withContext(Dispatchers.Main) {
-                    common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                    _commonLoadingViewModel.closeLoading()
                     showStationSelectDialog(stationListMap)
                 }
-            }
-            else{
+            } else {
                 _searchRouteListItem = RouteListItem()
                 _searchRouteListItem!!.stationName = stationName
                 searchDestinationFromStationName(stationName)
@@ -302,11 +377,11 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchDestinationFromStationName(stationName: String) {
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         launch(_viewModelContext) {
             val destinationListMap = _routeListViewModel.getDestinationFromStationName(stationName)
             withContext(Dispatchers.Main) {
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                _commonLoadingViewModel.closeLoading()
                 showDestinationSelectDialog(destinationListMap)
             }
         }
@@ -317,22 +392,27 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationNameMap 駅名一覧(key: 駅名, value: URL)
      * @param selectStation 選択した駅名
      */
-    private fun searchDestinationFromUrl(stationNameMap: Map<String, String>, selectStation: String) {
+    private fun searchDestinationFromUrl(
+        stationNameMap: Map<String, String>,
+        selectStation: String
+    ) {
 
-        if(stationNameMap[selectStation] == null){
+        if (stationNameMap[selectStation] == null) {
             // TODO: エラーハンドリング
             _searchRouteListItem = null
+            Toast.makeText(context, "行先一覧に失敗しました", Toast.LENGTH_SHORT).show()
             return
         }
         _searchRouteListItem = RouteListItem()
         _searchRouteListItem!!.stationName = selectStation
 
         // 行先リストを取得
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading()
         launch(_viewModelContext) {
-            val destinationListMap = _routeListViewModel.getDestinationFromUrl(stationNameMap.getValue(selectStation))
+            val destinationListMap =
+                _routeListViewModel.getDestinationFromUrl(stationNameMap.getValue(selectStation))
             withContext(Dispatchers.Main) {
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
+                _commonLoadingViewModel.closeLoading()
                 showDestinationSelectDialog(destinationListMap)
             }
         }
@@ -344,41 +424,57 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param selectDestination 選択した行先
      */
     private fun addRouteInfo(destinationMap: Map<String, String>, selectDestination: String) {
-        if(destinationMap[selectDestination] == null) {
+        if (destinationMap[selectDestination] == null) {
             // TODO: エラーハンドリング
             _searchRouteListItem = null
+            Toast.makeText(context, "時刻表の取得に失敗しました", Toast.LENGTH_SHORT).show()
             return
         }
-        loading_text.text = "時刻情報取得中……"
-        common_loading.visibility = android.widget.ProgressBar.VISIBLE
+        _commonLoadingViewModel.showLoading("時刻情報取得中")
         // キーから路線名と行先を分割
         val splitDestinationKey = _routeListViewModel.splitDestinationKey(selectDestination)
         _searchRouteListItem!!.routeName = splitDestinationKey.first
         _searchRouteListItem!!.destination = splitDestinationKey.second
 
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        setKeepScreenOn()
         // 時刻データを全取得
         Log.d("Debug", "データ取得開始")
         launch(_viewModelContext) {
-            val routeInfo = _routeListViewModel.getTimeTableInfo(destinationMap.getValue(selectDestination))
+            val routeInfo =
+                _routeListViewModel.getTimeTableInfo(
+                    destinationMap.getValue(selectDestination),
+                    { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                    { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
             _handler.post {
-                loading_text.text = "時刻情報登録中……"
+                _commonLoadingViewModel.changeText("時刻情報登録中")
             }
             // 時刻データが取得できていれば路線一覧情報をDBに追加
-            val parentDataId = _routeListViewModel.registRouteListItem(routeInfo, _searchRouteListItem!!)
+            val parentDataId =
+                _routeListViewModel.registRouteListItem(routeInfo, _searchRouteListItem!!)
             _searchRouteListItem = null
             _routeListViewModel.registRouteInfoDetailItems(routeInfo, parentDataId)
 
             Log.d("Debug", "データ登録完了")
             withContext(Dispatchers.Main) {
-                loading_text.text = "読み込み中……"
-                common_loading.visibility = android.widget.ProgressBar.INVISIBLE
-                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                _commonLoadingViewModel.closeLoading()
+                setKeepScreenOff()
             }
-
         }
     }
 
+    /**
+     * スクリーンON維持
+     */
+    private fun setKeepScreenOn() {
+        requireActivity().window!!.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    /**
+     * スクリーンON維持解除
+     */
+    private fun setKeepScreenOff() {
+        requireActivity().window!!.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
 
     // endregion ダイアログ関連
 

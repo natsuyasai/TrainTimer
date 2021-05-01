@@ -1,6 +1,5 @@
 package com.nyasai.traintimer.routelist
 
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.database.RouteListItem

@@ -1,0 +1,7 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:headerBackground">@color/actionBar</item>
+    </style>
+
+</resources>
