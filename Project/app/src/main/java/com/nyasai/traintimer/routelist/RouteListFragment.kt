@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
@@ -26,7 +27,7 @@ import kotlin.coroutines.CoroutineContext
  */
 class RouteListFragment : Fragment(), CoroutineScope {
 
-    companion object {
+    private companion object {
         // 路線リストアイテム削除確認ダイアログタグ
         const val RouteListDeleteConfirmDialogTag = "RouteListItemDeleteConfirm"
 
@@ -173,6 +174,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             }
             R.id.setting_menu -> {
                 Log.d("Debug", "設定ボタン押下")
+                showSettingFragment()
                 true
             }
             else -> {
@@ -327,30 +329,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
     }
 
     /**
-     * アイテム情報更新
-     * @param item 選択対象アイテム
-     */
-    private fun updateRouteItemInfo(item: RouteListItem) {
-        Log.d("Debug", "Update" + item.routeName)
-        _commonLoadingViewModel.showLoading("時刻情報更新中")
-        setKeepScreenOn()
-
-        launch(_viewModelContext) {
-            val ret = _routeListViewModel.updateRouteInfo(
-                item,
-                { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
-            withContext(Dispatchers.Main) {
-                _commonLoadingViewModel.closeLoading()
-                setKeepScreenOff()
-                if (!ret) {
-                    Toast.makeText(context, "更新に失敗しました", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    /**
      * 駅検索
      * @param stationName 検索対象駅名
      */
@@ -477,5 +455,37 @@ class RouteListFragment : Fragment(), CoroutineScope {
     }
 
     // endregion ダイアログ関連
+
+
+    /**
+     * アイテム情報更新
+     * @param item 選択対象アイテム
+     */
+    private fun updateRouteItemInfo(item: RouteListItem) {
+        Log.d("Debug", "Update" + item.routeName)
+        _commonLoadingViewModel.showLoading("時刻情報更新中")
+        setKeepScreenOn()
+
+        launch(_viewModelContext) {
+            val ret = _routeListViewModel.updateRouteInfo(
+                item,
+                { _commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                { _commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) })
+            withContext(Dispatchers.Main) {
+                _commonLoadingViewModel.closeLoading()
+                setKeepScreenOff()
+                if (!ret) {
+                    Toast.makeText(context, "更新に失敗しました", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    /**
+     * 設定フラグメント表示
+     */
+    private fun showSettingFragment() {
+        findNavController().navigate(RouteListFragmentDirections.actionRouteListToPreferenceFragment())
+    }
 
 }
