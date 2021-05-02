@@ -9,7 +9,7 @@ import com.nyasai.traintimer.R
 /**
  * アプリケーション情報表示用ダイアログ
  */
-class AppInfoDialogFlagment : DialogFragment() {
+class AppInfoDialogFragment : DialogFragment() {
     /**
      * ダイアログ生成
      */

@@ -54,7 +54,7 @@ class PreferenceFragment : PreferenceFragmentCompat() {
         FragmentUtil.deletePrevDialog(AppInfoDialogTag, parentFragmentManager)
 
         // ダイアログ表示
-        val dialog = AppInfoDialogFlagment()
+        val dialog = AppInfoDialogFragment()
         dialog.showNow(parentFragmentManager, AppInfoDialogTag)
     }
 }
