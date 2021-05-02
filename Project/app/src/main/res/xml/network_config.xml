@@ -3,5 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <!-- Yahooドメインへの接続許可 -->
         <domain includeSubdomains="true">transit.yahoo.co.jp</domain>
+        <!-- 祝日判定用の接続許可 -->
+        <domain includeSubdomains="true">s-proj.com</domain>
     </domain-config>
 </network-security-config>
