@@ -88,11 +88,17 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
 
         // データバインド
         _binding.routeInfoViewModel = _routeInfoViewModel
-        _routeInfoViewModel.initialize()
         _binding.routeInfoFragment = this
-
         _binding.lifecycleOwner = this
 
+        // 祝日の場合設定
+        launch (Dispatchers.Default + _job){
+            _routeInfoViewModel.initializeAsync()
+            withContext(Dispatchers.Main){
+                _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
+                _routeInfoViewModel.updateCurrentCountItem(true)
+            }
+        }
 
         // 路線詳細用アダプター設定
         _routeInfoAdapter = RouteInfoAdapter()

@@ -19,4 +19,15 @@
     <string name="select_filter_message">表示対象を選択してください</string>
     <string name="select_filter_yes">OK</string>
     <string name="select_filter_no">Cancel</string>
+    <!-- 設定フラグメント用 -->
+    <string name="preference_category_migration">データ移行</string>
+    <string name="preference_restore">リストア</string>
+    <string name="preference_restore_summary">時刻表情報をバックアップから復元します</string>
+    <string name="preference_backup">バックアップ</string>
+    <string name="preference_backup_summary">時刻表情報をバックアップします</string>
+    <string name="preference_category_help">ヘルプ</string>
+    <string name="preference_app_info">アプリケーション情報</string>
+
+    <!-- アプリケーション情報ダイアログ用 -->
+    <string name="app_info_dialog_title">時刻表</string>
 </resources>

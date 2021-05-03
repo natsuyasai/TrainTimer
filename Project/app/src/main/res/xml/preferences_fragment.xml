@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- データ移行関連 -->
+    <PreferenceCategory
+        android:key="data_migration"
+        android:title="@string/preference_category_migration">
+        <Preference
+            android:key="restore"
+            android:summary="@string/preference_restore_summary"
+            android:title="@string/preference_restore"></Preference>
+
+        <Preference
+            android:key="backup"
+            android:summary="@string/preference_backup_summary"
+            android:title="@string/preference_backup"></Preference>
+    </PreferenceCategory>
+
+    <!-- その他 -->
+    <PreferenceCategory
+        android:key="help"
+        android:title="@string/preference_category_help">
+        <Preference
+            android:key="app_info"
+            android:title="@string/preference_app_info"></Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

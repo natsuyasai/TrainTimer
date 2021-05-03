@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_routeList_to_listItemSelectDialogFragment"
             app:destination="@id/listItemSelectDialogFragment" />
+        <action
+            android:id="@+id/action_routeList_to_preferenceFragment"
+            app:destination="@id/preferenceFragment" />
     </fragment>
     <fragment
         android:id="@+id/routeInfoFragment2"
@@ -45,6 +48,14 @@
         android:label="ListItemSelectDialogFragment" >
         <action
             android:id="@+id/action_listItemSelectDialogFragment_to_routeList"
+            app:destination="@id/routeList" />
+    </fragment>
+    <fragment
+        android:id="@+id/preferenceFragment"
+        android:name="com.nyasai.traintimer.setting.PreferenceFragment"
+        android:label="PreferenceFragment" >
+        <action
+            android:id="@+id/action_preferenceFragment_to_routeList"
             app:destination="@id/routeList" />
     </fragment>
 </navigation>
