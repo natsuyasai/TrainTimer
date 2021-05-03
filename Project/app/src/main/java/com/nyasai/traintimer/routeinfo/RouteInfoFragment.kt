@@ -88,10 +88,12 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
 
         // データバインド
         _binding.routeInfoViewModel = _routeInfoViewModel
-        _routeInfoViewModel.initialize()
         _binding.routeInfoFragment = this
-
         _binding.lifecycleOwner = this
+        launch (Dispatchers.Default + _job){
+            _routeInfoViewModel.initializeAsync()
+        }
+
 
 
         // 路線詳細用アダプター設定

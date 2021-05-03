@@ -61,8 +61,8 @@ class RouteInfoViewModel(
      * 初期化
      * インスタンス生成以降に初期化したいものの初期化を行う
      */
-    fun initialize() {
-        trySetPublicHolidayDiagramType()
+    fun initializeAsync() {
+        trySetPublicHolidayDiagramTypeAsync()
     }
 
     /**
@@ -76,8 +76,8 @@ class RouteInfoViewModel(
     /**
      * 祝日ダイア設定
      */
-    private fun trySetPublicHolidayDiagramType() {
-        _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(true)
+    private fun trySetPublicHolidayDiagramTypeAsync() {
+        _currentDiagramType.postValue(_diagramTypeModel.getTodayDiagramType(true))
     }
 
     /**
