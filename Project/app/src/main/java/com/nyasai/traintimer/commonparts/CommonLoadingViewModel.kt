@@ -12,7 +12,7 @@ class CommonLoadingViewModel : ViewModel() {
 
     // ローディング表示状態
     private val _isVisible: MutableLiveData<Boolean> = MutableLiveData()
-    var isVisible: LiveData<Boolean> = _isVisible
+    var isVisibled: LiveData<Boolean> = _isVisible
 
     // テキスト
     private val _loadingText: MutableLiveData<String> = MutableLiveData()

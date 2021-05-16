@@ -3,6 +3,7 @@ package com.nyasai.traintimer.routeinfo
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
 import com.nyasai.traintimer.define.Define
+import java.lang.Exception
 import java.util.*
 
 class DiagramTypeModel {
@@ -36,10 +37,14 @@ class DiagramTypeModel {
             else -> Define.DiagramType.Weekday
         }
         if (judgePublicHoliday) {
+            try {
+                val response = PublicHolidayJudgeAPIUrl.httpGet().response()
+                if (response.second.isSuccessful && String(response.second.data) == "holiday") {
+                    type = Define.DiagramType.Sunday
+                }
+            }
+            catch (e: Exception) {
 
-            val response = PublicHolidayJudgeAPIUrl.httpGet().response()
-            if (response.second.isSuccessful && String(response.second.data) == "holiday") {
-                type = Define.DiagramType.Sunday
             }
         }
         return type
