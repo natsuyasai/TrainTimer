@@ -355,7 +355,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchDestinationFromStationName(stationName: String) {
-        _commonLoadingViewModel.showLoading()
+        launch(Dispatchers.Main){
+            _commonLoadingViewModel.showLoading()
+        }
         launch(_viewModelContext) {
             val destinationListMap = _routeListViewModel.getDestinationFromStationName(stationName)
             withContext(Dispatchers.Main) {
