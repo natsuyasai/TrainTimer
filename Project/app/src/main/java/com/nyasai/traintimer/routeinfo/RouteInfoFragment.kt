@@ -15,7 +15,6 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.android.synthetic.main.fragment_route_info.*
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -182,7 +181,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                         4,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
-                    countdown.text = _spannableStringBuilder
+                    _binding.countdown.text = _spannableStringBuilder
                 }
             }
 
@@ -282,7 +281,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         val text = """|${departureTimeStr}
                       |${trainTypeStr}
                       |${destinationStr}""".trimMargin()
-        next_time_table.text = text
+        _binding.nextTimeTable.text = text
 
         // スクロール位置更新
         updateScrollPosition()
@@ -297,7 +296,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
             launch(Dispatchers.Default + _job) {
                 delay(500)
                 withContext(Dispatchers.Main) {
-                    (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                    (_binding.routeInfoView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),
                         0
                     )
