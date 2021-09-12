@@ -2,6 +2,7 @@ package com.nyasai.traintimer.routeinfo
 
 import android.graphics.Color
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
@@ -15,7 +16,7 @@ import java.time.LocalTime
 fun TextView.setDepartureTime(item: RouteDetail?) {
     item?.let {
         text = item.departureTime
-        setTextColor(resources.getColor(getTimeTextColor(item.departureTime)))
+        setTextColor(ContextCompat.getColor(context, getTimeTextColor(item.departureTime)))
     }
 }
 
@@ -26,7 +27,12 @@ fun TextView.setDepartureTime(item: RouteDetail?) {
 fun TextView.setTrainType(item: RouteDetail?) {
     item?.let {
         text = item.trainType
-        setTextColor(resources.getColor(getTimeTextColor(item.departureTime, R.color.textRed)))
+        setTextColor(
+            ContextCompat.getColor(
+                context,
+                getTimeTextColor(item.departureTime, R.color.textRed)
+            )
+        )
     }
 }
 
@@ -37,7 +43,7 @@ fun TextView.setTrainType(item: RouteDetail?) {
 fun TextView.setDestination(item: RouteDetail?) {
     item?.let {
         text = item.destination
-        setTextColor(resources.getColor(getTimeTextColor(item.departureTime)))
+        setTextColor(ContextCompat.getColor(context, getTimeTextColor(item.departureTime)))
     }
 }
 
@@ -56,7 +62,7 @@ fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
         Define.DiagramType.Saturday -> R.color.saturday
         Define.DiagramType.Sunday -> R.color.sunday
     }
-    setTextColor(resources.getColor(color))
+    setTextColor(ContextCompat.getColor(context, color))
 }
 
 /**

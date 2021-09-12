@@ -2,6 +2,7 @@ package com.nyasai.traintimer.routeinfo
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.RelativeSizeSpan
@@ -60,7 +61,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     private lateinit var _timer: Timer
 
     // タイマ実処理受け渡し用ハンドラ
-    private val _handler = Handler()
+    private val _handler = Handler(Looper.getMainLooper())
 
     // 文字列装飾用
     private var _spannableStringBuilder = SpannableStringBuilder()
@@ -231,7 +232,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     /**
      * タイトルクリック
      */
-    fun onClickTitle(view: View) {
+    fun onClickTitle(@Suppress("UNUSED_PARAMETER") view: View) {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
         _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
