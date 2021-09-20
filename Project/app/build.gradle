@@ -80,6 +80,10 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+    testImplementation 'io.mockk:mockk:1.10.5'
+    testImplementation 'androidx.arch.core:core-testing:2.1.0'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.1.0'
+    testImplementation "com.nhaarman:mockito-kotlin:1.5.0"
 
     // DB Test
     //debugImplementation "com.amitshekhar.android:debug-db:1.0.6"
