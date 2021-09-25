@@ -6,6 +6,7 @@ import org.junit.Assert
 import org.junit.jupiter.api.Test
 import androidx.lifecycle.Observer;
 import com.nyasai.traintimer.testutil.InstantExecutorExtension
+import com.nyasai.traintimer.testutil.TestObserver
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(InstantExecutorExtension::class)
@@ -28,5 +29,31 @@ internal class CommonLoadingViewModelTest{
 
         Assert.assertEquals(target.isVisible(), true)
         verify(observer).onChanged(testMessage)
+    }
+
+    /**
+     * ローディング終了_成功
+     */
+    @Test
+    fun closeLoading_success() {
+        val target = CommonLoadingViewModel()
+
+        // オブザーバ設定
+        val maxCountObserver = TestObserver<Int>()
+        target.maxCount.observeForever(maxCountObserver)
+        val currentCountObserver = TestObserver<Int>()
+        target.maxCount.observeForever(currentCountObserver)
+
+        target.updateMaxCountFromBackgroundTask(100)
+        target.incrementCurrentCountFromBackgroundTask(1)
+
+        target.closeLoading()
+
+        maxCountObserver.await()
+        currentCountObserver.await()
+
+        Assert.assertEquals(target.isVisible(), false)
+        Assert.assertEquals(maxCountObserver.get(), 0)
+        Assert.assertEquals(currentCountObserver.get(), 0)
     }
 }
