@@ -3,10 +3,7 @@ package com.nyasai.traintimer
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.nyasai.traintimer.database.RouteDatabase
-import com.nyasai.traintimer.database.RouteDatabaseDao
-import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.database.*
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -569,4 +566,66 @@ class RouteDatabaseTest {
 
     // endregion 路線情報詳細操作
 
+    // region フィルタ情報操作
+
+    @Test
+    @Throws(Exception::class)
+    fun insertFilterInfoItem(){
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        val item = FilterInfo()
+        item.parentDataId = parents[0].dataId
+        item.isShow = true
+        item.trainTypeAndDestination = "普通"
+        routeDao.insertFilterInfoItem(item)
+
+        val dbItems = routeDao.getFilterInfoItemWithParentIdSync(parents[0].dataId)
+
+        // 片付け
+        routeDao.deleteFilterInfoItemWithParentId(parents[0].dataId)
+        Assert.assertEquals(dbItems[0].parentDataId, item.parentDataId)
+        Assert.assertEquals(dbItems[0].isShow, item.isShow)
+        Assert.assertEquals(dbItems[0].trainTypeAndDestination, item.trainTypeAndDestination)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun insertFilterInfoItems(){
+        // 親データ設定
+        val parent = RouteListItem()
+        parent.routeName = "JR"
+        parent.stationName = "Hoge駅"
+        parent.destination = "Fuga方面"
+        routeDao.insertRouteListItem(parent)
+        val parents = routeDao.getAllRouteListItemsSync()
+
+        val items = mutableListOf<FilterInfo>()
+        for (i in 1..10){
+            val item = FilterInfo()
+            item.parentDataId = parents[0].dataId
+            item.isShow = true
+            item.trainTypeAndDestination = i.toString()
+            items.add(item)
+        }
+        routeDao.insertFilterInfoItems(items)
+
+        val dbItems = routeDao.getFilterInfoItemWithParentIdSync(parents[0].dataId)
+
+        // 片付け
+        routeDao.deleteFilterInfoItemWithParentId(parents[0].dataId)
+        Assert.assertEquals(dbItems[0].parentDataId, items[0].parentDataId)
+        Assert.assertEquals(dbItems[0].isShow, items[0].isShow)
+        Assert.assertEquals(dbItems[0].trainTypeAndDestination, items[0].trainTypeAndDestination)
+        Assert.assertEquals(dbItems[9].parentDataId, items[9].parentDataId)
+        Assert.assertEquals(dbItems[9].isShow, items[9].isShow)
+        Assert.assertEquals(dbItems[9].trainTypeAndDestination, items[9].trainTypeAndDestination)
+    }
+
+    // endregion フィルタ情報操作
 }
