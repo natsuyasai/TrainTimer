@@ -2,6 +2,7 @@ package com.nyasai.traintimer.routelist
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -80,7 +81,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private var _searchRouteListItem: RouteListItem? = null
 
     // UI実行用ハンドラ
-    private val _handler = Handler()
+    private val _handler = Handler(Looper.getMainLooper())
 
     // 本フラグメント用job
     private val _job = Job()
