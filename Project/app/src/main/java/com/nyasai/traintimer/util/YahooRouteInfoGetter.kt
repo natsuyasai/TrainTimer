@@ -72,7 +72,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         val stationList = mutableMapOf<String, String>()
         val document = getHTMLDocument(requestUrl) ?: return stationList
         // 駅一覧箇所を取得
-        val searchResultDiv = document.getElementById("mdSearchResult") ?: return stationList
+        val searchResultDiv = document.getElementById("main") ?: return stationList
         val stationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem")
         if (stationListRootElement.size < 1) {
             return stationList
