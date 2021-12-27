@@ -73,7 +73,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         val document = getHTMLDocument(requestUrl) ?: return stationList
         // 駅一覧箇所を取得
         val searchResultDiv = document.getElementById("main") ?: return stationList
-        val stationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem")
+        val stationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem quad")
         if (stationListRootElement.size < 1) {
             return stationList
         }
