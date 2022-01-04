@@ -8,8 +8,8 @@ import java.util.*
 
 class DiagramTypeModel {
 
-    // 祝日判定用APIURL
-    private val PublicHolidayJudgeAPIUrl: String =
+    // 祝日判定用APIのURL
+    private val _publicHolidayJudgeAPIUrl: String =
         "http://s-proj.com/utils/checkHoliday.php?kind=ph"
 
     /**
@@ -38,7 +38,7 @@ class DiagramTypeModel {
         }
         if (judgePublicHoliday) {
             try {
-                val response = PublicHolidayJudgeAPIUrl.httpGet().response()
+                val response = _publicHolidayJudgeAPIUrl.httpGet().response()
                 if (response.second.isSuccessful && String(response.second.data) == "holiday") {
                     type = Define.DiagramType.Sunday
                 }

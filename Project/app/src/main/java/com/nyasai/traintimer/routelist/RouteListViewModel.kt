@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 /**
- * 路線一覧Viewmodel
+ * 路線一覧ViewModel
  */
 class RouteListViewModel(
     val database: RouteDatabaseDao,
@@ -102,7 +102,7 @@ class RouteListViewModel(
      * @param routeInfo 検索した路線情報
      * @return 登録したID
      */
-    fun registRouteListItem(
+    fun registerRouteListItem(
         routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
         searchRouteListItem: RouteListItem
     ): Long {
@@ -130,7 +130,7 @@ class RouteListViewModel(
      * @param routeInfo 検索した路線情報
      * @param parentDataId 親データID
      */
-    fun registRouteInfoDetailItems(
+    fun registerRouteInfoDetailItems(
         routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
         parentDataId: Long
     ) {
@@ -144,7 +144,7 @@ class RouteListViewModel(
             deleteListItem(parentDataId)
             return
         }
-        val registerItem = createRegistRouteInfoDetailItemsAndFilterInfo(routeInfo, parentDataId)
+        val registerItem = createRegisterRouteInfoDetailItemsAndFilterInfo(routeInfo, parentDataId)
         Log.d("Debug", "詳細データ登録")
         insertRouteDetailItems(registerItem.first)
         // フィルタ情報から重複削除したデータを登録
@@ -192,7 +192,7 @@ class RouteListViewModel(
         // 既にある路線アイテムを全消去
         database.deleteRouteDetailItemWithParentId(item.dataId)
         // 登録
-        val registerItem = createRegistRouteInfoDetailItemsAndFilterInfo(routeInfo, item.dataId)
+        val registerItem = createRegisterRouteInfoDetailItemsAndFilterInfo(routeInfo, item.dataId)
         insertRouteDetailItems(registerItem.first)
         database.updateFilterInfoListItem(registerItem.second.distinctBy { it.trainTypeAndDestination })
 
@@ -202,7 +202,7 @@ class RouteListViewModel(
     /**
      * 登録する路線情報詳細とフィルタ情報を生成
      */
-    private fun createRegistRouteInfoDetailItemsAndFilterInfo(
+    private fun createRegisterRouteInfoDetailItemsAndFilterInfo(
         routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
         parentDataId: Long
     ): Pair<List<RouteDetail>, List<FilterInfo>> {

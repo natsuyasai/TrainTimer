@@ -8,11 +8,9 @@ import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import kotlin.coroutines.CoroutineContext
 
 /**
  * 路線詳細情報表示用ViewModel
