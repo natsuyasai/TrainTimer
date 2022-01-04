@@ -338,7 +338,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         launch(Dispatchers.Default + _job) {
             // 駅名より検索実行．実行結果から駅名リストダイアログ表示
             val stationListMap = _routeListViewModel.getStationList(stationName)
-            if (stationListMap.isNotEmpty()) {
+            if (stationListMap?.isNotEmpty() == true) {
                 withContext(Dispatchers.Main) {
                     _commonLoadingViewModel.closeLoading()
                     showStationSelectDialog(stationListMap)

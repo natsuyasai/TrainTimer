@@ -165,7 +165,7 @@ class RouteListViewModel(
     ): Boolean {
         // 路線アイテム情報に一致する情報を取得する
         val stationListMap = _yahooRouteInfoGetter.getStationList(item.stationName)
-        val destinationListMap: Map<String, String> = if (stationListMap.isNotEmpty()) {
+        val destinationListMap: Map<String, String> = if (stationListMap?.isNotEmpty() == true) {
             if (stationListMap.containsKey(item.stationName)) {
                 _yahooRouteInfoGetter.getDestinationFromUrl(stationListMap.getValue(item.stationName))
             } else {

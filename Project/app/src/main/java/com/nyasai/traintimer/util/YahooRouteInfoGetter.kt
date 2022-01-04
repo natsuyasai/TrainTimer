@@ -65,12 +65,12 @@ class YahooRouteInfoGetter : CoroutineScope {
      * @param stationName 検索対象駅名
      * @return key：駅名, value:URL
      */
-    fun getStationList(stationName: String): Map<String, String> {
+    fun getStationList(stationName: String): Map<String, String>? {
         // 駅名検索結果を取得
         val requestUrl =
             "${YahooRouteSearchBaseUrl}/station/time/search?srtbl=on&kind=1&done=time&q=$stationName"
         val stationList = mutableMapOf<String, String>()
-        val document = getHTMLDocument(requestUrl) ?: return stationList
+        val document = getHTMLDocument(requestUrl) ?: return null
         // 駅一覧箇所を取得
         val searchResultDiv = document.getElementById("main") ?: return stationList
         val stationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem quad")
