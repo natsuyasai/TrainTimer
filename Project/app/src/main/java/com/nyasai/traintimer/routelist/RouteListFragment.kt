@@ -431,9 +431,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
             }
             // 時刻データが取得できていれば路線一覧情報をDBに追加
             val parentDataId =
-                _routeListViewModel.registRouteListItem(routeInfo, _searchRouteListItem!!)
+                _routeListViewModel.registerRouteListItem(routeInfo, _searchRouteListItem!!)
             _searchRouteListItem = null
-            _routeListViewModel.registRouteInfoDetailItems(routeInfo, parentDataId)
+            _routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
 
             Log.d("Debug", "データ登録完了")
             withContext(Dispatchers.Main) {

@@ -2,13 +2,14 @@ package com.nyasai.traintimer.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 /**
  * 路線一覧用データ
  */
 @Entity(tableName = "route_list_item_table")
-data class RouteListItem(
+data class RouteListItem @Ignore constructor(
 
     // データID(連番)
     @PrimaryKey(autoGenerate = true)
@@ -30,4 +31,6 @@ data class RouteListItem(
     @ColumnInfo(name = "sort_index")
     var sortIndex: Long = 0L
 
-)
+){
+    constructor() : this(0, "", "","",0L)
+}

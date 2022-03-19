@@ -1,9 +1,6 @@
 package com.nyasai.traintimer.database
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 
 /**
  * 時刻表詳細ページ用データ
@@ -18,7 +15,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )]
 )
-data class RouteDetail(
+data class RouteDetail @Ignore constructor(
 
     // データID(連番)
     @PrimaryKey(autoGenerate = true)
@@ -44,4 +41,6 @@ data class RouteDetail(
     @ColumnInfo(name = "destination")
     var destination: String = "",
 
-    )
+    ){
+    constructor() : this(0, 0L, 0, "", "", "")
+}

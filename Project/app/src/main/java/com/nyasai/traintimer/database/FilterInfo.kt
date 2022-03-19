@@ -1,9 +1,6 @@
 package com.nyasai.traintimer.database
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 
 /**
  * フィルタ情報データ
@@ -18,7 +15,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )]
 )
-data class FilterInfo(
+data class FilterInfo @Ignore constructor(
 
     // データID(連番)
     @PrimaryKey(autoGenerate = true)
@@ -36,6 +33,9 @@ data class FilterInfo(
     @ColumnInfo(name = "is_show")
     var isShow: Boolean = true,
 ) {
+
+    constructor() : this(0, 0L, "", true)
+
     companion object {
         /**
          *
