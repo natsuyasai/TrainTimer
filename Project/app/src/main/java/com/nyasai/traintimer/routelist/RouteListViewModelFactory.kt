@@ -14,7 +14,7 @@ class RouteListViewModelFactory(
 ) : ViewModelProvider.Factory {
 
     @Suppress("unchecked_cast")
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RouteListViewModel::class.java)) {
             return RouteListViewModel(dataSource, application) as T
         }

@@ -30,6 +30,14 @@ class YahooRouteInfoGetter : CoroutineScope {
 
         // 路線検索URLベース部分
         const val YahooRouteSearchBaseUrl = "https://transit.yahoo.co.jp"
+
+        // ダイア種別(平日，土曜，日曜・祝日)
+        enum class DiagramType {
+            Weekday,
+            Saturday,
+            Holiday,
+            Max
+        }
     }
 
     // リクエスト総数
@@ -159,16 +167,14 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
         var timeTableInfoList = listOf<List<TimeInfo>>()
-        if (tableUrls.size == 3) {
-            coroutineScope {
-                val awaitList = listOf(
-                    async { getTimeInfoList(tableUrls[0], notifyMaxCountCallback, notifyCountCallback) },
-                    async { getTimeInfoList(tableUrls[1], notifyMaxCountCallback, notifyCountCallback) },
-                    async { getTimeInfoList(tableUrls[2], notifyMaxCountCallback, notifyCountCallback) })
-                timeTableInfoList = awaitList.awaitAll()
-            }
+        if(tableUrls.size == DiagramType.Max.ordinal) { return timeTableInfoList }
+        coroutineScope {
+            val awaitList = listOf(
+                async { getTimeInfoList(tableUrls[DiagramType.Weekday.ordinal], notifyMaxCountCallback, notifyCountCallback) },
+                async { getTimeInfoList(tableUrls[DiagramType.Saturday.ordinal], notifyMaxCountCallback, notifyCountCallback) },
+                async { getTimeInfoList(tableUrls[DiagramType.Holiday.ordinal], notifyMaxCountCallback, notifyCountCallback) })
+            timeTableInfoList = awaitList.awaitAll()
         }
-
         return timeTableInfoList
     }
 

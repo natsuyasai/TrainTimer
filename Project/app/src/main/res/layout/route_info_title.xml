@@ -8,7 +8,7 @@
             type="com.nyasai.traintimer.database.RouteListItem" />
         <variable
             name="currentDiagramType"
-            type="com.nyasai.traintimer.define.Define.DiagramType" />
+            type="com.nyasai.traintimer.util.YahooRouteInfoGetter.Companion.DiagramType" />
         <variable
             name="routeInfoFragment"
             type="com.nyasai.traintimer.routeinfo.RouteInfoFragment" />

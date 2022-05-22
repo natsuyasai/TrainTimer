@@ -140,13 +140,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
         setHasOptionsMenu(true)
 
         // 変更監視
-        _routeListViewModel.routeList.observe(viewLifecycleOwner, {
+        _routeListViewModel.routeList.observe(viewLifecycleOwner) {
             it?.let {
                 // リストアイテム設定
                 adapter.submitList(it)
                 Log.d("Debug", "データ更新 : ${_routeListViewModel.routeList.value.toString()}")
             }
-        })
+        }
 
         // Inflate the layout for this fragment
         return binding.root
@@ -164,7 +164,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // ローディング表示中はメニュー非表示
-        if (_commonLoadingViewModel.isVisible()) {
+        if (_commonLoadingViewModel.isVisible.value == true) {
             return false
         }
         return when (item.itemId) {

@@ -58,7 +58,7 @@ class RouteListViewModel(
     /**
      * データ追加
      */
-    fun insert(item: RouteListItem) {
+    private fun insert(item: RouteListItem) {
         database.insertRouteListItem(item)
     }
 
@@ -108,18 +108,20 @@ class RouteListViewModel(
     ): Long {
         Log.d("Debug", "データ登録開始")
         var parentDataId = -1L
-        if (routeInfo.size == 3 && routeInfo[0].isNotEmpty() && routeInfo[1].isNotEmpty() && routeInfo[2].isNotEmpty()) {
-            Log.d("Debug", "一覧データ登録")
-            insert(searchRouteListItem)
-            // 追加したアイテムのIDを取得
-            for (item in getListItemsAsync()) {
-                if (item.stationName == searchRouteListItem.stationName
-                    && item.routeName == searchRouteListItem.routeName
-                    && item.destination == searchRouteListItem.destination
-                ) {
-                    parentDataId = item.dataId
-                    break
-                }
+        if(routeInfo.size != YahooRouteInfoGetter.Companion.DiagramType.Max.ordinal) { return parentDataId }
+        if(routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()) { return parentDataId }
+        if(routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()) { return parentDataId }
+        if(routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty()) { return parentDataId }
+        Log.d("Debug", "一覧データ登録")
+        insert(searchRouteListItem)
+        // 追加したアイテムのIDを取得
+        for (item in getListItemsAsync()) {
+            if (item.stationName == searchRouteListItem.stationName
+                && item.routeName == searchRouteListItem.routeName
+                && item.destination == searchRouteListItem.destination
+            ) {
+                parentDataId = item.dataId
+                break
             }
         }
         return parentDataId
@@ -139,7 +141,9 @@ class RouteListViewModel(
             Log.d("Debug", "親データ未設定")
             return
         }
-        if (routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty()) {
+        if (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()
+            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()
+            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty()) {
             Log.d("Debug", "データのいずれかが取得失敗")
             deleteListItem(parentDataId)
             return
@@ -186,7 +190,10 @@ class RouteListViewModel(
                 notifyMaxCountCallback,
                 notifyCountCallback
             )
-        if (routeInfo.count() <= 0 || (routeInfo[0].isEmpty() || routeInfo[1].isEmpty() || routeInfo[2].isEmpty())) {
+        if (routeInfo.isEmpty()
+            || (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()
+            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()
+            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty())) {
             return false
         }
         // 既にある路線アイテムを全消去
@@ -209,14 +216,14 @@ class RouteListViewModel(
         val max = routeInfo.size - 1
         val addDataList = mutableListOf<RouteDetail>()
         val filterInfoList = mutableListOf<FilterInfo>()
-        for (diagramType in 0..max) {
+        for ((index, diagramType) in routeInfo.withIndex()) {
             // ダイヤ種別毎のアイテム
-            for (timeInfo in routeInfo[diagramType]) {
+            for (timeInfo in diagramType) {
                 // 時刻情報追加
                 addDataList.add(
                     RouteDetail(
                         parentDataId = parentDataId,
-                        diagramType = diagramType,
+                        diagramType = index,
                         departureTime = timeInfo.time,
                         trainType = timeInfo.type,
                         destination = timeInfo.destination
