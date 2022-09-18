@@ -213,7 +213,6 @@ class RouteListViewModel(
         routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
         parentDataId: Long
     ): Pair<List<RouteDetail>, List<FilterInfo>> {
-        val max = routeInfo.size - 1
         val addDataList = mutableListOf<RouteDetail>()
         val filterInfoList = mutableListOf<FilterInfo>()
         for ((index, diagramType) in routeInfo.withIndex()) {
