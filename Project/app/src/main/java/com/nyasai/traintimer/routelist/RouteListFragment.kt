@@ -2,11 +2,14 @@ package com.nyasai.traintimer.routelist
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -80,7 +83,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private var _searchRouteListItem: RouteListItem? = null
 
     // UI実行用ハンドラ
-    private val _handler = Handler()
+    private val _handler = Handler(Looper.getMainLooper())
 
     // 本フラグメント用job
     private val _job = Job()
@@ -136,52 +139,21 @@ class RouteListFragment : Fragment(), CoroutineScope {
         initDialog()
 
         // メニューボタン表示設定
-        setHasOptionsMenu(true)
+        initMenuItem()
 
         // 変更監視
-        _routeListViewModel.routeList.observe(viewLifecycleOwner, {
+        _routeListViewModel.routeList.observe(viewLifecycleOwner) {
             it?.let {
                 // リストアイテム設定
                 adapter.submitList(it)
                 Log.d("Debug", "データ更新 : ${_routeListViewModel.routeList.value.toString()}")
             }
-        })
+        }
 
         // Inflate the layout for this fragment
         return binding.root
     }
 
-    /**
-     * onCreateOptionsMenuフック
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.route_list_option, menu)
-    }
-
-    /**
-     * onOptionsItemSelectedフック
-     */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // ローディング表示中はメニュー非表示
-        if (_commonLoadingViewModel.isVisible()) {
-            return false
-        }
-        return when (item.itemId) {
-            R.id.route_add_menu -> {
-                Log.d("Debug", "路線検索ボタン押下")
-                showSearchTargetInputDialog()
-                true
-            }
-            R.id.setting_menu -> {
-                Log.d("Debug", "設定ボタン押下")
-                showSettingFragment()
-                true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
 
     /**
      * onDestroyフック
@@ -205,6 +177,47 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 onClickDeleteConfirmDialogYse(it)
             }
             deleteConfirmDialog.onClickNegativeButtonCallback = {
+            }
+        }
+    }
+
+    /**
+     * メニュー要素初期化
+     */
+    private fun initMenuItem() {
+        val menuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.route_list_option, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return onSelectedOptionItem(menuItem)
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    /**
+     * onOptionsItemSelectedフック
+     */
+    private fun onSelectedOptionItem(item: MenuItem): Boolean {
+        // ローディング表示中はメニュー非表示
+        if (_commonLoadingViewModel.isVisible.value == true) {
+            return false
+        }
+        return when (item.itemId) {
+            R.id.route_add_menu -> {
+                Log.d("Debug", "路線検索ボタン押下")
+                showSearchTargetInputDialog()
+                true
+            }
+            R.id.setting_menu -> {
+                Log.d("Debug", "設定ボタン押下")
+                showSettingFragment()
+                true
+            }
+            else -> {
+                false
             }
         }
     }
@@ -337,7 +350,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         launch(Dispatchers.Default + _job) {
             // 駅名より検索実行．実行結果から駅名リストダイアログ表示
             val stationListMap = _routeListViewModel.getStationList(stationName)
-            if (stationListMap.isNotEmpty()) {
+            if (stationListMap?.isNotEmpty() == true) {
                 withContext(Dispatchers.Main) {
                     _commonLoadingViewModel.closeLoading()
                     showStationSelectDialog(stationListMap)
@@ -355,7 +368,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchDestinationFromStationName(stationName: String) {
-        _commonLoadingViewModel.showLoading()
+        launch(Dispatchers.Main){
+            _commonLoadingViewModel.showLoading()
+        }
         launch(_viewModelContext) {
             val destinationListMap = _routeListViewModel.getDestinationFromStationName(stationName)
             withContext(Dispatchers.Main) {
@@ -428,9 +443,9 @@ class RouteListFragment : Fragment(), CoroutineScope {
             }
             // 時刻データが取得できていれば路線一覧情報をDBに追加
             val parentDataId =
-                _routeListViewModel.registRouteListItem(routeInfo, _searchRouteListItem!!)
+                _routeListViewModel.registerRouteListItem(routeInfo, _searchRouteListItem!!)
             _searchRouteListItem = null
-            _routeListViewModel.registRouteInfoDetailItems(routeInfo, parentDataId)
+            _routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
 
             Log.d("Debug", "データ登録完了")
             withContext(Dispatchers.Main) {

@@ -2,20 +2,22 @@ package com.nyasai.traintimer.routeinfo
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.*
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.databinding.FragmentRouteInfoBinding
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.android.synthetic.main.fragment_route_info.*
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -49,19 +51,19 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         ViewModelProvider(
             this,
             viewModelFactory
-        ).get(RouteInfoViewModel::class.java)
+        )[RouteInfoViewModel::class.java]
     }
 
     // ViewModel
     private val _filterItemSelectViewModel: FilterItemSelectViewModel by lazy {
-        ViewModelProvider(requireActivity()).get(FilterItemSelectViewModel::class.java)
+        ViewModelProvider(requireActivity())[FilterItemSelectViewModel::class.java]
     }
 
     // タイマ
     private lateinit var _timer: Timer
 
     // タイマ実処理受け渡し用ハンドラ
-    private val _handler = Handler()
+    private val _handler = Handler(Looper.getMainLooper())
 
     // 文字列装飾用
     private var _spannableStringBuilder = SpannableStringBuilder()
@@ -108,32 +110,32 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         initDialog()
 
         // メニューボタン表示設定
-        setHasOptionsMenu(true)
+        initMenuItem()
 
         // 変更監視
-        _routeInfoViewModel.routeItems.observe(viewLifecycleOwner, {
+        _routeInfoViewModel.routeItems.observe(viewLifecycleOwner) {
             it?.let {
                 // 表示種別に応じたデータを設定
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
                 Log.d("Debug", "詳細データ更新 : $it")
             }
-        })
+        }
 
-        _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner, {
+        _routeInfoViewModel.currentCountItem.observe(viewLifecycleOwner) {
             it?.let {
                 updateCountdownTargetInfo()
                 Log.d("Debug", "カウントダウン対象データ更新 : $it")
             }
-        })
+        }
 
-        _routeInfoViewModel.filterInfo.observe(viewLifecycleOwner, {
+        _routeInfoViewModel.filterInfo.observe(viewLifecycleOwner) {
             it?.let {
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
                 Log.d("Debug", "フィルタ更新 : $it")
             }
-        })
+        }
 
         return _binding.root
     }
@@ -150,42 +152,8 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
              * タイマ開始
              */
             override fun run() {
-                // UIスレッドで実行
-                _handler.post {
-                    val diffTime = _routeInfoViewModel.getNextDiffTime()
-                    if (diffTime <= 0) {
-                        // 次のデータへ遷移
-                        if (_routeInfoViewModel.currentCountItem.value != null) {
-                            // リストに変更通知
-                            _routeInfoAdapter.notifyItemChanged(
-                                _routeInfoAdapter.indexOf(
-                                    _routeInfoViewModel.currentCountItem.value!!
-                                )
-                            )
-                            _routeInfoViewModel.updateCurrentCountItem()
-                        }
-                    }
-                    val planeText = when {
-                        diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${
-                            "%0,2d".format(
-                                (diffTime % 60)
-                            )
-                        }"""
-                        else -> "Next -- : --"
-                    }
-                    // Next部分を小さく表示させる
-                    _spannableStringBuilder.clear()
-                    _spannableStringBuilder.append(planeText)
-                    _spannableStringBuilder.setSpan(
-                        RelativeSizeSpan(0.5f),
-                        0,
-                        4,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    countdown.text = _spannableStringBuilder
-                }
+                watchCountdown()
             }
-
         }, 100, 1000)
     }
 
@@ -207,32 +175,9 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     }
 
     /**
-     * onCreateOptionsMenuフック
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.route_info_option, menu)
-    }
-
-    /**
-     * onOptionsItemSelectedフック
-     */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.info_filter_menu -> {
-                Log.d("Debug", "フィルタボタン押下")
-                showFilterSelectDialog()
-                true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
-
-    /**
      * タイトルクリック
      */
-    fun onClickTitle(view: View) {
+    fun onClickTitle(@Suppress("UNUSED_PARAMETER") view: View) {
         // 表示ダイア種別を更新して表示データ切り替え
         _routeInfoViewModel.setNextDiagramType()
         _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
@@ -243,6 +188,38 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      */
     private fun initDialog() {
         FragmentUtil.deletePrevDialog(SelectFilterDialogTag, parentFragmentManager)
+    }
+
+    /**
+     * メニュー要素初期化
+     */
+    private fun initMenuItem() {
+        val menuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.route_info_option, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return onSelectedOptionItem(menuItem)
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    /**
+     * オプションメニュー要素選択
+     */
+    private fun onSelectedOptionItem(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.info_filter_menu -> {
+                Log.d("Debug", "フィルタボタン押下")
+                showFilterSelectDialog()
+                true
+            }
+            else -> {
+                false
+            }
+        }
     }
 
     /**
@@ -282,7 +259,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         val text = """|${departureTimeStr}
                       |${trainTypeStr}
                       |${destinationStr}""".trimMargin()
-        next_time_table.text = text
+        _binding.nextTimeTable.text = text
 
         // スクロール位置更新
         updateScrollPosition()
@@ -292,22 +269,62 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      * スクロール位置更新
      */
     private fun updateScrollPosition() {
-        if (_routeInfoViewModel.currentCountItem.value != null) {
-            // リストアイテムの描画を待ってから対象位置までスクロール
-            launch(Dispatchers.Default + _job) {
-                delay(500)
-                withContext(Dispatchers.Main) {
-                    (route_info_view.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                        _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),
-                        0
+        if (_routeInfoViewModel.currentCountItem.value == null) { return }
+        // リストアイテムの描画を待ってから対象位置までスクロール
+        launch(Dispatchers.Default + _job) {
+            delay(500)
+            withContext(Dispatchers.Main) {
+                (_binding.routeInfoView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                    _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!),
+                    0
+                )
+                Log.d(
+                    "Debug",
+                    _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!)
+                        .toString()
+                )
+            }
+        }
+
+    }
+
+    /**
+     * カウントダウン監視
+     */
+    private fun watchCountdown() {
+        // UIスレッドで実行
+        _handler.post {
+            val diffTime = _routeInfoViewModel.getNextDiffTime()
+            if (diffTime <= 0) {
+                // 次のデータへ遷移
+                if (_routeInfoViewModel.currentCountItem.value != null) {
+                    // リストに変更通知
+                    _routeInfoAdapter.notifyItemChanged(
+                        _routeInfoAdapter.indexOf(
+                            _routeInfoViewModel.currentCountItem.value!!
+                        )
                     )
-                    Log.d(
-                        "Debug",
-                        _routeInfoAdapter.indexOf(_routeInfoViewModel.currentCountItem.value!!)
-                            .toString()
-                    )
+                    _routeInfoViewModel.updateCurrentCountItem()
                 }
             }
+            val planeText = when {
+                diffTime >= 0 -> """Next ${"%0,2d".format((diffTime / 60))} : ${
+                    "%0,2d".format(
+                        (diffTime % 60)
+                    )
+                }"""
+                else -> "Next -- : --"
+            }
+            // Next部分を小さく表示させる
+            _spannableStringBuilder.clear()
+            _spannableStringBuilder.append(planeText)
+            _spannableStringBuilder.setSpan(
+                RelativeSizeSpan(0.5f),
+                0,
+                4,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            _binding.countdown.text = _spannableStringBuilder
         }
     }
 }

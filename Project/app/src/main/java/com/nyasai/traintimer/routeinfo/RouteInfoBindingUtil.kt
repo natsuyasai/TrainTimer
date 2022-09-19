@@ -1,62 +1,70 @@
 package com.nyasai.traintimer.routeinfo
 
-import android.graphics.Color
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
+import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import java.time.LocalTime
 
 /**
- * 時刻
+ * 時刻情報のスタイル設定
  */
 @BindingAdapter("departureTime")
 fun TextView.setDepartureTime(item: RouteDetail?) {
     item?.let {
         text = item.departureTime
-        setTextColor(resources.getColor(getTimeTextColor(item.departureTime)))
+        setTextColor(ContextCompat.getColor(context, getTimeTextColor(item.departureTime)))
     }
 }
 
 /**
- * 電車種別
+ * 電車種別のスタイル設定
  */
 @BindingAdapter("trainType")
 fun TextView.setTrainType(item: RouteDetail?) {
     item?.let {
         text = item.trainType
-        setTextColor(resources.getColor(getTimeTextColor(item.departureTime, R.color.textRed)))
+        setTextColor(
+            ContextCompat.getColor(
+                context,
+                getTimeTextColor(item.departureTime, R.color.textRed)
+            )
+        )
     }
 }
 
 /**
- * 方面
+ * 方面のスタイル設定
  */
 @BindingAdapter("destination")
 fun TextView.setDestination(item: RouteDetail?) {
     item?.let {
         text = item.destination
-        setTextColor(resources.getColor(getTimeTextColor(item.departureTime)))
+        setTextColor(ContextCompat.getColor(context, getTimeTextColor(item.departureTime)))
     }
 }
 
 /**
- * ダイヤ種別
+ * ダイヤ種別のスタイル設定
  */
 @BindingAdapter("diagramType")
-fun TextView.setDiagramType(currentDiagramType: Define.DiagramType) {
+fun TextView.setDiagramType(currentDiagramType: YahooRouteInfoGetter.Companion.DiagramType) {
     text = when (currentDiagramType) {
-        Define.DiagramType.Weekday -> "[平日]"
-        Define.DiagramType.Saturday -> "[土曜]"
-        Define.DiagramType.Sunday -> "[日曜・祝日]"
+        YahooRouteInfoGetter.Companion.DiagramType.Weekday -> "[平日]"
+        YahooRouteInfoGetter.Companion.DiagramType.Saturday -> "[土曜]"
+        YahooRouteInfoGetter.Companion.DiagramType.Holiday -> "[日曜・祝日]"
+        else -> ""
     }
     val color = when (currentDiagramType) {
-        Define.DiagramType.Weekday -> R.color.weekday
-        Define.DiagramType.Saturday -> R.color.saturday
-        Define.DiagramType.Sunday -> R.color.sunday
+        YahooRouteInfoGetter.Companion.DiagramType.Weekday -> R.color.weekday
+        YahooRouteInfoGetter.Companion.DiagramType.Saturday -> R.color.saturday
+        YahooRouteInfoGetter.Companion.DiagramType.Holiday -> R.color.sunday
+        else -> R.color.weekday
     }
-    setTextColor(resources.getColor(color))
+    setTextColor(ContextCompat.getColor(context, color))
 }
 
 /**
@@ -69,7 +77,7 @@ fun getTimeTextColor(departureTimeStr: String, defaultColor: Int = R.color.textC
     if (departureTime.hour !in 0..3 && departureTime < now) {
         return R.color.textGray
     } else if (departureTime.hour in 0..3) {
-        // 0～3時なら日付変更前と後で比較方法変更
+        // 0～3時なら日付変更前と後で比較方法変更(日付は変わっているが終電がまだの場合をケア)
         return if (now.hour in 0..3) {
             if (departureTime < now) {
                 R.color.textGray

@@ -8,11 +8,10 @@ import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
-import kotlinx.coroutines.Dispatchers
+import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import kotlin.coroutines.CoroutineContext
 
 /**
  * 路線詳細情報表示用ViewModel
@@ -37,8 +36,8 @@ class RouteInfoViewModel(
     var currentCountItem: LiveData<RouteDetail> = _currentCountItem
 
     // 現在の表示ダイア種別
-    private var _currentDiagramType: MutableLiveData<Define.DiagramType> = MutableLiveData()
-    var currentDiagramType: LiveData<Define.DiagramType> = _currentDiagramType
+    private var _currentDiagramType: MutableLiveData<YahooRouteInfoGetter.Companion.DiagramType> = MutableLiveData()
+    var currentDiagramType: LiveData<YahooRouteInfoGetter.Companion.DiagramType> = _currentDiagramType
 
     // フィルタ情報
     val filterInfo = database.getFilterInfoItemWithParentId(parentId)
