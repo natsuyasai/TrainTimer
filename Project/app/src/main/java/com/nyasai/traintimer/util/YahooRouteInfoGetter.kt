@@ -167,7 +167,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
         var timeTableInfoList = listOf<List<TimeInfo>>()
-        if(tableUrls.size == DiagramType.Max.ordinal) { return timeTableInfoList }
+        if(tableUrls.size != DiagramType.Max.ordinal) { return timeTableInfoList }
         coroutineScope {
             val awaitList = listOf(
                 async { getTimeInfoList(tableUrls[DiagramType.Weekday.ordinal], notifyMaxCountCallback, notifyCountCallback) },
