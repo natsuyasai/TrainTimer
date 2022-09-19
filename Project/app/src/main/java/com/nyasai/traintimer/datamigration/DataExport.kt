@@ -1,29 +1,29 @@
 package com.nyasai.traintimer.datamigration
 
-import android.content.Context
-import android.os.Environment
+import android.content.Intent
 import android.util.Log
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.lang.Exception
+import androidx.activity.result.ActivityResultLauncher
+import androidx.fragment.app.Fragment
+import com.nyasai.traintimer.database.RouteDatabaseDao
+import java.io.OutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.logging.Logger
 
-class DataExport(val context: Context) {
-    // ビューコンテキスト
-    private val _context: Context = context
+
+class DataExport: Fragment() {
 
     /**
-     * アプリケーションデータ出力
+     * アプリケーションデータ出力先選択起動
      */
-    fun exportAppData(inputStream: BufferedInputStream) {
+    fun launchFolderSelector(launcher: ActivityResultLauncher<Intent>/*inputStream: BufferedInputStream*/) {
         try{
             val filename = getFileName()
-            val file = File(_context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),filename)
-            val stream = FileOutputStream(filename)
-
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/octet-stream"
+                putExtra(Intent.EXTRA_TITLE, filename)
+            }
+            launcher.launch(intent)
         }
         catch (e: Exception){
             Log.e("Exception", e.toString())
@@ -31,11 +31,37 @@ class DataExport(val context: Context) {
     }
 
     /**
+     * データ出力
+     */
+    fun export(outputStream: OutputStream, routeDatabaseDao: RouteDatabaseDao) {
+        try {
+            outputStream.write("RouteListDataStart\r\n".toByteArray())
+            for (item in routeDatabaseDao.getAllRouteListItemsSync()){
+                outputStream.write("${item.dataId},${item.routeName},${item.stationName},${item.destination},${item.sortIndex}\r\n".toByteArray())
+            }
+            outputStream.write("\r\n".toByteArray())
+            outputStream.write("RouteDetailDataStart\r\n".toByteArray())
+            for (item in routeDatabaseDao.getAllRouteDetailItemsSync()){
+                outputStream.write("${item.dataId},${item.parentDataId},${item.diagramType},${item.departureTime},${item.trainType},${item.destination}\n".toByteArray())
+            }
+            outputStream.write("\r\n".toByteArray())
+            outputStream.write("FilterInfoDataStart\r\n".toByteArray())
+            for (item in routeDatabaseDao.getAllFilterInfoItemSync()){
+                outputStream.write("${item.dataId},${item.parentDataId},${item.trainTypeAndDestination},${item.isShow}\n".toByteArray())
+            }
+        }
+        catch (e: java.lang.Exception){
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    /**
      * ファイル名取得
      */
     private fun getFileName(): String {
-        val datetime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd_HH-mm-ss"))
-        return "traintimer-data-${datetime}.csv"
+        val datetime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
+        return "TrainTimerData-${datetime}.dat"
     }
 
 }

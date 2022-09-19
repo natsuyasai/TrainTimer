@@ -74,7 +74,6 @@ interface RouteDatabaseDao {
 
     // endregion 路線リストアイテム操作
 
-
     // region 路線情報詳細操作
 
     /**
@@ -225,6 +224,12 @@ interface RouteDatabaseDao {
      */
     @Query("SELECT * from filter_info_table WHERE parent_row_id = :parentId ORDER BY dataId")
     fun getFilterInfoItemWithParentIdSync(parentId: Long): List<FilterInfo>
+
+    /**
+     * フィルタ情報アイテム一覧取得(同期)
+     */
+    @Query("SELECT * from filter_info_table ORDER BY dataId")
+    fun getAllFilterInfoItemSync(): List<FilterInfo>
 
     // endregion フィルタ情報操作
 }
