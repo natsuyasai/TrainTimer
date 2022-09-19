@@ -8,8 +8,10 @@ import android.text.SpannableStringBuilder
 import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.*
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nyasai.traintimer.R
@@ -49,12 +51,12 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         ViewModelProvider(
             this,
             viewModelFactory
-        ).get(RouteInfoViewModel::class.java)
+        )[RouteInfoViewModel::class.java]
     }
 
     // ViewModel
     private val _filterItemSelectViewModel: FilterItemSelectViewModel by lazy {
-        ViewModelProvider(requireActivity()).get(FilterItemSelectViewModel::class.java)
+        ViewModelProvider(requireActivity())[FilterItemSelectViewModel::class.java]
     }
 
     // タイマ
@@ -108,7 +110,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         initDialog()
 
         // メニューボタン表示設定
-        setHasOptionsMenu(true)
+        initMenuItem()
 
         // 変更監視
         _routeInfoViewModel.routeItems.observe(viewLifecycleOwner) {
@@ -173,29 +175,6 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
     }
 
     /**
-     * onCreateOptionsMenuフック
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.route_info_option, menu)
-    }
-
-    /**
-     * onOptionsItemSelectedフック
-     */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.info_filter_menu -> {
-                Log.d("Debug", "フィルタボタン押下")
-                showFilterSelectDialog()
-                true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
-
-    /**
      * タイトルクリック
      */
     fun onClickTitle(@Suppress("UNUSED_PARAMETER") view: View) {
@@ -209,6 +188,38 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      */
     private fun initDialog() {
         FragmentUtil.deletePrevDialog(SelectFilterDialogTag, parentFragmentManager)
+    }
+
+    /**
+     * メニュー要素初期化
+     */
+    private fun initMenuItem() {
+        val menuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.route_info_option, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return onSelectedOptionItem(menuItem)
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    /**
+     * オプションメニュー要素選択
+     */
+    private fun onSelectedOptionItem(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.info_filter_menu -> {
+                Log.d("Debug", "フィルタボタン押下")
+                showFilterSelectDialog()
+                true
+            }
+            else -> {
+                false
+            }
+        }
     }
 
     /**

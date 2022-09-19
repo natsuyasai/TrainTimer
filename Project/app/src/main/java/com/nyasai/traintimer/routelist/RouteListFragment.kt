@@ -6,8 +6,10 @@ import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -137,7 +139,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         initDialog()
 
         // メニューボタン表示設定
-        setHasOptionsMenu(true)
+        initMenuItem()
 
         // 変更監視
         _routeListViewModel.routeList.observe(viewLifecycleOwner) {
@@ -152,37 +154,6 @@ class RouteListFragment : Fragment(), CoroutineScope {
         return binding.root
     }
 
-    /**
-     * onCreateOptionsMenuフック
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.route_list_option, menu)
-    }
-
-    /**
-     * onOptionsItemSelectedフック
-     */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // ローディング表示中はメニュー非表示
-        if (_commonLoadingViewModel.isVisible.value == true) {
-            return false
-        }
-        return when (item.itemId) {
-            R.id.route_add_menu -> {
-                Log.d("Debug", "路線検索ボタン押下")
-                showSearchTargetInputDialog()
-                true
-            }
-            R.id.setting_menu -> {
-                Log.d("Debug", "設定ボタン押下")
-                showSettingFragment()
-                true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
 
     /**
      * onDestroyフック
@@ -206,6 +177,47 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 onClickDeleteConfirmDialogYse(it)
             }
             deleteConfirmDialog.onClickNegativeButtonCallback = {
+            }
+        }
+    }
+
+    /**
+     * メニュー要素初期化
+     */
+    private fun initMenuItem() {
+        val menuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.route_list_option, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return onSelectedOptionItem(menuItem)
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    /**
+     * onOptionsItemSelectedフック
+     */
+    private fun onSelectedOptionItem(item: MenuItem): Boolean {
+        // ローディング表示中はメニュー非表示
+        if (_commonLoadingViewModel.isVisible.value == true) {
+            return false
+        }
+        return when (item.itemId) {
+            R.id.route_add_menu -> {
+                Log.d("Debug", "路線検索ボタン押下")
+                showSearchTargetInputDialog()
+                true
+            }
+            R.id.setting_menu -> {
+                Log.d("Debug", "設定ボタン押下")
+                showSettingFragment()
+                true
+            }
+            else -> {
+                false
             }
         }
     }
