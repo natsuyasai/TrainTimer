@@ -50,10 +50,13 @@ class PreferenceFragment : PreferenceFragmentCompat(), CoroutineScope {
                         val application = requireNotNull(this.activity).application
                         val routeDatabaseDao = RouteDatabase.getInstance(application).routeDatabaseDao
                         try {
-                            launch (coroutineContext) {
+                            launch {
                             context?.contentResolver?.openOutputStream(uri).use { outputStream ->
                                     outputStream?.let { _dataExport.export(it, routeDatabaseDao) }
                                 }
+                            }
+                            launch(Dispatchers.Main) {
+                                Toast.makeText(context, "Data Export Complete!!!", Toast.LENGTH_SHORT).show()
                             }
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
@@ -87,7 +90,6 @@ class PreferenceFragment : PreferenceFragmentCompat(), CoroutineScope {
         // バックアップ押下
         findPreference<Preference>("backup")?.setOnPreferenceClickListener {
             Log.d("Debug", "バックアップ押下")
-            Toast.makeText(context, "バックアップ：未実装", Toast.LENGTH_SHORT).show()
             _dataExport.launchFolderSelector(_exportLauncher)
 
             true
