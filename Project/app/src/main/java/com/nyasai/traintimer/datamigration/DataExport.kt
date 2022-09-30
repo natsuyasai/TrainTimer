@@ -3,19 +3,18 @@ package com.nyasai.traintimer.datamigration
 import android.content.Intent
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
-import androidx.fragment.app.Fragment
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import java.io.OutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class DataExport: Fragment() {
+class DataExport {
 
     /**
      * アプリケーションデータ出力先選択起動
      */
-    fun launchFolderSelector(launcher: ActivityResultLauncher<Intent>/*inputStream: BufferedInputStream*/) {
+    fun launchFolderSelector(launcher: ActivityResultLauncher<Intent>) {
         try{
             val filename = getFileName()
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -35,23 +34,24 @@ class DataExport: Fragment() {
      */
     fun export(outputStream: OutputStream, routeDatabaseDao: RouteDatabaseDao) {
         try {
-            outputStream.write("RouteListDataStart\r\n".toByteArray())
+            outputStream.writeLine(DataMigrationDefine.DATA_VERSION_INFO)
+            outputStream.writeLine(DataMigrationDefine.ROUTE_LIST_DATA_START_WORD)
             for (item in routeDatabaseDao.getAllRouteListItemsSync()){
-                outputStream.write("${item.dataId},${item.routeName},${item.stationName},${item.destination},${item.sortIndex}\r\n".toByteArray())
+                outputStream.writeLine("${item.dataId},${item.routeName},${item.stationName},${item.destination},${item.sortIndex}")
             }
-            outputStream.write("\r\n".toByteArray())
-            outputStream.write("RouteDetailDataStart\r\n".toByteArray())
+            outputStream.writeLine()
+            outputStream.writeLine(DataMigrationDefine.ROUTE_DETAIL_DATA_START_WORD)
             for (item in routeDatabaseDao.getAllRouteDetailItemsSync()){
-                outputStream.write("${item.dataId},${item.parentDataId},${item.diagramType},${item.departureTime},${item.trainType},${item.destination}\n".toByteArray())
+                outputStream.writeLine("${item.dataId},${item.parentDataId},${item.diagramType},${item.departureTime},${item.trainType},${item.destination}")
             }
-            outputStream.write("\r\n".toByteArray())
-            outputStream.write("FilterInfoDataStart\r\n".toByteArray())
+            outputStream.writeLine()
+            outputStream.writeLine(DataMigrationDefine.FILTER_INFO_DATA_START_WORD)
             for (item in routeDatabaseDao.getAllFilterInfoItemSync()){
-                outputStream.write("${item.dataId},${item.parentDataId},${item.trainTypeAndDestination},${item.isShow}\n".toByteArray())
+                outputStream.writeLine("${item.dataId},${item.parentDataId},${item.trainTypeAndDestination},${item.isShow}")
             }
         }
-        catch (e: java.lang.Exception){
-            e.printStackTrace()
+        catch (e: Exception){
+            Log.e("Exception", e.toString())
             throw e
         }
     }
