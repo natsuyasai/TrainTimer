@@ -9,19 +9,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class DataExport {
+open class DataExport {
 
     /**
      * アプリケーションデータ出力先選択起動
      */
     fun launchFolderSelector(launcher: ActivityResultLauncher<Intent>) {
-        try{
+        try {
             val filename = getFileName()
-            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "application/octet-stream"
-                putExtra(Intent.EXTRA_TITLE, filename)
-            }
+            val intent = getIntent(filename)
             launcher.launch(intent)
         }
         catch (e: Exception){
@@ -54,6 +50,15 @@ class DataExport {
             Log.e("Exception", e.toString())
             throw e
         }
+    }
+
+    protected open fun getIntent(filename: String): Intent {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/octet-stream"
+            putExtra(Intent.EXTRA_TITLE, filename)
+        }
+        return intent
     }
 
     /**

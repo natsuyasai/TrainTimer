@@ -1,13 +1,13 @@
 package com.nyasai.traintimer.commonparts
 
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
 import org.junit.jupiter.api.Test
 import androidx.lifecycle.Observer
 import com.nyasai.traintimer.testutil.InstantExecutorExtension
 import com.nyasai.traintimer.testutil.TestObserver
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
 
 @ExtendWith(InstantExecutorExtension::class)
 internal class CommonLoadingViewModelTest{

@@ -18,7 +18,7 @@ class RouteDatabaseTest {
     private lateinit var routeDao: RouteDatabaseDao
     private lateinit var db: RouteDatabase
 
-    // regiuon DB準備，片付け
+    // region DB準備，片付け
     @Before
     fun createDB() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
