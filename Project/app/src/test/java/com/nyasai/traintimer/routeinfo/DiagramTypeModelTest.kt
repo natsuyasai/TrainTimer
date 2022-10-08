@@ -1,20 +1,15 @@
 package com.nyasai.traintimer.routeinfo
 
-import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.Response
-import com.github.kittinunf.fuel.core.ResponseResultOf
-import com.github.kittinunf.fuel.core.requests.DefaultRequest
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import io.mockk.every
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockkObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.runner.RunWith
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
