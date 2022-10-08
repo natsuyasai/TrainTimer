@@ -7,11 +7,17 @@ import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import java.lang.Exception
 import java.util.*
 
-class DiagramTypeModel {
+open class DiagramTypeModel(calendar: Calendar) {
 
     // 祝日判定用APIのURL
     private val _publicHolidayJudgeAPIUrl: String =
         "http://s-proj.com/utils/checkHoliday.php?kind=ph"
+
+    private val _calendar: Calendar
+
+    init {
+        _calendar = calendar
+    }
 
     /**
      * 次のダイア種別を取得
@@ -32,15 +38,14 @@ class DiagramTypeModel {
      * @param judgePublicHoliday 祝日の判定を行うか
      */
     fun getTodayDiagramType(judgePublicHoliday: Boolean): YahooRouteInfoGetter.Companion.DiagramType {
-        var type = when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
+        var type = when (_calendar.get(Calendar.DAY_OF_WEEK)) {
             1 -> YahooRouteInfoGetter.Companion.DiagramType.Holiday
             7 -> YahooRouteInfoGetter.Companion.DiagramType.Saturday
             else -> YahooRouteInfoGetter.Companion.DiagramType.Weekday
         }
         if (judgePublicHoliday) {
             try {
-                val response = _publicHolidayJudgeAPIUrl.httpGet().response()
-                if (response.second.isSuccessful && String(response.second.data) == "holiday") {
+                if (isHoliday()) {
                     type = YahooRouteInfoGetter.Companion.DiagramType.Holiday
                 }
             }
@@ -49,5 +54,16 @@ class DiagramTypeModel {
             }
         }
         return type
+    }
+
+    /**
+     * 休日か
+     */
+    protected open fun isHoliday(): Boolean {
+        val response = _publicHolidayJudgeAPIUrl.httpGet().response()
+        if (response.second.isSuccessful && String(response.second.data) == "holiday") {
+            return true
+        }
+        return false
     }
 }

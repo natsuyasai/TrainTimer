@@ -12,6 +12,7 @@ import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 /**
  * 路線詳細情報表示用ViewModel
@@ -49,7 +50,7 @@ class RouteInfoViewModel(
     private val _parentDataId: Long = parentId
 
     // ダイア種別用モデルクラス
-    private val _diagramTypeModel: DiagramTypeModel = DiagramTypeModel()
+    private val _diagramTypeModel: DiagramTypeModel = DiagramTypeModel(Calendar.getInstance())
 
     init {
         _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(false)
