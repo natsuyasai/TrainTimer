@@ -9,7 +9,7 @@ class Define {
         // 路線リスト削除確認ダイアログ引数(データID)
         const val RouteListDeleteConfirmArgentDataId = "DATA_ID"
 
-        // 路線リストアイテム編集種別結果o
+        // 路線リストアイテム編集種別結果
         const val RouteListItemEditType = "ITEM_EDIT_TYPE"
     }
 }
