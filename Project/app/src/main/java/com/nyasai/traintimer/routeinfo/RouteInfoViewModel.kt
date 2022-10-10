@@ -8,6 +8,7 @@ import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.define.Define
+import com.nyasai.traintimer.http.HttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job
 import java.time.LocalTime
@@ -50,7 +51,7 @@ class RouteInfoViewModel(
     private val _parentDataId: Long = parentId
 
     // ダイア種別用モデルクラス
-    private val _diagramTypeModel: DiagramTypeModel = DiagramTypeModel(Calendar.getInstance())
+    private val _diagramTypeModel: DiagramTypeModel = DiagramTypeModel(Calendar.getInstance(), HttpClient())
 
     init {
         _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(false)

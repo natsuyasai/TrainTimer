@@ -3,11 +3,12 @@ package com.nyasai.traintimer.routeinfo
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
 import com.nyasai.traintimer.define.Define
+import com.nyasai.traintimer.http.IHttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import java.lang.Exception
 import java.util.*
 
-open class DiagramTypeModel(calendar: Calendar) {
+open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
 
     // 祝日判定用APIのURL
     private val _publicHolidayJudgeAPIUrl: String =
@@ -15,8 +16,11 @@ open class DiagramTypeModel(calendar: Calendar) {
 
     private val _calendar: Calendar
 
+    private val _httpClient: IHttpClient
+
     init {
         _calendar = calendar
+        _httpClient = httpClient
     }
 
     /**
@@ -60,8 +64,8 @@ open class DiagramTypeModel(calendar: Calendar) {
      * 休日か
      */
     protected open fun isHoliday(): Boolean {
-        val response = _publicHolidayJudgeAPIUrl.httpGet().response()
-        if (response.second.isSuccessful && String(response.second.data) == "holiday") {
+        val response = _httpClient.httpGet(_publicHolidayJudgeAPIUrl)
+        if (response.isSuccessful && String(response.data) == "holiday") {
             return true
         }
         return false
