@@ -59,7 +59,7 @@ dependencies {
 
     // Support libraries
     implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'androidx.fragment:fragment-ktx:1.5.3'
+    implementation 'androidx.fragment:fragment-ktx:1.5.5'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // Android KTX
@@ -68,27 +68,27 @@ dependencies {
     // Room and Lifecycle dependencies
     implementation 'androidx.room:room-runtime:2.4.3'
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
-    implementation 'androidx.fragment:fragment-ktx:1.5.3'
+    implementation 'androidx.fragment:fragment-ktx:1.5.5'
     kapt 'androidx.room:room-compiler:2.4.3'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
 
     // Navigation
-    implementation('androidx.navigation:navigation-fragment-ktx:2.5.2')
-    implementation('androidx.navigation:navigation-ui-ktx:2.5.2')
+    implementation('androidx.navigation:navigation-fragment-ktx:2.5.3')
+    implementation('androidx.navigation:navigation-ui-ktx:2.5.3')
 
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation "androidx.test.ext:junit:1.1.3"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-    testImplementation 'io.mockk:mockk:1.12.8'
+    androidTestImplementation "androidx.test.ext:junit:1.1.4"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.0"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testImplementation 'io.mockk:mockk:1.13.3'
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
-    testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
-    testImplementation 'org.robolectric:robolectric:4.8'
-    //testImplementation 'org.mockito:mockito-inline:4.8'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
+    testImplementation 'org.robolectric:robolectric:4.9.2'
+    testImplementation 'org.mockito:mockito-inline:4.11.0'
 
 
     // HTTP
