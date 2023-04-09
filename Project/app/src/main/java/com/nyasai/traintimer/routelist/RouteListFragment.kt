@@ -100,6 +100,10 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
     private var _itemTouchHelper: ItemTouchHelper? = null
 
+    private val _routeListAdapter = RouteListAdapter()
+
+    private lateinit var _fragmentRouteListBinding: FragmentRouteListBinding
+
     /**
      * onCreateViewフック
      */
@@ -109,20 +113,18 @@ class RouteListFragment : Fragment(), CoroutineScope {
     ): View {
 
         // データバインド設定
-        val binding = DataBindingUtil.inflate<FragmentRouteListBinding>(
+        _fragmentRouteListBinding = DataBindingUtil.inflate<FragmentRouteListBinding>(
             inflater, R.layout.fragment_route_list, container, false
         )
 
-        binding.routeListViewModel = _routeListViewModel
-        binding.lifecycleOwner = this
-        binding.commonLoadingViewModel = _commonLoadingViewModel
+        _fragmentRouteListBinding.routeListViewModel = _routeListViewModel
+        _fragmentRouteListBinding.lifecycleOwner = this
+        _fragmentRouteListBinding.commonLoadingViewModel = _commonLoadingViewModel
 
 
         // 路線リスト用アダプター設定
-        val adapter = RouteListAdapter()
-        binding.routeListView.adapter = adapter
-        setListItemTouchEvent(adapter)
-        setSortHelper(binding, adapter)
+        _fragmentRouteListBinding.routeListView.adapter = _routeListAdapter
+        setListItemTouchEvent(_routeListAdapter)
 
         // ダイアログ初期化
         initDialog()
@@ -134,13 +136,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
         _routeListViewModel.routeList.observe(viewLifecycleOwner) {
             it?.let {
                 // リストアイテム設定
-                adapter.submitList(it)
+                _routeListAdapter.submitList(it)
                 Log.d("Debug", "データ更新 : ${_routeListViewModel.routeList.value.toString()}")
             }
         }
 
         // Inflate the layout for this fragment
-        return binding.root
+        return _fragmentRouteListBinding.root
     }
 
 
@@ -203,6 +205,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
             R.id.route_manual_sort -> {
                 Log.d("Debug", "路線ソートボタン押下")
                 _routeListViewModel.switchManualSortMode()
+                setSortHelper(_fragmentRouteListBinding)
                 true
             }
             R.id.setting_menu -> {
@@ -476,7 +479,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
                     .navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
             }
         })
-        adapter.setOnItemLongClickListener(object : RouteListAdapter.OnItemLongClickListener {
+        adapter.setOnItemLongClickListener(object :
+            RouteListAdapter.OnItemLongClickListener {
             override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
                 // 長押し
                 Log.d("Debug", "アイテム長押し : $item")
@@ -492,12 +496,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
     /**
      * ソート用タッチヘルパ実装
      */
-    private fun setSortHelper(binding: FragmentRouteListBinding, adapter: RouteListAdapter) {
+    private fun setSortHelper(binding: FragmentRouteListBinding) {
         _itemTouchHelper = ItemTouchHelper(
             object : ItemTouchHelper.SimpleCallback(
                 ItemTouchHelper.UP or ItemTouchHelper.DOWN,
                 ItemTouchHelper.ACTION_STATE_IDLE
             ) {
+
                 override fun onMove(
                     recyclerView: RecyclerView,
                     viewHolder: RecyclerView.ViewHolder,
@@ -506,11 +511,10 @@ class RouteListFragment : Fragment(), CoroutineScope {
                     // 並び替え
                     val from = viewHolder.adapterPosition
                     val to = target.adapterPosition
-                    adapter.notifyItemMoved(from, to)
-                    launch(_viewModelContext) {
-                        // 結果を保存
-                        _routeListViewModel.updateSortIndex()
-                    }
+                    Log.d("Debug", "from: $from  to: $to")
+                    // 結果を保存
+                    _routeListViewModel.updateSortIndex(from, to)
+                    _routeListAdapter.notifyItemMoved(from, to)
                     return true
                 }
 
@@ -518,7 +522,11 @@ class RouteListFragment : Fragment(), CoroutineScope {
                     // スワイプ
                 }
             })
-        _itemTouchHelper!!.attachToRecyclerView(binding.routeListView)
+        if (_routeListViewModel.isManualSortMode.value == true) {
+            _itemTouchHelper!!.attachToRecyclerView(binding.routeListView)
+        } else {
+            _itemTouchHelper!!.attachToRecyclerView(null)
+        }
     }
 
     /**

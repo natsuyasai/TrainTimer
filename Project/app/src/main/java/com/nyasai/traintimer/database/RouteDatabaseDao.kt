@@ -28,6 +28,9 @@ interface RouteDatabaseDao {
     @Update
     fun updateRouteListItem(routeListItem: RouteListItem)
 
+    @Update
+    fun updateRouteListItems(routeListItem: List<RouteListItem>)
+
     /**
      * 路線アイテム削除
      */
@@ -71,6 +74,9 @@ interface RouteDatabaseDao {
      */
     @Query("SELECT * from route_list_item_table ORDER BY sort_index DESC")
     fun getDestAllRouteListItemsSync(): List<RouteListItem>
+
+    @Query("SELECT MAX(sort_index) FROM route_list_item_table")
+    fun getMaxSortIndex(): Long
 
     // endregion 路線リストアイテム操作
 

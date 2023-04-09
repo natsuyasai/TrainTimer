@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -41,12 +42,17 @@ class RouteListViewModel(
     // Yahoo路線情報取得用
     private val _yahooRouteInfoGetter = YahooRouteInfoGetter()
 
+    init {
+        _isManualSortMode.value = false
+    }
+
     /**
      * onClearedフック
      */
     override fun onCleared() {
         _yahooRouteInfoGetter.dispose()
         _job.cancel()
+        _isManualSortMode.value = false
         super.onCleared()
     }
 
@@ -65,6 +71,8 @@ class RouteListViewModel(
      * データ追加
      */
     private fun insert(item: RouteListItem) {
+        val maxIndex = database.getMaxSortIndex()
+        item.sortIndex = maxIndex + 1
         database.insertRouteListItem(item)
     }
 
@@ -229,19 +237,75 @@ class RouteListViewModel(
     /**
      * ソート情報更新
      */
-    fun updateSortIndex() {
+    fun updateSortIndex(from: Int, to: Int) {
         if (routeList.value == null) {
             return
         }
-        // TODO: 処理は要見直しのこと
-        for ((index, item) in routeList.value!!.withIndex()) {
-            item.sortIndex = index.toLong()
-            database.updateRouteListItem(item)
+        val routeListItems = routeList.value!!
+        if (from < to) {
+            for (i in from until to) {
+                Collections.swap(routeListItems, i, i + 1)
+                val order1 = routeListItems[i].sortIndex
+                val order2 = routeListItems[i + 1].sortIndex
+                routeListItems[i].sortIndex = order2
+                routeListItems[i + 1].sortIndex = order1
+            }
+        } else {
+            for (i in from downTo to + 1) {
+                Collections.swap(routeListItems, i, i - 1)
+                val order1 = routeListItems[i].sortIndex
+                val order2 = routeListItems[i - 1].sortIndex
+                routeListItems[i].sortIndex = order2
+                routeListItems[i - 1].sortIndex = order1
+            }
         }
+        launch(coroutineContext) {
+            database.updateRouteListItems(routeListItems)
+        }
+
+//        var needBreak = false
+//        for ((index, item) in routeList.value!!.withIndex()) {
+//            if (index.toLong() < from && index.toLong() < to) {
+//                item.sortIndex = index.toLong()
+//                database.updateRouteListItem(item)
+//                continue
+//            }
+//
+//            if (from < to) {
+//                // 上から下へ移動
+//                if (index.toLong() == from) {
+//                    item.sortIndex = to
+//                    needBreak = true
+//                } else {
+//                    if ((index - 1).toLong() == to) {
+//                        item.sortIndex = (index - 2).toLong()
+//                    } else {
+//                        item.sortIndex = (index - 1).toLong()
+//                    }
+//                }
+//            } else {
+//                // 下から上へ移動
+//                if (index.toLong() == from) {
+//                    item.sortIndex = to
+//                    needBreak = true
+//                } else {
+//                    if ((index + 1).toLong() == to) {
+//                        item.sortIndex = (index + 2).toLong()
+//                    } else {
+//                        item.sortIndex = (index + 1).toLong()
+//                    }
+//                }
+//            }
+//            database.updateRouteListItem(item)
+//            if (needBreak) {
+//                break
+//            }
+//        }
     }
 
     fun switchManualSortMode() {
-        _isManualSortMode.value = !(_isManualSortMode.value ?: false)
+        val current = (isManualSortMode.value ?: true)
+        _isManualSortMode.value = !current
     }
 
     /**

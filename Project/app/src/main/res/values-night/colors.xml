@@ -15,7 +15,7 @@
     <color name="colorCardBackground">@color/colorPrimary</color>
     <color name="colorBackgroundBottomAppBar">#353535</color>
 
-    <color name="colorSortBackground">#fffacd</color>
+    <color name="colorSortBackground">#00008b</color>
     <color name="colorNormalBackground">#00313131</color>
 
     <color name="weekday">#FFFFFF</color>
