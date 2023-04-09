@@ -13,6 +13,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
@@ -24,6 +26,7 @@ import com.nyasai.traintimer.routesearch.*
 import com.nyasai.traintimer.util.FragmentUtil
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
+
 
 /**
  * 路線一覧表示フラグメント
@@ -95,6 +98,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private val _viewModelContext: CoroutineContext
         get() = Dispatchers.Default + _job
 
+    private var _itemTouchHelper: ItemTouchHelper? = null
+
     /**
      * onCreateViewフック
      */
@@ -116,24 +121,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 路線リスト用アダプター設定
         val adapter = RouteListAdapter()
         binding.routeListView.adapter = adapter
-        // 操作イベント登録
-        adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener {
-            override fun onItemClickListener(view: View, item: RouteListItem) {
-                // ページ遷移
-                Log.d("Debug", "アイテム選択 : $item")
-                view.findNavController()
-                    .navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
-            }
-        })
-        adapter.setOnItemLongClickListener(object : RouteListAdapter.OnItemLongClickListener {
-            override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
-                // 長押し
-                Log.d("Debug", "アイテム長押し : $item")
-                // 編集操作選択
-                showItemEditDialog(item)
-                return true
-            }
-        })
+        setListItemTouchEvent(adapter)
+        setSortHelper(binding, adapter)
 
         // ダイアログ初期化
         initDialog()
@@ -209,6 +198,11 @@ class RouteListFragment : Fragment(), CoroutineScope {
             R.id.route_add_menu -> {
                 Log.d("Debug", "路線検索ボタン押下")
                 showSearchTargetInputDialog()
+                true
+            }
+            R.id.route_manual_sort -> {
+                Log.d("Debug", "路線ソートボタン押下")
+                _routeListViewModel.switchManualSortMode()
                 true
             }
             R.id.setting_menu -> {
@@ -368,7 +362,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchDestinationFromStationName(stationName: String) {
-        launch(Dispatchers.Main){
+        launch(Dispatchers.Main) {
             _commonLoadingViewModel.showLoading()
         }
         launch(_viewModelContext) {
@@ -471,6 +465,61 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
     // endregion ダイアログ関連
 
+
+    private fun setListItemTouchEvent(adapter: RouteListAdapter) {
+        // 操作イベント登録
+        adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener {
+            override fun onItemClickListener(view: View, item: RouteListItem) {
+                // ページ遷移
+                Log.d("Debug", "アイテム選択 : $item")
+                view.findNavController()
+                    .navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
+            }
+        })
+        adapter.setOnItemLongClickListener(object : RouteListAdapter.OnItemLongClickListener {
+            override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
+                // 長押し
+                Log.d("Debug", "アイテム長押し : $item")
+                if (_routeListViewModel.isManualSortMode.value == null || _routeListViewModel.isManualSortMode.value == false) {
+                    // 編集操作選択
+                    showItemEditDialog(item)
+                }
+                return true
+            }
+        })
+    }
+
+    /**
+     * ソート用タッチヘルパ実装
+     */
+    private fun setSortHelper(binding: FragmentRouteListBinding, adapter: RouteListAdapter) {
+        _itemTouchHelper = ItemTouchHelper(
+            object : ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+                ItemTouchHelper.ACTION_STATE_IDLE
+            ) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    // 並び替え
+                    val from = viewHolder.adapterPosition
+                    val to = target.adapterPosition
+                    adapter.notifyItemMoved(from, to)
+                    launch(_viewModelContext) {
+                        // 結果を保存
+                        _routeListViewModel.updateSortIndex()
+                    }
+                    return true
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    // スワイプ
+                }
+            })
+        _itemTouchHelper!!.attachToRecyclerView(binding.routeListView)
+    }
 
     /**
      * アイテム情報更新

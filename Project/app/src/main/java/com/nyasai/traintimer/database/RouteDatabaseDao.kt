@@ -57,19 +57,19 @@ interface RouteDatabaseDao {
     /**
      * 路線アイテム一覧取得
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId")
+    @Query("SELECT * from route_list_item_table ORDER BY sort_index")
     fun getAllRouteListItems(): LiveData<List<RouteListItem>>
 
     /**
      * 路線アイテム一覧取得(同期)
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId")
+    @Query("SELECT * from route_list_item_table ORDER BY sort_index")
     fun getAllRouteListItemsSync(): List<RouteListItem>
 
     /**
      * 路線アイテム一覧降順取得(同期)
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId DESC")
+    @Query("SELECT * from route_list_item_table ORDER BY sort_index DESC")
     fun getDestAllRouteListItemsSync(): List<RouteListItem>
 
     // endregion 路線リストアイテム操作

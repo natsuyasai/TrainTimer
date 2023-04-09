@@ -30,4 +30,7 @@
 
     <!-- アプリケーション情報ダイアログ用 -->
     <string name="app_info_dialog_title">時刻表</string>
+    <string name="route_add_menu">路線検索</string>
+    <string name="route_manual_sort">並び替え</string>
+    <string name="route_list_setting_menu">設定</string>
 </resources>
