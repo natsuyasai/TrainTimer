@@ -495,31 +495,33 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * ソート用タッチヘルパ実装
      */
     private fun setSortHelper(binding: FragmentRouteListBinding) {
-        _itemTouchHelper = ItemTouchHelper(
-            object : ItemTouchHelper.SimpleCallback(
-                ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-                ItemTouchHelper.ACTION_STATE_IDLE
-            ) {
+        if(_itemTouchHelper == null){
+            _itemTouchHelper = ItemTouchHelper(
+                object : ItemTouchHelper.SimpleCallback(
+                    ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+                    ItemTouchHelper.ACTION_STATE_IDLE
+                ) {
 
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    // 並び替え
-                    val from = viewHolder.adapterPosition
-                    val to = target.adapterPosition
-                    Log.d("Debug", "from: $from  to: $to")
-                    // 結果を保存
-                    _routeListViewModel.updateSortIndex(from, to)
-                    _routeListAdapter.notifyItemMoved(from, to)
-                    return true
-                }
+                    override fun onMove(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder,
+                        target: RecyclerView.ViewHolder
+                    ): Boolean {
+                        // 並び替え
+                        val from = viewHolder.adapterPosition
+                        val to = target.adapterPosition
+                        Log.d("Debug", "from: $from  to: $to")
+                        // 結果を保存
+                        _routeListViewModel.updateSortIndex(from, to)
+                        _routeListAdapter.notifyItemMoved(from, to)
+                        return true
+                    }
 
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    // スワイプ
-                }
-            })
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                        // スワイプ
+                    }
+                })
+        }
         if (_routeListViewModel.isManualSortMode.value == true) {
             _itemTouchHelper!!.attachToRecyclerView(binding.routeListView)
             Toast.makeText(context, "手動ソートモード開始", Toast.LENGTH_SHORT).show()
