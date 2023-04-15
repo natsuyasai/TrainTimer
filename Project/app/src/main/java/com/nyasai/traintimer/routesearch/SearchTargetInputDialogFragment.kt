@@ -20,7 +20,7 @@ class SearchTargetInputDialogFragment : DialogFragment() {
         ViewModelProvider(
             requireActivity(),
             SearchTargetInputViewModelFactory()
-        ).get(SearchTargetInputViewModel::class.java)
+        )[SearchTargetInputViewModel::class.java]
     }
 
     /**

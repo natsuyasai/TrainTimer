@@ -33,4 +33,5 @@
     <string name="route_add_menu">路線検索</string>
     <string name="route_manual_sort">並び替え</string>
     <string name="route_list_setting_menu">設定</string>
+    <string name="setting_title_filter">フィルタ</string>
 </resources>

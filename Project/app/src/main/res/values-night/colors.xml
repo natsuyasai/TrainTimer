@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
-    <color name="textDark">#000000</color>
     <color name="textRed">#ff6347</color>
     <color name="textGray">#808080</color>
     <color name="shade">#80808080</color>
@@ -12,8 +8,6 @@
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="textColorSecondary">#fffafa</color>
     <color name="colorBackground">#313131</color>
-    <color name="colorCardBackground">@color/colorPrimary</color>
-    <color name="colorBackgroundBottomAppBar">#353535</color>
 
     <color name="colorSortBackground">#00008b</color>
     <color name="colorNormalBackground">#00313131</color>

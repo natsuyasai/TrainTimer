@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.http.HttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job

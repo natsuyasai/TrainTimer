@@ -3,7 +3,7 @@ package com.nyasai.traintimer.testutil
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import androidx.lifecycle.Observer;
+import androidx.lifecycle.Observer
 
 class TestObserver<T>(count: Int = 1) : Observer<T> {
     private val latch: CountDownLatch = CountDownLatch(count)

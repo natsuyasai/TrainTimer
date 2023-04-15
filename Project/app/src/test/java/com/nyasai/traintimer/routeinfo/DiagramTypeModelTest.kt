@@ -1,3 +1,5 @@
+@file:Suppress("NonAsciiCharacters")
+
 package com.nyasai.traintimer.routeinfo
 
 import com.github.kittinunf.fuel.core.Body
@@ -21,7 +23,7 @@ internal class DiagramTypeModelTest {
 
     @BeforeEach
     fun setUp() {
-        _httpClientMock = mock<IHttpClient>()
+        _httpClientMock = mock()
     }
 
     @AfterEach
@@ -51,7 +53,7 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定無し 現在：平日`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 2
         }
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
@@ -62,7 +64,7 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定無し 現在：土曜`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 7
         }
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
@@ -72,7 +74,7 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定無し 現在：日曜`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 1
         }
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
@@ -82,10 +84,10 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：平日`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 2
         }
-        val body = mock<Body>() {
+        val body = mock<Body> {
             on { toByteArray() } doReturn ("else".toByteArray())
         }
         val response = Response(url = URL("http","localhost",80, ""),200, body = body)
@@ -97,10 +99,10 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：土曜`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 7
         }
-        val body = mock<Body>() {
+        val body = mock<Body> {
             on { toByteArray() } doReturn ("else".toByteArray())
         }
         val response = Response(url = URL("http","localhost",80, ""),200, body = body)
@@ -112,10 +114,10 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：日曜`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 1
         }
-        val body = mock<Body>() {
+        val body = mock<Body> {
             on { toByteArray() } doReturn ("else".toByteArray())
         }
         val response = Response(url = URL("http","localhost",80, ""),200, body = body)
@@ -127,10 +129,10 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：平日（祝日）`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 2
         }
-        val body = mock<Body>() {
+        val body = mock<Body> {
             on { toByteArray() } doReturn ("holiday".toByteArray())
         }
         val response = Response(url = URL("http","localhost",80, ""),200, body = body)
@@ -142,10 +144,10 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 祝日判定失敗 現在：平日`() {
-        val calendarMock = mock<Calendar>(){
+        val calendarMock = mock<Calendar> {
             on { get(any()) } doReturn 2
         }
-        val body = mock<Body>() {
+        val body = mock<Body> {
             on { toByteArray() } doReturn ("error".toByteArray())
         }
         val response = Response(url = URL("http","localhost",80, ""),500, body = body)

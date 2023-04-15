@@ -1,14 +1,13 @@
+@file:Suppress("NonAsciiCharacters", "EmptyMethod")
+
 package com.nyasai.traintimer.datamigration
 
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.nyasai.traintimer.database.RouteDatabaseDao
-import io.mockk.InternalPlatformDsl.toArray
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.*
 import java.io.OutputStream
 
@@ -23,7 +22,7 @@ internal class DataExportTest {
     }
 
     @Test
-    fun `フォルダ出力先選択処理起動`() {
+    fun `フォルダ出力先選択処理 起動`() {
         val target = DataExportTesting()
         val activityResultLauncherMock = mock<ActivityResultLauncher<Intent>>()
 
@@ -57,7 +56,7 @@ internal class DataExportTest {
 
     internal class DataExportTesting : DataExport() {
         override fun getIntent(filename: String): Intent {
-            return mock<Intent>()
+            return mock()
         }
     }
 }

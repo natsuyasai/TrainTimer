@@ -12,9 +12,9 @@ class FragmentUtil {
         fun deletePrevDialog(tag: String, parentFragmentManager: FragmentManager) {
             val prevDlg = parentFragmentManager.findFragmentByTag(tag)
             if (prevDlg != null) {
-                parentFragmentManager.beginTransaction().remove(prevDlg)
+                parentFragmentManager.beginTransaction().remove(prevDlg).commit()
             }
-            parentFragmentManager.beginTransaction().addToBackStack(null)
+            parentFragmentManager.beginTransaction().addToBackStack(null).commit()
         }
     }
 }

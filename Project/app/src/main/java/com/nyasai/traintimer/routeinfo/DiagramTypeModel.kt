@@ -1,11 +1,9 @@
 package com.nyasai.traintimer.routeinfo
 
+import android.util.Log
 import com.github.kittinunf.fuel.core.isSuccessful
-import com.github.kittinunf.fuel.httpGet
-import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.http.IHttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import java.lang.Exception
 import java.util.*
 
 open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
@@ -52,9 +50,8 @@ open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
                 if (isHoliday()) {
                     type = YahooRouteInfoGetter.Companion.DiagramType.Holiday
                 }
-            }
-            catch (e: Exception) {
-
+            } catch (e: Exception) {
+                Log.d("Debug", "祝日判定失敗")
             }
         }
         return type

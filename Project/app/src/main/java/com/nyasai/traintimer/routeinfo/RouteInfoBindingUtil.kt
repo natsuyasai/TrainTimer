@@ -5,7 +5,6 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.define.Define
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import java.time.LocalTime
 

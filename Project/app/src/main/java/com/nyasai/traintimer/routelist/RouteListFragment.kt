@@ -56,7 +56,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 RouteDatabase.getInstance(application).routeDatabaseDao,
                 application
             )
-        ).get(RouteListViewModel::class.java)
+        )[RouteListViewModel::class.java]
     }
 
     // 検索用インプットダイアログViewModel
@@ -64,7 +64,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ViewModelProvider(
             requireActivity(),
             SearchTargetInputViewModelFactory()
-        ).get(SearchTargetInputViewModel::class.java)
+        )[SearchTargetInputViewModel::class.java]
     }
 
     // リストアイテム選択ViewModel
@@ -72,14 +72,12 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ViewModelProvider(
             requireActivity(),
             ListItemSelectViewModelFactory()
-        ).get(ListItemSelectViewModel::class.java)
+        )[ListItemSelectViewModel::class.java]
     }
 
     // 共通ローディングViewModel
     private val _commonLoadingViewModel: CommonLoadingViewModel by lazy {
-        ViewModelProvider(requireActivity(), CommonLoadingViewModelFactory()).get(
-            CommonLoadingViewModel::class.java
-        )
+        ViewModelProvider(requireActivity(), CommonLoadingViewModelFactory())[CommonLoadingViewModel::class.java]
     }
 
     // 検索情報保持領域
@@ -113,7 +111,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
     ): View {
 
         // データバインド設定
-        _fragmentRouteListBinding = DataBindingUtil.inflate<FragmentRouteListBinding>(
+        _fragmentRouteListBinding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_route_list, container, false
         )
 
