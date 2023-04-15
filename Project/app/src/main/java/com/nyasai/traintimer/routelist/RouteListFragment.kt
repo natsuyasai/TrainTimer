@@ -524,8 +524,10 @@ class RouteListFragment : Fragment(), CoroutineScope {
             })
         if (_routeListViewModel.isManualSortMode.value == true) {
             _itemTouchHelper!!.attachToRecyclerView(binding.routeListView)
+            Toast.makeText(context, "手動ソートモード開始", Toast.LENGTH_SHORT).show()
         } else {
             _itemTouchHelper!!.attachToRecyclerView(null)
+            Toast.makeText(context, "手動ソートモード終了", Toast.LENGTH_SHORT).show()
         }
     }
 
