@@ -1,4 +1,5 @@
-@file:Suppress("SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
+@file:Suppress(
+    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
     "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
     "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
     "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
@@ -29,9 +30,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.IOException
-import java.lang.Exception
 
-@Suppress("SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
+@Suppress(
+    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
     "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
     "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
     "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
@@ -556,7 +557,8 @@ class RouteDatabaseTest {
         item.trainType = "普通"
         routeDao.insertRouteDetailItem(item)
 
-        val dbItems = routeDao.getCurrentDiagramRouteDetailItemsWithParentIdSync(parents[0].dataId, 1)
+        val dbItems =
+            routeDao.getCurrentDiagramRouteDetailItemsWithParentIdSync(parents[0].dataId, 1)
 
         // 片付け
         routeDao.clearAllRouteListItem()
@@ -607,7 +609,7 @@ class RouteDatabaseTest {
 
     @Test
     @Throws(Exception::class)
-    fun insertFilterInfoItem(){
+    fun insertFilterInfoItem() {
         // 親データ設定
         val parent = RouteListItem()
         parent.routeName = "JR"
@@ -633,7 +635,7 @@ class RouteDatabaseTest {
 
     @Test
     @Throws(Exception::class)
-    fun insertFilterInfoItems(){
+    fun insertFilterInfoItems() {
         // 親データ設定
         val parent = RouteListItem()
         parent.routeName = "JR"
@@ -643,7 +645,7 @@ class RouteDatabaseTest {
         val parents = routeDao.getAllRouteListItemsSync()
 
         val items = mutableListOf<FilterInfo>()
-        for (i in 1..10){
+        for (i in 1..10) {
             val item = FilterInfo()
             item.parentDataId = parents[0].dataId
             item.isShow = true

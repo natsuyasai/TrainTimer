@@ -12,7 +12,7 @@ import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.Calendar
 
 /**
  * 路線詳細情報表示用ViewModel
@@ -37,8 +37,10 @@ class RouteInfoViewModel(
     var currentCountItem: LiveData<RouteDetail> = _currentCountItem
 
     // 現在の表示ダイア種別
-    private var _currentDiagramType: MutableLiveData<YahooRouteInfoGetter.Companion.DiagramType> = MutableLiveData()
-    var currentDiagramType: LiveData<YahooRouteInfoGetter.Companion.DiagramType> = _currentDiagramType
+    private var _currentDiagramType: MutableLiveData<YahooRouteInfoGetter.Companion.DiagramType> =
+        MutableLiveData()
+    var currentDiagramType: LiveData<YahooRouteInfoGetter.Companion.DiagramType> =
+        _currentDiagramType
 
     // フィルタ情報
     val filterInfo = database.getFilterInfoItemWithParentId(parentId)
@@ -50,7 +52,8 @@ class RouteInfoViewModel(
     private val _parentDataId: Long = parentId
 
     // ダイア種別用モデルクラス
-    private val _diagramTypeModel: DiagramTypeModel = DiagramTypeModel(Calendar.getInstance(), HttpClient())
+    private val _diagramTypeModel: DiagramTypeModel =
+        DiagramTypeModel(Calendar.getInstance(), HttpClient())
 
     init {
         _currentDiagramType.value = _diagramTypeModel.getTodayDiagramType(false)
@@ -146,6 +149,7 @@ class RouteInfoViewModel(
                     currentCountItem.value?.departureTime
                 )
             )
+
             else -> -1L
         }
     }

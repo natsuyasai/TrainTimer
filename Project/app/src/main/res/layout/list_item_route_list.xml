@@ -2,7 +2,9 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
     <data>
+
         <variable
             name="routeListItem"
             type="com.nyasai.traintimer.database.RouteListItem" />
@@ -11,11 +13,11 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/list_frame_style"
         android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
         android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp" >
+        android:background="@drawable/list_frame_style"
+        android:orientation="vertical">
 
         <!-- 路線名 -->
         <TextView
@@ -23,14 +25,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:textSize="18sp"
             android:layout_marginStart="16dp"
             android:textColor="@color/textColor"
+            android:textSize="18sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:routeName="@{routeListItem}"
-            tools:text="路線名"/>
+            tools:text="路線名" />
         <!-- 駅名 -->
         <TextView
             android:id="@+id/station_name"
@@ -38,8 +40,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:layout_marginStart="16dp"
-            android:textSize="24sp"
             android:textColor="@color/textColor"
+            android:textSize="24sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/route_name"
@@ -52,12 +54,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:layout_marginStart="16dp"
-            android:textSize="18sp"
             android:textColor="@color/textColor"
+            android:textSize="18sp"
+            app:destination="@{routeListItem}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_name"
-            app:destination="@{routeListItem}"
             tools:text="方面" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

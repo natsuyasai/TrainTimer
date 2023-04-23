@@ -4,7 +4,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
@@ -22,9 +28,18 @@ import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
-import com.nyasai.traintimer.routesearch.*
+import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
+import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
+import com.nyasai.traintimer.routesearch.ListItemSelectViewModelFactory
+import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
+import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
+import com.nyasai.traintimer.routesearch.SearchTargetInputViewModelFactory
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 
@@ -77,7 +92,10 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
     // 共通ローディングViewModel
     private val _commonLoadingViewModel: CommonLoadingViewModel by lazy {
-        ViewModelProvider(requireActivity(), CommonLoadingViewModelFactory())[CommonLoadingViewModel::class.java]
+        ViewModelProvider(
+            requireActivity(),
+            CommonLoadingViewModelFactory()
+        )[CommonLoadingViewModel::class.java]
     }
 
     // 検索情報保持領域
@@ -200,17 +218,20 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 showSearchTargetInputDialog()
                 true
             }
+
             R.id.route_manual_sort -> {
                 Log.d("Debug", "路線ソートボタン押下")
                 _routeListViewModel.switchManualSortMode()
                 setSortHelper(_fragmentRouteListBinding)
                 true
             }
+
             R.id.setting_menu -> {
                 Log.d("Debug", "設定ボタン押下")
                 showSettingFragment()
                 true
             }
+
             else -> {
                 false
             }
@@ -236,6 +257,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                     RouteListItemEditDialogFragment.EditType.Update -> {
                         updateRouteItemInfo(item)
                     }
+
                     else -> {
                         showDeleteConfirmDialog(item)
                     }
@@ -495,7 +517,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * ソート用タッチヘルパ実装
      */
     private fun setSortHelper(binding: FragmentRouteListBinding) {
-        if(_itemTouchHelper == null){
+        if (_itemTouchHelper == null) {
             _itemTouchHelper = ItemTouchHelper(
                 object : ItemTouchHelper.SimpleCallback(
                     ItemTouchHelper.UP or ItemTouchHelper.DOWN,

@@ -19,8 +19,7 @@ open class DataExport {
             val filename = getFileName()
             val intent = getIntent(filename)
             launcher.launch(intent)
-        }
-        catch (e: Exception){
+        } catch (e: Exception) {
             Log.e("Exception", e.toString())
         }
     }
@@ -32,21 +31,20 @@ open class DataExport {
         try {
             outputStream.writeLine(DataMigrationDefine.DATA_VERSION_INFO)
             outputStream.writeLine(DataMigrationDefine.ROUTE_LIST_DATA_START_WORD)
-            for (item in routeDatabaseDao.getAllRouteListItemsSync()){
+            for (item in routeDatabaseDao.getAllRouteListItemsSync()) {
                 outputStream.writeLine("${item.dataId},${item.routeName},${item.stationName},${item.destination},${item.sortIndex}")
             }
             outputStream.writeLine()
             outputStream.writeLine(DataMigrationDefine.ROUTE_DETAIL_DATA_START_WORD)
-            for (item in routeDatabaseDao.getAllRouteDetailItemsSync()){
+            for (item in routeDatabaseDao.getAllRouteDetailItemsSync()) {
                 outputStream.writeLine("${item.dataId},${item.parentDataId},${item.diagramType},${item.departureTime},${item.trainType},${item.destination}")
             }
             outputStream.writeLine()
             outputStream.writeLine(DataMigrationDefine.FILTER_INFO_DATA_START_WORD)
-            for (item in routeDatabaseDao.getAllFilterInfoItemSync()){
+            for (item in routeDatabaseDao.getAllFilterInfoItemSync()) {
                 outputStream.writeLine("${item.dataId},${item.parentDataId},${item.trainTypeAndDestination},${item.isShow}")
             }
-        }
-        catch (e: Exception){
+        } catch (e: Exception) {
             Log.e("Exception", e.toString())
             throw e
         }
@@ -65,7 +63,8 @@ open class DataExport {
      * ファイル名取得
      */
     private fun getFileName(): String {
-        val datetime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
+        val datetime =
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
         return "TrainTimerData-${datetime}.dat"
     }
 

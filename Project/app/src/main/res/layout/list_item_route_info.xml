@@ -2,7 +2,9 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
     <data>
+
         <variable
             name="routeDetail"
             type="com.nyasai.traintimer.database.RouteDetail" />
@@ -11,9 +13,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:background="@drawable/list_frame_style"
         android:foregroundGravity="left"
-        android:background="@drawable/list_frame_style" >
+        android:orientation="vertical">
 
         <!-- 時刻 -->
         <TextView
@@ -21,15 +23,15 @@
             android:layout_width="0dp"
             android:layout_height="35dp"
             android:layout_gravity="start"
+            android:autoSizeTextType="uniform"
             android:gravity="start"
             android:textColor="@color/textColor"
-            android:autoSizeTextType="uniform"
-            app:layout_constraintWidth_percent="0.2"
             app:departureTime="@{routeDetail}"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/train_type"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/train_type"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.2"
             tools:text="時刻" />
         <!-- 種別 -->
         <TextView
@@ -37,15 +39,15 @@
             android:layout_width="0dp"
             android:layout_height="35dp"
             android:layout_gravity="start"
-            android:gravity="start"
             android:autoSizeTextType="uniform"
+            android:gravity="start"
             android:textColor="@color/textRed"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/destination_name"
+            app:layout_constraintStart_toEndOf="@id/departure_time"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.4"
             app:trainType="@{routeDetail}"
-            app:layout_constraintStart_toEndOf="@id/departure_time"
-            app:layout_constraintEnd_toStartOf="@id/destination_name"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="種別" />
         <!-- 方面 -->
         <TextView
@@ -53,15 +55,15 @@
             android:layout_width="0dp"
             android:layout_height="35dp"
             android:layout_gravity="start"
-            android:gravity="start"
             android:autoSizeTextType="uniform"
+            android:gravity="start"
             android:textColor="@color/textColor"
-            app:layout_constraintWidth_percent="0.3"
             app:destination="@{routeDetail}"
-            app:layout_constraintStart_toEndOf="@id/train_type"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/train_type"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.3"
             tools:text="方面" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,17 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/route_add_menu"
-        android:title="@string/route_add_menu"
         android:icon="@drawable/ic_add_24px"
-        app:showAsAction="ifRoom"/>
+        android:title="@string/route_add_menu"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/route_manual_sort"
-        android:title="@string/route_manual_sort"
         android:icon="@drawable/ic_sort_24px"
-        app:showAsAction="ifRoom"/>
+        android:title="@string/route_manual_sort"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/setting_menu"
-        android:title="@string/route_list_setting_menu"
         android:icon="@drawable/ic_settings_24px"
-        app:showAsAction="always"/>
+        android:title="@string/route_list_setting_menu"
+        app:showAsAction="always" />
 </menu>

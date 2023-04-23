@@ -6,6 +6,7 @@ class DataMigrationDefine {
         // データバージョン
         private const val DATA_VERSION = 1
         const val DATA_VERSION_INFO = "DataVersion,${DATA_VERSION}"
+
         // 路線一覧情報開始位置
         const val ROUTE_LIST_DATA_START_WORD = "RouteListDataStart"
         const val ROUTE_DETAIL_DATA_START_WORD = "RouteDetailDataStart"

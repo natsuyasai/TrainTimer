@@ -1,6 +1,10 @@
 package com.nyasai.traintimer.database
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 
 /**
  * 時刻表詳細ページ用データ
@@ -41,6 +45,6 @@ data class RouteDetail @Ignore constructor(
     @ColumnInfo(name = "destination")
     var destination: String = "",
 
-    ){
+    ) {
     constructor() : this(0, 0L, 0, "", "", "")
 }

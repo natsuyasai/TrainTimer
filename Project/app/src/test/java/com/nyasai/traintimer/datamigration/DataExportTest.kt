@@ -5,11 +5,13 @@ package com.nyasai.traintimer.datamigration
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.nyasai.traintimer.database.RouteDatabaseDao
-import com.nyasai.traintimer.datamigration.DataMigrationDefine.Companion.DATA_VERSION_INFO
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import java.io.OutputStream
 
 internal class DataExportTest {

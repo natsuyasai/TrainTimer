@@ -90,8 +90,8 @@ internal class DiagramTypeModelTest {
         val body = mock<Body> {
             on { toByteArray() } doReturn ("else".toByteArray())
         }
-        val response = Response(url = URL("http","localhost",80, ""),200, body = body)
-        whenever(_httpClientMock.httpGet(any(),eq(null))).thenReturn(response)
+        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Weekday, result)
@@ -105,8 +105,8 @@ internal class DiagramTypeModelTest {
         val body = mock<Body> {
             on { toByteArray() } doReturn ("else".toByteArray())
         }
-        val response = Response(url = URL("http","localhost",80, ""),200, body = body)
-        whenever(_httpClientMock.httpGet(any(),eq(null))).thenReturn(response)
+        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Saturday, result)
@@ -120,8 +120,8 @@ internal class DiagramTypeModelTest {
         val body = mock<Body> {
             on { toByteArray() } doReturn ("else".toByteArray())
         }
-        val response = Response(url = URL("http","localhost",80, ""),200, body = body)
-        whenever(_httpClientMock.httpGet(any(),eq(null))).thenReturn(response)
+        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Holiday, result)
@@ -135,7 +135,7 @@ internal class DiagramTypeModelTest {
         val body = mock<Body> {
             on { toByteArray() } doReturn ("holiday".toByteArray())
         }
-        val response = Response(url = URL("http","localhost",80, ""),200, body = body)
+        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
         whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
@@ -150,8 +150,8 @@ internal class DiagramTypeModelTest {
         val body = mock<Body> {
             on { toByteArray() } doReturn ("error".toByteArray())
         }
-        val response = Response(url = URL("http","localhost",80, ""),500, body = body)
-        whenever(_httpClientMock.httpGet(any(),eq(null))).thenReturn(response)
+        val response = Response(url = URL("http", "localhost", 80, ""), 500, body = body)
+        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Weekday, result)

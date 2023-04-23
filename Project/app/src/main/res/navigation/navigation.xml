@@ -7,7 +7,7 @@
         android:id="@+id/routeList"
         android:name="com.nyasai.traintimer.routelist.RouteListFragment"
         android:label="fragment_route_list"
-        tools:layout="@layout/fragment_route_list" >
+        tools:layout="@layout/fragment_route_list">
         <action
             android:id="@+id/action_routeList_to_routeInfoFragment"
             app:destination="@id/routeInfoFragment2" />
@@ -25,7 +25,7 @@
         android:id="@+id/routeInfoFragment2"
         android:name="com.nyasai.traintimer.routeinfo.RouteInfoFragment"
         android:label="fragment_route_info"
-        tools:layout="@layout/fragment_route_info" >
+        tools:layout="@layout/fragment_route_info">
         <argument
             android:name="parentDataId"
             app:argType="long" />
@@ -36,7 +36,7 @@
     <fragment
         android:id="@+id/searchTargetInputDialogFragment"
         android:name="com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment"
-        android:label="SearchTargetInputDialogFragment" >
+        android:label="SearchTargetInputDialogFragment">
         <action
             android:id="@+id/action_searchTargetInputDialogFragment_to_routeList"
             app:destination="@id/routeList" />
@@ -44,7 +44,7 @@
     <fragment
         android:id="@+id/listItemSelectDialogFragment"
         android:name="com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment"
-        android:label="ListItemSelectDialogFragment" >
+        android:label="ListItemSelectDialogFragment">
         <action
             android:id="@+id/action_listItemSelectDialogFragment_to_routeList"
             app:destination="@id/routeList" />
@@ -52,7 +52,7 @@
     <fragment
         android:id="@+id/preferenceFragment"
         android:name="com.nyasai.traintimer.setting.PreferenceFragment"
-        android:label="PreferenceFragment" >
+        android:label="PreferenceFragment">
         <action
             android:id="@+id/action_preferenceFragment_to_routeList"
             app:destination="@id/routeList" />

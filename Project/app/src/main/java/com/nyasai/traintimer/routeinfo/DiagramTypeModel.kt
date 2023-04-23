@@ -4,7 +4,7 @@ import android.util.Log
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.nyasai.traintimer.http.IHttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import java.util.*
+import java.util.Calendar
 
 open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
 

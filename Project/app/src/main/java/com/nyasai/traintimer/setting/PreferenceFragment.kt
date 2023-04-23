@@ -15,7 +15,10 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.datamigration.DataExport
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -48,19 +51,31 @@ class PreferenceFragment : PreferenceFragmentCompat(), CoroutineScope {
                     result.data?.let { data: Intent ->
                         val uri: Uri = data.data ?: return@let
                         val application = requireNotNull(this.activity).application
-                        val routeDatabaseDao = RouteDatabase.getInstance(application).routeDatabaseDao
+                        val routeDatabaseDao =
+                            RouteDatabase.getInstance(application).routeDatabaseDao
                         try {
                             launch {
-                            context?.contentResolver?.openOutputStream(uri).use { outputStream ->
-                                    outputStream?.let { _dataExport.export(it, routeDatabaseDao) }
-                                }
+                                context?.contentResolver?.openOutputStream(uri)
+                                    .use { outputStream ->
+                                        outputStream?.let {
+                                            _dataExport.export(
+                                                it,
+                                                routeDatabaseDao
+                                            )
+                                        }
+                                    }
                             }
                             launch(Dispatchers.Main) {
-                                Toast.makeText(context, "Data Export Complete!!!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Data Export Complete!!!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
-                            Toast.makeText(context, "Data Export Failed!!!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Data Export Failed!!!", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }
                 }
