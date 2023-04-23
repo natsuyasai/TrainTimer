@@ -46,5 +46,7 @@ data class FilterInfo @Ignore constructor(
          */
         fun createFilterKey(trainType: String, destination: String) =
             "$trainType - $destination"
+
+        const val DataSize = 4
     }
 }

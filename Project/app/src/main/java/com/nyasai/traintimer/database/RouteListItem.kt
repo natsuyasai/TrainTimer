@@ -33,4 +33,8 @@ data class RouteListItem @Ignore constructor(
 
 ) {
     constructor() : this(0, "", "", "", 0L)
+    companion object {
+        const val DataSize = 5
+    }
+
 }

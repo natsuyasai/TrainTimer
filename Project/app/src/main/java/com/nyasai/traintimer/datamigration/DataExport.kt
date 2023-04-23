@@ -3,7 +3,10 @@ package com.nyasai.traintimer.datamigration
 import android.content.Intent
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
-import com.nyasai.traintimer.database.RouteDatabaseDao
+import com.nyasai.traintimer.database.FilterInfo
+import com.nyasai.traintimer.database.RouteDetail
+import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.datamigration.DataMigrationDefine.Companion.DELIMITER
 import java.io.OutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -27,22 +30,27 @@ open class DataExport {
     /**
      * データ出力
      */
-    fun export(outputStream: OutputStream, routeDatabaseDao: RouteDatabaseDao) {
+    fun export(
+        outputStream: OutputStream,
+        allRouteLists: List<RouteListItem>,
+        allRouteDetailItems: List<RouteDetail>,
+        allFilterInfoItems: List<FilterInfo>
+    ) {
         try {
             outputStream.writeLine(DataMigrationDefine.DATA_VERSION_INFO)
             outputStream.writeLine(DataMigrationDefine.ROUTE_LIST_DATA_START_WORD)
-            for (item in routeDatabaseDao.getAllRouteListItemsSync()) {
-                outputStream.writeLine("${item.dataId},${item.routeName},${item.stationName},${item.destination},${item.sortIndex}")
+            for (item in allRouteLists) {
+                outputStream.writeLine("${item.dataId}${DELIMITER}${item.routeName}${DELIMITER}${item.stationName}${DELIMITER}${item.destination}${DELIMITER}${item.sortIndex}")
             }
             outputStream.writeLine()
             outputStream.writeLine(DataMigrationDefine.ROUTE_DETAIL_DATA_START_WORD)
-            for (item in routeDatabaseDao.getAllRouteDetailItemsSync()) {
-                outputStream.writeLine("${item.dataId},${item.parentDataId},${item.diagramType},${item.departureTime},${item.trainType},${item.destination}")
+            for (item in allRouteDetailItems) {
+                outputStream.writeLine("${item.dataId}${DELIMITER}${item.parentDataId}${DELIMITER}${item.diagramType}${DELIMITER}${item.departureTime}${DELIMITER}${item.trainType}${DELIMITER}${item.destination}")
             }
             outputStream.writeLine()
             outputStream.writeLine(DataMigrationDefine.FILTER_INFO_DATA_START_WORD)
-            for (item in routeDatabaseDao.getAllFilterInfoItemSync()) {
-                outputStream.writeLine("${item.dataId},${item.parentDataId},${item.trainTypeAndDestination},${item.isShow}")
+            for (item in allFilterInfoItems) {
+                outputStream.writeLine("${item.dataId}${DELIMITER}${item.parentDataId}${DELIMITER}${item.trainTypeAndDestination}${DELIMITER}${item.isShow}")
             }
         } catch (e: Exception) {
             Log.e("Exception", e.toString())
@@ -53,7 +61,7 @@ open class DataExport {
     protected open fun getIntent(filename: String): Intent {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/octet-stream"
+            type = DataMigrationDefine.MIME_TYPE
             putExtra(Intent.EXTRA_TITLE, filename)
         }
         return intent
@@ -67,5 +75,4 @@ open class DataExport {
             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
         return "TrainTimerData-${datetime}.dat"
     }
-
 }

@@ -237,5 +237,8 @@ interface RouteDatabaseDao {
     @Query("SELECT * from filter_info_table ORDER BY dataId")
     fun getAllFilterInfoItemSync(): List<FilterInfo>
 
+    @Query("DELETE FROM filter_info_table")
+    fun clearAllFilterInfo()
+
     // endregion フィルタ情報操作
 }

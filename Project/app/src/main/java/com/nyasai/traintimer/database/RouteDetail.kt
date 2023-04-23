@@ -47,4 +47,8 @@ data class RouteDetail @Ignore constructor(
 
     ) {
     constructor() : this(0, 0L, 0, "", "", "")
+
+    companion object {
+        const val DataSize = 6
+    }
 }

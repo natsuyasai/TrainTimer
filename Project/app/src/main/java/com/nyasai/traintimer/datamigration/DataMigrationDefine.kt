@@ -11,5 +11,9 @@ class DataMigrationDefine {
         const val ROUTE_LIST_DATA_START_WORD = "RouteListDataStart"
         const val ROUTE_DETAIL_DATA_START_WORD = "RouteDetailDataStart"
         const val FILTER_INFO_DATA_START_WORD = "FilterInfoDataStart"
+
+        const val MIME_TYPE = "application/octet-stream"
+
+        const val DELIMITER = "\t"
     }
 }
