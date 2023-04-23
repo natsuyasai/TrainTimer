@@ -5,6 +5,7 @@ package com.nyasai.traintimer.datamigration
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.nyasai.traintimer.database.RouteDatabaseDao
+import com.nyasai.traintimer.datamigration.DataMigrationDefine.Companion.DATA_VERSION_INFO
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,20 +39,11 @@ internal class DataExportTest {
         val routeDatabaseDaoMock = mock<RouteDatabaseDao>()
 
         target.export(outputStreamMock, routeDatabaseDaoMock)
-
-        argumentCaptor<String>().apply {
-            verify(outputStreamMock, times(6)).writeLine(capture())
-//            val expected = listOf(
-//                "${DataMigrationDefine.DATA_VERSION_INFO}\r\n".toByteArray(),
-//                "${DataMigrationDefine.ROUTE_LIST_DATA_START_WORD}\r\n".toByteArray(),
-//                "\r\n".toByteArray(),
-//                "${DataMigrationDefine.ROUTE_DETAIL_DATA_START_WORD}\r\n".toByteArray(),
-//                "\r\n".toByteArray(),
-//                "${DataMigrationDefine.FILTER_INFO_DATA_START_WORD}\r\n".toByteArray()
-//            )
-            //Assertions.assertArrayEquals(expected.toArray(), allValues.toArray())
-        }
         verify(outputStreamMock, times(2)).writeLine()
+        verify(outputStreamMock, times(1)).writeLine("DataVersion,1")
+        verify(outputStreamMock, times(1)).writeLine("RouteListDataStart")
+        verify(outputStreamMock, times(1)).writeLine("RouteDetailDataStart")
+        verify(outputStreamMock, times(1)).writeLine("FilterInfoDataStart")
     }
 
     internal class DataExportTesting : DataExport() {
