@@ -1,17 +1,25 @@
 package com.nyasai.traintimer.routeinfo
 
+import android.util.Log
 import com.github.kittinunf.fuel.core.isSuccessful
-import com.github.kittinunf.fuel.httpGet
-import com.nyasai.traintimer.define.Define
+import com.nyasai.traintimer.http.IHttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import java.lang.Exception
-import java.util.*
+import java.util.Calendar
 
-class DiagramTypeModel {
+open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
 
     // 祝日判定用APIのURL
     private val _publicHolidayJudgeAPIUrl: String =
         "http://s-proj.com/utils/checkHoliday.php?kind=ph"
+
+    private val _calendar: Calendar
+
+    private val _httpClient: IHttpClient
+
+    init {
+        _calendar = calendar
+        _httpClient = httpClient
+    }
 
     /**
      * 次のダイア種別を取得
@@ -32,22 +40,31 @@ class DiagramTypeModel {
      * @param judgePublicHoliday 祝日の判定を行うか
      */
     fun getTodayDiagramType(judgePublicHoliday: Boolean): YahooRouteInfoGetter.Companion.DiagramType {
-        var type = when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
+        var type = when (_calendar.get(Calendar.DAY_OF_WEEK)) {
             1 -> YahooRouteInfoGetter.Companion.DiagramType.Holiday
             7 -> YahooRouteInfoGetter.Companion.DiagramType.Saturday
             else -> YahooRouteInfoGetter.Companion.DiagramType.Weekday
         }
         if (judgePublicHoliday) {
             try {
-                val response = _publicHolidayJudgeAPIUrl.httpGet().response()
-                if (response.second.isSuccessful && String(response.second.data) == "holiday") {
+                if (isHoliday()) {
                     type = YahooRouteInfoGetter.Companion.DiagramType.Holiday
                 }
-            }
-            catch (e: Exception) {
-
+            } catch (e: Exception) {
+                Log.d("Debug", "祝日判定失敗")
             }
         }
         return type
+    }
+
+    /**
+     * 休日か
+     */
+    protected open fun isHoliday(): Boolean {
+        val response = _httpClient.httpGet(_publicHolidayJudgeAPIUrl)
+        if (response.isSuccessful && String(response.data) == "holiday") {
+            return true
+        }
+        return false
     }
 }

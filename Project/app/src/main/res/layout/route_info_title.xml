@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <data>
+
         <variable
             name="routeListItem"
             type="com.nyasai.traintimer.database.RouteListItem" />
+
         <variable
             name="currentDiagramType"
             type="com.nyasai.traintimer.util.YahooRouteInfoGetter.Companion.DiagramType" />
+
         <variable
             name="routeInfoFragment"
             type="com.nyasai.traintimer.routeinfo.RouteInfoFragment" />
@@ -17,9 +20,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="@drawable/list_frame_style"
-        android:onClick="@{routeInfoFragment::onClickTitle}" >
+        android:onClick="@{routeInfoFragment::onClickTitle}"
+        android:orientation="vertical">
 
         <!-- 路線名 -->
         <TextView
@@ -27,11 +30,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAlignment="center"
-            android:textSize="18sp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:textAlignment="center"
             android:textColor="@color/textColor"
+            android:textSize="18sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -42,11 +45,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAlignment="center"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:textSize="24sp"
+            android:textAlignment="center"
             android:textColor="@color/textColor"
+            android:textSize="24sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/route_name"
@@ -57,15 +60,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAlignment="center"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:textSize="18sp"
+            android:textAlignment="center"
             android:textColor="@color/textColor"
+            android:textSize="18sp"
+            app:destination="@{routeListItem}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/station_name"
-            app:destination="@{routeListItem}" />
+            app:layout_constraintTop_toBottomOf="@+id/station_name" />
 
         <!-- 種類(平日or土曜or日曜祝日) -->
         <TextView
@@ -73,15 +76,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAlignment="center"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:textSize="18sp"
+            android:textAlignment="center"
             android:textColor="@color/textColor"
+            android:textSize="18sp"
+            app:diagramType="@{currentDiagramType}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/destination_name"
-            app:diagramType="@{currentDiagramType}" />
+            app:layout_constraintTop_toBottomOf="@+id/destination_name" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

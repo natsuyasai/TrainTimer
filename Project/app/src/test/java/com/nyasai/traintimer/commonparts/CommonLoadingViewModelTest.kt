@@ -1,16 +1,16 @@
 package com.nyasai.traintimer.commonparts
 
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import org.junit.Assert
-import org.junit.jupiter.api.Test
-import androidx.lifecycle.Observer;
+import androidx.lifecycle.Observer
 import com.nyasai.traintimer.testutil.InstantExecutorExtension
 import com.nyasai.traintimer.testutil.TestObserver
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
 
 @ExtendWith(InstantExecutorExtension::class)
-internal class CommonLoadingViewModelTest{
+internal class CommonLoadingViewModelTest {
 
     /**
      * ローディング表示_成功_テキスト変更
@@ -27,7 +27,7 @@ internal class CommonLoadingViewModelTest{
         val testMessage = "Test!!!!"
         target.showLoading(testMessage)
 
-        Assert.assertEquals(target.isVisible(), true)
+        Assertions.assertEquals(target.isVisible.value, true)
         verify(observer).onChanged(testMessage)
     }
 
@@ -45,7 +45,7 @@ internal class CommonLoadingViewModelTest{
 
         target.showLoading()
 
-        Assert.assertEquals(target.isVisible(), true)
+        Assertions.assertEquals(target.isVisible.value, true)
         verify(observer).onChanged("読み込み中")
     }
 
@@ -70,9 +70,9 @@ internal class CommonLoadingViewModelTest{
         maxCountObserver.await()
         currentCountObserver.await()
 
-        Assert.assertEquals(target.isVisible(), false)
-        Assert.assertEquals(maxCountObserver.get(), 0)
-        Assert.assertEquals(currentCountObserver.get(), 0)
+        Assertions.assertEquals(target.isVisible.value, false)
+        Assertions.assertEquals(maxCountObserver.get(), 0)
+        Assertions.assertEquals(currentCountObserver.get(), 0)
     }
 
     /**
@@ -90,7 +90,7 @@ internal class CommonLoadingViewModelTest{
 
         maxCountObserver.await()
 
-        Assert.assertEquals(maxCountObserver.get(), 100)
+        Assertions.assertEquals(maxCountObserver.get(), 100)
     }
 
     /**
@@ -108,7 +108,7 @@ internal class CommonLoadingViewModelTest{
 
         maxCountObserver.await()
 
-        Assert.assertEquals(maxCountObserver.get(), 1)
+        Assertions.assertEquals(maxCountObserver.get(), 1)
     }
 
 

@@ -3,7 +3,12 @@ package com.nyasai.traintimer.util
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.jsoup.Jsoup
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -167,12 +172,32 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 平日，土曜，日曜・祝日分のURLを取得
         val tableUrls = getTimeTableUrlList(timeTableUrl)
         var timeTableInfoList = listOf<List<TimeInfo>>()
-        if(tableUrls.size == DiagramType.Max.ordinal) { return timeTableInfoList }
+        if (tableUrls.size != DiagramType.Max.ordinal) {
+            return timeTableInfoList
+        }
         coroutineScope {
             val awaitList = listOf(
-                async { getTimeInfoList(tableUrls[DiagramType.Weekday.ordinal], notifyMaxCountCallback, notifyCountCallback) },
-                async { getTimeInfoList(tableUrls[DiagramType.Saturday.ordinal], notifyMaxCountCallback, notifyCountCallback) },
-                async { getTimeInfoList(tableUrls[DiagramType.Holiday.ordinal], notifyMaxCountCallback, notifyCountCallback) })
+                async {
+                    getTimeInfoList(
+                        tableUrls[DiagramType.Weekday.ordinal],
+                        notifyMaxCountCallback,
+                        notifyCountCallback
+                    )
+                },
+                async {
+                    getTimeInfoList(
+                        tableUrls[DiagramType.Saturday.ordinal],
+                        notifyMaxCountCallback,
+                        notifyCountCallback
+                    )
+                },
+                async {
+                    getTimeInfoList(
+                        tableUrls[DiagramType.Holiday.ordinal],
+                        notifyMaxCountCallback,
+                        notifyCountCallback
+                    )
+                })
             timeTableInfoList = awaitList.awaitAll()
         }
         return timeTableInfoList

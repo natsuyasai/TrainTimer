@@ -2,16 +2,19 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
     <data>
 
         <variable
             name="routeListViewModel"
             type="com.nyasai.traintimer.routelist.RouteListViewModel" />
+
         <variable
             name="commonLoadingViewModel"
             type="com.nyasai.traintimer.commonparts.CommonLoadingViewModel" />
 
     </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,18 +23,19 @@
         <!-- ローディング用 -->
         <include
             layout="@layout/common_loading"
-            app:commonLoadingViewModel="@{commonLoadingViewModel}"/>
+            app:commonLoadingViewModel="@{commonLoadingViewModel}" />
 
         <!-- 路線一覧 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/route_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:background="@{routeListViewModel.isManualSortMode ? @color/colorSortBackground : @color/colorNormalBackground }"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

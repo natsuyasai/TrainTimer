@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RouteDetail::class,
         FilterInfo::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class RouteDatabase : RoomDatabase() {
@@ -97,6 +97,10 @@ abstract class RouteDatabase : RoomDatabase() {
                     database.execSQL("CREATE INDEX IF NOT EXISTS index_filter_info_table_parent_row_id ON filter_info_table (parent_row_id)")
                 }
             }
+            val migration5to6 = object : Migration(5, 6) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                }
+            }
             synchronized(this) {
                 var instance = INSTANCE
                 if (instance == null) {
@@ -110,6 +114,7 @@ abstract class RouteDatabase : RoomDatabase() {
                         .addMigrations(migration2to3)
                         .addMigrations(migration3to4)
                         .addMigrations(migration4to5)
+                        .addMigrations(migration5to6)
                         .build()
                     INSTANCE = instance
                 }

@@ -28,6 +28,9 @@ interface RouteDatabaseDao {
     @Update
     fun updateRouteListItem(routeListItem: RouteListItem)
 
+    @Update
+    fun updateRouteListItems(routeListItem: List<RouteListItem>)
+
     /**
      * 路線アイテム削除
      */
@@ -57,23 +60,25 @@ interface RouteDatabaseDao {
     /**
      * 路線アイテム一覧取得
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId")
+    @Query("SELECT * from route_list_item_table ORDER BY sort_index")
     fun getAllRouteListItems(): LiveData<List<RouteListItem>>
 
     /**
      * 路線アイテム一覧取得(同期)
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId")
+    @Query("SELECT * from route_list_item_table ORDER BY sort_index")
     fun getAllRouteListItemsSync(): List<RouteListItem>
 
     /**
      * 路線アイテム一覧降順取得(同期)
      */
-    @Query("SELECT * from route_list_item_table ORDER BY dataId DESC")
+    @Query("SELECT * from route_list_item_table ORDER BY sort_index DESC")
     fun getDestAllRouteListItemsSync(): List<RouteListItem>
 
-    // endregion 路線リストアイテム操作
+    @Query("SELECT MAX(sort_index) FROM route_list_item_table")
+    fun getMaxSortIndex(): Long
 
+    // endregion 路線リストアイテム操作
 
     // region 路線情報詳細操作
 
@@ -225,6 +230,15 @@ interface RouteDatabaseDao {
      */
     @Query("SELECT * from filter_info_table WHERE parent_row_id = :parentId ORDER BY dataId")
     fun getFilterInfoItemWithParentIdSync(parentId: Long): List<FilterInfo>
+
+    /**
+     * フィルタ情報アイテム一覧取得(同期)
+     */
+    @Query("SELECT * from filter_info_table ORDER BY dataId")
+    fun getAllFilterInfoItemSync(): List<FilterInfo>
+
+    @Query("DELETE FROM filter_info_table")
+    fun clearAllFilterInfo()
 
     // endregion フィルタ情報操作
 }

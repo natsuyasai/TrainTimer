@@ -8,12 +8,12 @@
         <Preference
             android:key="restore"
             android:summary="@string/preference_restore_summary"
-            android:title="@string/preference_restore"></Preference>
+            android:title="@string/preference_restore" />
 
         <Preference
             android:key="backup"
             android:summary="@string/preference_backup_summary"
-            android:title="@string/preference_backup"></Preference>
+            android:title="@string/preference_backup" />
     </PreferenceCategory>
 
     <!-- その他 -->
@@ -22,6 +22,6 @@
         android:title="@string/preference_category_help">
         <Preference
             android:key="app_info"
-            android:title="@string/preference_app_info"></Preference>
+            android:title="@string/preference_app_info" />
     </PreferenceCategory>
 </PreferenceScreen>

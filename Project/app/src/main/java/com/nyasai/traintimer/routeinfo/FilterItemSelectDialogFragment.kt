@@ -11,11 +11,11 @@ import com.nyasai.traintimer.R
 /**
  * フィルタ対象選択ダイアログ
  */
-class FilterItemSelectDialogFragment() : DialogFragment() {
+class FilterItemSelectDialogFragment : DialogFragment() {
 
     // ViewModel
     private val _viewModel: FilterItemSelectViewModel by lazy {
-        ViewModelProvider(requireActivity()).get(FilterItemSelectViewModel::class.java)
+        ViewModelProvider(requireActivity())[FilterItemSelectViewModel::class.java]
     }
 
     /**

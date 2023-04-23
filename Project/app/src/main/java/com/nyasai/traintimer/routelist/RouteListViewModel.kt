@@ -3,6 +3,8 @@ package com.nyasai.traintimer.routelist
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
@@ -12,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.Collections
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -32,8 +35,16 @@ class RouteListViewModel(
     // 路線一覧
     val routeList = database.getAllRouteListItems()
 
+    // 手動ソートモード中か
+    private var _isManualSortMode: MutableLiveData<Boolean> = MutableLiveData()
+    var isManualSortMode: LiveData<Boolean> = _isManualSortMode
+
     // Yahoo路線情報取得用
     private val _yahooRouteInfoGetter = YahooRouteInfoGetter()
+
+    init {
+        _isManualSortMode.value = false
+    }
 
     /**
      * onClearedフック
@@ -41,6 +52,7 @@ class RouteListViewModel(
     override fun onCleared() {
         _yahooRouteInfoGetter.dispose()
         _job.cancel()
+        _isManualSortMode.value = false
         super.onCleared()
     }
 
@@ -59,6 +71,8 @@ class RouteListViewModel(
      * データ追加
      */
     private fun insert(item: RouteListItem) {
+        val maxIndex = database.getMaxSortIndex()
+        item.sortIndex = maxIndex + 1
         database.insertRouteListItem(item)
     }
 
@@ -95,7 +109,11 @@ class RouteListViewModel(
         timeTableUrl: String,
         notifyMaxCountCallback: ((Int) -> Unit),
         notifyCountCallback: (() -> Unit)
-    ) = _yahooRouteInfoGetter.getTimeTableInfo(timeTableUrl, notifyMaxCountCallback, notifyCountCallback)
+    ) = _yahooRouteInfoGetter.getTimeTableInfo(
+        timeTableUrl,
+        notifyMaxCountCallback,
+        notifyCountCallback
+    )
 
     /**
      * 路線リストアイテム登録
@@ -108,10 +126,18 @@ class RouteListViewModel(
     ): Long {
         Log.d("Debug", "データ登録開始")
         var parentDataId = -1L
-        if(routeInfo.size != YahooRouteInfoGetter.Companion.DiagramType.Max.ordinal) { return parentDataId }
-        if(routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()) { return parentDataId }
-        if(routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()) { return parentDataId }
-        if(routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty()) { return parentDataId }
+        if (routeInfo.size != YahooRouteInfoGetter.Companion.DiagramType.Max.ordinal) {
+            return parentDataId
+        }
+        if (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()) {
+            return parentDataId
+        }
+        if (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()) {
+            return parentDataId
+        }
+        if (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty()) {
+            return parentDataId
+        }
         Log.d("Debug", "一覧データ登録")
         insert(searchRouteListItem)
         // 追加したアイテムのIDを取得
@@ -143,7 +169,8 @@ class RouteListViewModel(
         }
         if (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()
             || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()
-            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty()) {
+            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty()
+        ) {
             Log.d("Debug", "データのいずれかが取得失敗")
             deleteListItem(parentDataId)
             return
@@ -192,8 +219,9 @@ class RouteListViewModel(
             )
         if (routeInfo.isEmpty()
             || (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()
-            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()
-            || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty())) {
+                    || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()
+                    || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty())
+        ) {
             return false
         }
         // 既にある路線アイテムを全消去
@@ -204,6 +232,80 @@ class RouteListViewModel(
         database.updateFilterInfoListItem(registerItem.second.distinctBy { it.trainTypeAndDestination })
 
         return true
+    }
+
+    /**
+     * ソート情報更新
+     */
+    fun updateSortIndex(from: Int, to: Int) {
+        if (routeList.value == null) {
+            return
+        }
+        val routeListItems = routeList.value!!
+        if (from < to) {
+            for (i in from until to) {
+                Collections.swap(routeListItems, i, i + 1)
+                val order1 = routeListItems[i].sortIndex
+                val order2 = routeListItems[i + 1].sortIndex
+                routeListItems[i].sortIndex = order2
+                routeListItems[i + 1].sortIndex = order1
+            }
+        } else {
+            for (i in from downTo to + 1) {
+                Collections.swap(routeListItems, i, i - 1)
+                val order1 = routeListItems[i].sortIndex
+                val order2 = routeListItems[i - 1].sortIndex
+                routeListItems[i].sortIndex = order2
+                routeListItems[i - 1].sortIndex = order1
+            }
+        }
+        launch(coroutineContext) {
+            database.updateRouteListItems(routeListItems)
+        }
+
+//        var needBreak = false
+//        for ((index, item) in routeList.value!!.withIndex()) {
+//            if (index.toLong() < from && index.toLong() < to) {
+//                item.sortIndex = index.toLong()
+//                database.updateRouteListItem(item)
+//                continue
+//            }
+//
+//            if (from < to) {
+//                // 上から下へ移動
+//                if (index.toLong() == from) {
+//                    item.sortIndex = to
+//                    needBreak = true
+//                } else {
+//                    if ((index - 1).toLong() == to) {
+//                        item.sortIndex = (index - 2).toLong()
+//                    } else {
+//                        item.sortIndex = (index - 1).toLong()
+//                    }
+//                }
+//            } else {
+//                // 下から上へ移動
+//                if (index.toLong() == from) {
+//                    item.sortIndex = to
+//                    needBreak = true
+//                } else {
+//                    if ((index + 1).toLong() == to) {
+//                        item.sortIndex = (index + 2).toLong()
+//                    } else {
+//                        item.sortIndex = (index + 1).toLong()
+//                    }
+//                }
+//            }
+//            database.updateRouteListItem(item)
+//            if (needBreak) {
+//                break
+//            }
+//        }
+    }
+
+    fun switchManualSortMode() {
+        val current = (isManualSortMode.value ?: true)
+        _isManualSortMode.value = !current
     }
 
     /**

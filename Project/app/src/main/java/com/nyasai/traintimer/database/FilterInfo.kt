@@ -1,6 +1,10 @@
 package com.nyasai.traintimer.database
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 
 /**
  * フィルタ情報データ
@@ -42,5 +46,7 @@ data class FilterInfo @Ignore constructor(
          */
         fun createFilterKey(trainType: String, destination: String) =
             "$trainType - $destination"
+
+        const val DataSize = 4
     }
 }

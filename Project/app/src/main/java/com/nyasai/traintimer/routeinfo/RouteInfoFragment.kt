@@ -28,7 +28,7 @@ import kotlin.coroutines.CoroutineContext
  */
 class RouteInfoFragment : Fragment(), CoroutineScope {
 
-    companion object{
+    companion object {
         // フィルタ選択ダイアログ
         const val SelectFilterDialogTag = "SelectList"
     }
@@ -94,9 +94,9 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
         _binding.lifecycleOwner = this
 
         // 祝日の場合設定
-        launch (Dispatchers.Default + _job){
+        launch(Dispatchers.Default + _job) {
             _routeInfoViewModel.initializeAsync()
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 _routeInfoAdapter.submitList(_routeInfoViewModel.getDisplayRouteDetailItems())
                 _routeInfoViewModel.updateCurrentCountItem(true)
             }
@@ -216,6 +216,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                 showFilterSelectDialog()
                 true
             }
+
             else -> {
                 false
             }
@@ -269,7 +270,9 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
      * スクロール位置更新
      */
     private fun updateScrollPosition() {
-        if (_routeInfoViewModel.currentCountItem.value == null) { return }
+        if (_routeInfoViewModel.currentCountItem.value == null) {
+            return
+        }
         // リストアイテムの描画を待ってから対象位置までスクロール
         launch(Dispatchers.Default + _job) {
             delay(500)
@@ -313,6 +316,7 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                         (diffTime % 60)
                     )
                 }"""
+
                 else -> "Next -- : --"
             }
             // Next部分を小さく表示させる

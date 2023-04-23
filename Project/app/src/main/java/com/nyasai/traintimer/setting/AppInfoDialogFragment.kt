@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.nyasai.traintimer.setting
 
 import android.app.AlertDialog

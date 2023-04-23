@@ -18,7 +18,7 @@ class ListItemSelectDialogFragment : DialogFragment() {
         ViewModelProvider(
             requireActivity(),
             ListItemSelectViewModelFactory()
-        ).get(ListItemSelectViewModel::class.java)
+        )[ListItemSelectViewModel::class.java]
     }
 
     /**

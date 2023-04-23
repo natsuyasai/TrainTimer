@@ -4,7 +4,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
@@ -13,6 +19,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
@@ -20,10 +28,20 @@ import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
-import com.nyasai.traintimer.routesearch.*
+import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
+import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
+import com.nyasai.traintimer.routesearch.ListItemSelectViewModelFactory
+import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
+import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
+import com.nyasai.traintimer.routesearch.SearchTargetInputViewModelFactory
 import com.nyasai.traintimer.util.FragmentUtil
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+
 
 /**
  * 路線一覧表示フラグメント
@@ -53,7 +71,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 RouteDatabase.getInstance(application).routeDatabaseDao,
                 application
             )
-        ).get(RouteListViewModel::class.java)
+        )[RouteListViewModel::class.java]
     }
 
     // 検索用インプットダイアログViewModel
@@ -61,7 +79,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ViewModelProvider(
             requireActivity(),
             SearchTargetInputViewModelFactory()
-        ).get(SearchTargetInputViewModel::class.java)
+        )[SearchTargetInputViewModel::class.java]
     }
 
     // リストアイテム選択ViewModel
@@ -69,14 +87,15 @@ class RouteListFragment : Fragment(), CoroutineScope {
         ViewModelProvider(
             requireActivity(),
             ListItemSelectViewModelFactory()
-        ).get(ListItemSelectViewModel::class.java)
+        )[ListItemSelectViewModel::class.java]
     }
 
     // 共通ローディングViewModel
     private val _commonLoadingViewModel: CommonLoadingViewModel by lazy {
-        ViewModelProvider(requireActivity(), CommonLoadingViewModelFactory()).get(
-            CommonLoadingViewModel::class.java
-        )
+        ViewModelProvider(
+            requireActivity(),
+            CommonLoadingViewModelFactory()
+        )[CommonLoadingViewModel::class.java]
     }
 
     // 検索情報保持領域
@@ -95,6 +114,12 @@ class RouteListFragment : Fragment(), CoroutineScope {
     private val _viewModelContext: CoroutineContext
         get() = Dispatchers.Default + _job
 
+    private var _itemTouchHelper: ItemTouchHelper? = null
+
+    private val _routeListAdapter = RouteListAdapter()
+
+    private lateinit var _fragmentRouteListBinding: FragmentRouteListBinding
+
     /**
      * onCreateViewフック
      */
@@ -104,36 +129,18 @@ class RouteListFragment : Fragment(), CoroutineScope {
     ): View {
 
         // データバインド設定
-        val binding = DataBindingUtil.inflate<FragmentRouteListBinding>(
+        _fragmentRouteListBinding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_route_list, container, false
         )
 
-        binding.routeListViewModel = _routeListViewModel
-        binding.lifecycleOwner = this
-        binding.commonLoadingViewModel = _commonLoadingViewModel
+        _fragmentRouteListBinding.routeListViewModel = _routeListViewModel
+        _fragmentRouteListBinding.lifecycleOwner = this
+        _fragmentRouteListBinding.commonLoadingViewModel = _commonLoadingViewModel
 
 
         // 路線リスト用アダプター設定
-        val adapter = RouteListAdapter()
-        binding.routeListView.adapter = adapter
-        // 操作イベント登録
-        adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener {
-            override fun onItemClickListener(view: View, item: RouteListItem) {
-                // ページ遷移
-                Log.d("Debug", "アイテム選択 : $item")
-                view.findNavController()
-                    .navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
-            }
-        })
-        adapter.setOnItemLongClickListener(object : RouteListAdapter.OnItemLongClickListener {
-            override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
-                // 長押し
-                Log.d("Debug", "アイテム長押し : $item")
-                // 編集操作選択
-                showItemEditDialog(item)
-                return true
-            }
-        })
+        _fragmentRouteListBinding.routeListView.adapter = _routeListAdapter
+        setListItemTouchEvent(_routeListAdapter)
 
         // ダイアログ初期化
         initDialog()
@@ -145,13 +152,13 @@ class RouteListFragment : Fragment(), CoroutineScope {
         _routeListViewModel.routeList.observe(viewLifecycleOwner) {
             it?.let {
                 // リストアイテム設定
-                adapter.submitList(it)
+                _routeListAdapter.submitList(it)
                 Log.d("Debug", "データ更新 : ${_routeListViewModel.routeList.value.toString()}")
             }
         }
 
         // Inflate the layout for this fragment
-        return binding.root
+        return _fragmentRouteListBinding.root
     }
 
 
@@ -211,11 +218,20 @@ class RouteListFragment : Fragment(), CoroutineScope {
                 showSearchTargetInputDialog()
                 true
             }
+
+            R.id.route_manual_sort -> {
+                Log.d("Debug", "路線ソートボタン押下")
+                _routeListViewModel.switchManualSortMode()
+                setSortHelper(_fragmentRouteListBinding)
+                true
+            }
+
             R.id.setting_menu -> {
                 Log.d("Debug", "設定ボタン押下")
                 showSettingFragment()
                 true
             }
+
             else -> {
                 false
             }
@@ -241,6 +257,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
                     RouteListItemEditDialogFragment.EditType.Update -> {
                         updateRouteItemInfo(item)
                     }
+
                     else -> {
                         showDeleteConfirmDialog(item)
                     }
@@ -368,7 +385,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      * @param stationName 検索対象駅名
      */
     private fun searchDestinationFromStationName(stationName: String) {
-        launch(Dispatchers.Main){
+        launch(Dispatchers.Main) {
             _commonLoadingViewModel.showLoading()
         }
         launch(_viewModelContext) {
@@ -471,6 +488,70 @@ class RouteListFragment : Fragment(), CoroutineScope {
 
     // endregion ダイアログ関連
 
+
+    private fun setListItemTouchEvent(adapter: RouteListAdapter) {
+        // 操作イベント登録
+        adapter.setOnItemClickListener(object : RouteListAdapter.OnItemClickListener {
+            override fun onItemClickListener(view: View, item: RouteListItem) {
+                // ページ遷移
+                Log.d("Debug", "アイテム選択 : $item")
+                view.findNavController()
+                    .navigate(RouteListFragmentDirections.actionRouteListToRouteInfoFragment(item.dataId))
+            }
+        })
+        adapter.setOnItemLongClickListener(object :
+            RouteListAdapter.OnItemLongClickListener {
+            override fun onItemLongClickListener(view: View, item: RouteListItem): Boolean {
+                // 長押し
+                Log.d("Debug", "アイテム長押し : $item")
+                if (_routeListViewModel.isManualSortMode.value == null || _routeListViewModel.isManualSortMode.value == false) {
+                    // 編集操作選択
+                    showItemEditDialog(item)
+                }
+                return true
+            }
+        })
+    }
+
+    /**
+     * ソート用タッチヘルパ実装
+     */
+    private fun setSortHelper(binding: FragmentRouteListBinding) {
+        if (_itemTouchHelper == null) {
+            _itemTouchHelper = ItemTouchHelper(
+                object : ItemTouchHelper.SimpleCallback(
+                    ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+                    ItemTouchHelper.ACTION_STATE_IDLE
+                ) {
+
+                    override fun onMove(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder,
+                        target: RecyclerView.ViewHolder
+                    ): Boolean {
+                        // 並び替え
+                        val from = viewHolder.adapterPosition
+                        val to = target.adapterPosition
+                        Log.d("Debug", "from: $from  to: $to")
+                        // 結果を保存
+                        _routeListViewModel.updateSortIndex(from, to)
+                        _routeListAdapter.notifyItemMoved(from, to)
+                        return true
+                    }
+
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                        // スワイプ
+                    }
+                })
+        }
+        if (_routeListViewModel.isManualSortMode.value == true) {
+            _itemTouchHelper!!.attachToRecyclerView(binding.routeListView)
+            Toast.makeText(context, "手動ソートモード開始", Toast.LENGTH_SHORT).show()
+        } else {
+            _itemTouchHelper!!.attachToRecyclerView(null)
+            Toast.makeText(context, "手動ソートモード終了", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     /**
      * アイテム情報更新

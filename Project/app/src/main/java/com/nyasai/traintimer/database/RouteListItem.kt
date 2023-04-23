@@ -31,6 +31,10 @@ data class RouteListItem @Ignore constructor(
     @ColumnInfo(name = "sort_index")
     var sortIndex: Long = 0L
 
-){
-    constructor() : this(0, "", "","",0L)
+) {
+    constructor() : this(0, "", "", "", 0L)
+    companion object {
+        const val DataSize = 5
+    }
+
 }
