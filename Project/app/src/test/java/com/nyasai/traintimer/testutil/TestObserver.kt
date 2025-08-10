@@ -8,14 +8,14 @@ import java.util.concurrent.TimeoutException
 class TestObserver<T>(count: Int = 1) : Observer<T> {
     private val latch: CountDownLatch = CountDownLatch(count)
 
-    private val values = mutableListOf<T?>()
+    private val values = mutableListOf<T>()
 
-    override fun onChanged(t: T?) {
-        values.add(t)
+    override fun onChanged(value: T) {
+        values.add(value)
         latch.countDown()
     }
 
-    fun get(): T? {
+    fun get(): T {
         if (values.size == 0) {
             throw IllegalStateException("onChanged is not called.")
         }

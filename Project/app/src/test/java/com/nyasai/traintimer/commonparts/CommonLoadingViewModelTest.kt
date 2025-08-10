@@ -6,8 +6,8 @@ import com.nyasai.traintimer.testutil.TestObserver
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito.verify
-import org.mockito.kotlin.mock
+import io.mockk.mockk
+import io.mockk.verify
 
 @ExtendWith(InstantExecutorExtension::class)
 internal class CommonLoadingViewModelTest {
@@ -21,14 +21,14 @@ internal class CommonLoadingViewModelTest {
         target.changeText("")
 
         // オブザーバ設定
-        val observer = mock<Observer<String>>()
+        val observer = mockk<Observer<String>>(relaxed = true)
         target.loadingText.observeForever(observer)
 
         val testMessage = "Test!!!!"
         target.showLoading(testMessage)
 
         Assertions.assertEquals(target.isVisible.value, true)
-        verify(observer).onChanged(testMessage)
+        verify { observer.onChanged(testMessage) }
     }
 
     /**
@@ -40,13 +40,13 @@ internal class CommonLoadingViewModelTest {
         target.changeText("")
 
         // オブザーバ設定
-        val observer = mock<Observer<String>>()
+        val observer = mockk<Observer<String>>(relaxed = true)
         target.loadingText.observeForever(observer)
 
         target.showLoading()
 
         Assertions.assertEquals(target.isVisible.value, true)
-        verify(observer).onChanged("読み込み中")
+        verify { observer.onChanged("読み込み中") }
     }
 
     /**

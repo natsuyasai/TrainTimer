@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.kotlin.*
+import io.mockk.*
 import java.net.URL
 import java.util.*
 
@@ -23,7 +23,7 @@ internal class DiagramTypeModelTest {
 
     @BeforeEach
     fun setUp() {
-        _httpClientMock = mock()
+        _httpClientMock = mockk(relaxed = true)
     }
 
     @AfterEach
@@ -53,9 +53,8 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定無し 現在：平日`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 2
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 2
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         Calendar.getInstance()
         val result = target.getTodayDiagramType(false)
@@ -64,9 +63,8 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定無し 現在：土曜`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 7
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 7
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(false)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Saturday, result)
@@ -74,9 +72,8 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定無し 現在：日曜`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 1
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 1
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(false)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Holiday, result)
@@ -84,14 +81,12 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：平日`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 2
-        }
-        val body = mock<Body> {
-            on { toByteArray() } doReturn ("else".toByteArray())
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 2
+        val body = mockk<Body>()
+        every { body.toByteArray() } returns ("else".toByteArray())
         val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
-        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
+        every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Weekday, result)
@@ -99,14 +94,12 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：土曜`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 7
-        }
-        val body = mock<Body> {
-            on { toByteArray() } doReturn ("else".toByteArray())
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 7
+        val body = mockk<Body>()
+        every { body.toByteArray() } returns ("else".toByteArray())
         val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
-        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
+        every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Saturday, result)
@@ -114,14 +107,12 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：日曜`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 1
-        }
-        val body = mock<Body> {
-            on { toByteArray() } doReturn ("else".toByteArray())
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 1
+        val body = mockk<Body>()
+        every { body.toByteArray() } returns ("else".toByteArray())
         val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
-        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
+        every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Holiday, result)
@@ -129,14 +120,12 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：平日（祝日）`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 2
-        }
-        val body = mock<Body> {
-            on { toByteArray() } doReturn ("holiday".toByteArray())
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 2
+        val body = mockk<Body>()
+        every { body.toByteArray() } returns ("holiday".toByteArray())
         val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
-        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
+        every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Holiday, result)
@@ -144,14 +133,12 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 祝日判定失敗 現在：平日`() {
-        val calendarMock = mock<Calendar> {
-            on { get(any()) } doReturn 2
-        }
-        val body = mock<Body> {
-            on { toByteArray() } doReturn ("error".toByteArray())
-        }
+        val calendarMock = mockk<Calendar>()
+        every { calendarMock.get(any()) } returns 2
+        val body = mockk<Body>()
+        every { body.toByteArray() } returns ("error".toByteArray())
         val response = Response(url = URL("http", "localhost", 80, ""), 500, body = body)
-        whenever(_httpClientMock.httpGet(any(), eq(null))).thenReturn(response)
+        every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
         Assertions.assertEquals(YahooRouteInfoGetter.Companion.DiagramType.Weekday, result)
