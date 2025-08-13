@@ -39,13 +39,10 @@ fun PreferenceScreen(
     // ViewModelインスタンス
     val appInfoViewModel: AppInfoViewModel = viewModel()
     
-    // データエクスポート/インポート
+    // データエクスポート/インポート（簡略化実装）
     val dataExport = remember { DataExport() }
-    val dataImport = remember { 
-        // TODO: RouteDatabase実装が必要
-        // DataImport(routeDatabaseDao)
-        null
-    }
+    // Note: Compose環境では Activity Result Contract を使用するため
+    // 完全な実装にはActivity側での対応が必要
     
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(

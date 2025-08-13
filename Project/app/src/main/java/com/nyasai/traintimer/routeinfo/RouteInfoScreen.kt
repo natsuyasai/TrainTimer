@@ -58,19 +58,35 @@ fun RouteInfoScreen(
     var countdownText by remember { mutableStateOf("--:--:--") }
     var nextTimeInfo by remember { mutableStateOf("") }
     
+    // カウントダウンタイマー
+    LaunchedEffect(currentCountItem) {
+        while (true) {
+            currentCountItem?.let { countItem ->
+                val diffSeconds = routeInfoViewModel.getNextDiffTime()
+                countdownText = formatCountdownTime(diffSeconds)
+                nextTimeInfo = buildNextTimeInfo(countItem)
+            } ?: run {
+                countdownText = "--:--:--"
+                nextTimeInfo = ""
+            }
+            kotlinx.coroutines.delay(1000) // 1秒ごとに更新
+        }
+    }
+    
     // 表示用の路線詳細リスト
     val displayRouteDetails = remember { mutableStateListOf<RouteDetail>() }
     
-    // 初期化処理（簡略化）
+    // 初期化処理
     LaunchedEffect(parentDataId) {
-        // TODO: 初期化ロジックの実装
-        // routeInfoViewModel.initializeAsync()
+        routeInfoViewModel.initializeAsync()
     }
     
-    LaunchedEffect(routeInfoViewModel) {
-        // TODO: 表示リストの更新ロジック
-        // displayRouteDetails.clear()
-        // displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
+    // 表示リストの更新ロジック
+    LaunchedEffect(currentDiagramType, routeInfoViewModel.filterInfo.observeAsState().value) {
+        displayRouteDetails.clear()
+        displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
+        // キャッシュクリアのためfalseを指定
+        routeInfoViewModel.updateCurrentCountItem(false)
     }
     
     Box(modifier = modifier.fillMaxSize()) {
@@ -87,9 +103,8 @@ fun RouteInfoScreen(
                         IconButton(onClick = { 
                             scope.launch {
                                 try {
-                                    // TODO: フィルタ項目の取得
-                                    // val filterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
-                                    // filterItemSelectViewModel.updateFilterItems(filterItems)
+                                    val filterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
+                                    filterItemSelectViewModel.updateFilterItems(filterItems)
                                     showFilterDialog = true
                                 } catch (e: Exception) {
                                     // エラーハンドリング
@@ -115,8 +130,7 @@ fun RouteInfoScreen(
                         routeListItem = route,
                         currentDiagramType = currentDiagramType,
                         onTitleClick = {
-                            // TODO: ダイヤ種別切り替えロジック
-                            // routeInfoViewModel.switchDiagramType()
+                            routeInfoViewModel.setNextDiagramType()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -184,11 +198,12 @@ fun RouteInfoScreen(
                 onClickPositiveButtonCallback = {
                     scope.launch {
                         try {
-                            // TODO: フィルタ情報の更新
-                            // routeInfoViewModel.updateFilterInfoListItem(filterItemsState)
-                            // 表示リストを更新
-                            // displayRouteDetails.clear()
-                            // displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
+                            routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
+                            // 表示リストを更新（キャッシュクリア）
+                            displayRouteDetails.clear()
+                            displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
+                            // カウントアイテムも更新
+                            routeInfoViewModel.updateCurrentCountItem(false)
                         } catch (e: Exception) {
                             // エラーハンドリング
                         }
@@ -204,21 +219,33 @@ fun RouteInfoScreen(
 }
 
 /**
- * カウントダウン計算（簡略化版）
+ * カウントダウン時間をフォーマット
  */
-private fun calculateCountdown(countItem: RouteDetail): String {
-    // 実際のカウントダウン計算ロジックを実装
-    // RouteInfoFragmentからロジックを移植
-    return "--:--:--"
+private fun formatCountdownTime(diffSeconds: Long): String {
+    return when {
+        diffSeconds < 0 -> "--:--:--"
+        diffSeconds < 60 -> "00:00:${String.format("%02d", diffSeconds)}"
+        diffSeconds < 3600 -> {
+            val minutes = diffSeconds / 60
+            val seconds = diffSeconds % 60
+            "00:${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+        }
+        else -> {
+            val hours = diffSeconds / 3600
+            val minutes = (diffSeconds % 3600) / 60
+            val seconds = diffSeconds % 60
+            "${String.format("%02d", hours)}:${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+        }
+    }
 }
 
 /**
- * 次の時刻情報構築（簡略化版）
+ * 次の時刻情報構築
  */
 private fun buildNextTimeInfo(countItem: RouteDetail): String {
-    return buildAnnotatedString {
+    return buildString {
         append("${countItem.departureTime ?: "--:--"}\n")
         append("${countItem.trainType ?: "--"}\n")
         append("${countItem.destination ?: "--"}")
-    }.toString()
+    }
 }
