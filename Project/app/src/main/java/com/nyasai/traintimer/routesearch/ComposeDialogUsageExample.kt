@@ -34,10 +34,10 @@ fun SearchTargetInputDialogUsageExample() {
     }
 
     if (showDialog) {
-        SearchTargetInputDialog(
-            viewModel = viewModel,
+        SearchTargetInputDialogWithViewModel(
+            isVisible = showDialog,
             onDismiss = { showDialog = false },
-            onConfirm = { showDialog = false }
+            viewModel = viewModel
         )
     }
 }
@@ -102,10 +102,10 @@ fun ListItemSelectDialogUsageExample() {
  *     
  *     // ダイアログ
  *     if (showSearchDialog) {
- *         SearchTargetInputDialog(
- *             viewModel = viewModel(),
+ *         SearchTargetInputDialogWithViewModel(
+ *             isVisible = showSearchDialog,
  *             onDismiss = { showSearchDialog = false },
- *             onConfirm = { showSearchDialog = false }
+ *             viewModel = viewModel()
  *         )
  *     }
  * }

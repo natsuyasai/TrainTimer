@@ -5,9 +5,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * SearchTargetInputComposeDialogのテスト
+ * SearchTargetInputViewModelのテスト (Compose対応版)
  */
-class SearchTargetInputComposeDialogTest {
+class SearchTargetInputViewModelComposeTest {
 
     private lateinit var viewModel: SearchTargetInputViewModel
 

@@ -11,7 +11,7 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.databinding.DialogSearchTargetInputBinding
 
 /**
- * 検索対象入力用ダイアログ
+ * 検索対象入力用ダイアログ (従来のFragment版 - 段階的にCompose版に移行予定)
  */
 class SearchTargetInputDialogFragment : DialogFragment() {
 
