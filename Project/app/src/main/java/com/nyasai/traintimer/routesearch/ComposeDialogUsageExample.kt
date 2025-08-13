@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nyasai.traintimer.routelist.RouteListItemEditDialogWithViewModel
+import com.nyasai.traintimer.routelist.RouteListItemEditViewModel
 
 /**
  * Composeダイアログの使用例
@@ -81,15 +83,56 @@ fun ListItemSelectDialogUsageExample() {
 }
 
 /**
+ * RouteListItemEditDialog の使用例
+ */
+@Composable
+fun RouteListItemEditDialogUsageExample() {
+    var showDialog by remember { mutableStateOf(false) }
+    val viewModel: RouteListItemEditViewModel = viewModel()
+    val testDataId = 123L
+    
+    // コールバック設定
+    viewModel.onClickPositiveButtonCallback = { editType, dataId ->
+        // 選択確定処理
+        when (editType) {
+            RouteListItemEditViewModel.EditType.Update -> {
+                // 更新処理をここに記述
+            }
+            RouteListItemEditViewModel.EditType.Delete -> {
+                // 削除処理をここに記述
+            }
+            RouteListItemEditViewModel.EditType.None -> {
+                // 何もしない
+            }
+        }
+        showDialog = false
+    }
+    
+    viewModel.onClickNegativeButtonCallback = { _, _ ->
+        // キャンセル処理
+        showDialog = false
+    }
+
+    if (showDialog) {
+        RouteListItemEditDialogWithViewModel(
+            isVisible = showDialog,
+            targetDataId = testDataId,
+            onDismiss = { showDialog = false },
+            viewModel = viewModel
+        )
+    }
+}
+
+/**
  * 従来のFragmentベースからCompose呼び出しへの移行ガイド
  * 
- * 従来:
+ * SearchTargetInputDialog 従来版:
  * ```
  * val dialog = SearchTargetInputDialogFragment()
  * dialog.show(supportFragmentManager, "search_input")
  * ```
  * 
- * Compose版:
+ * SearchTargetInputDialog Compose版:
  * ```
  * @Composable
  * fun MyScreen() {
@@ -106,6 +149,42 @@ fun ListItemSelectDialogUsageExample() {
  *             isVisible = showSearchDialog,
  *             onDismiss = { showSearchDialog = false },
  *             viewModel = viewModel()
+ *         )
+ *     }
+ * }
+ * ```
+ * 
+ * RouteListItemEditDialog 従来版:
+ * ```
+ * val dialog = RouteListItemEditDialogFragment()
+ * val bundle = Bundle()
+ * bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
+ * dialog.arguments = bundle
+ * dialog.onClickPositiveButtonCallback = { editType, dataId ->
+ *     // 処理
+ * }
+ * dialog.show(supportFragmentManager, "edit_dialog")
+ * ```
+ * 
+ * RouteListItemEditDialog Compose版:
+ * ```
+ * @Composable
+ * fun MyScreen() {
+ *     var showEditDialog by remember { mutableStateOf(false) }
+ *     val viewModel: RouteListItemEditViewModel = viewModel()
+ *     
+ *     // コールバック設定
+ *     viewModel.onClickPositiveButtonCallback = { editType, dataId ->
+ *         // 処理
+ *     }
+ *     
+ *     // ダイアログ
+ *     if (showEditDialog) {
+ *         RouteListItemEditDialogWithViewModel(
+ *             isVisible = showEditDialog,
+ *             targetDataId = item.dataId,
+ *             onDismiss = { showEditDialog = false },
+ *             viewModel = viewModel
  *         )
  *     }
  * }
