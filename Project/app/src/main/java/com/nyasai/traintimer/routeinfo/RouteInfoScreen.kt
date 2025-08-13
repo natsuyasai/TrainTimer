@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -133,7 +134,10 @@ fun RouteInfoScreen(
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.Settings, contentDescription = "フィルタ")
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_filter_alt_24px),
+                                contentDescription = "フィルタ"
+                            )
                         }
                     }
                 )
