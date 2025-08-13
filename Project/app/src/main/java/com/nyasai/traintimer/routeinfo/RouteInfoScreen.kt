@@ -76,17 +76,31 @@ fun RouteInfoScreen(
     // 表示用の路線詳細リスト
     val displayRouteDetails = remember { mutableStateListOf<RouteDetail>() }
     
+    // 路線アイテムデータの監視
+    val routeItems by routeInfoViewModel.routeItems.observeAsState(emptyList())
+    val filterInfo by routeInfoViewModel.filterInfo.observeAsState(emptyList())
+    
     // 初期化処理
     LaunchedEffect(parentDataId) {
         routeInfoViewModel.initializeAsync()
     }
     
-    // 表示リストの更新ロジック
-    LaunchedEffect(currentDiagramType, routeInfoViewModel.filterInfo.observeAsState().value) {
-        displayRouteDetails.clear()
-        displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
-        // キャッシュクリアのためfalseを指定
-        routeInfoViewModel.updateCurrentCountItem(false)
+    // 表示リストの更新ロジック（データが変更されたときに実行）
+    LaunchedEffect(currentDiagramType, routeItems, filterInfo) {
+        if (routeItems.isNotEmpty()) { // データがある場合のみ更新
+            displayRouteDetails.clear()
+            displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
+            // キャッシュクリアのためfalseを指定
+            routeInfoViewModel.updateCurrentCountItem(false)
+        }
+    }
+    
+    // 強制的な初期データロード（LiveDataが初期化されてから）
+    LaunchedEffect(routeItems) {
+        if (routeItems.isNotEmpty() && displayRouteDetails.isEmpty()) {
+            displayRouteDetails.clear()
+            displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
+        }
     }
     
     Box(modifier = modifier.fillMaxSize()) {
@@ -103,11 +117,19 @@ fun RouteInfoScreen(
                         IconButton(onClick = { 
                             scope.launch {
                                 try {
-                                    val filterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
-                                    filterItemSelectViewModel.updateFilterItems(filterItems)
+                                    // 現在のフィルタ情報を取得してダイアログに設定
+                                    val currentFilterItems = filterInfo
+                                    if (currentFilterItems.isNotEmpty()) {
+                                        filterItemSelectViewModel.updateFilterItems(currentFilterItems)
+                                    } else {
+                                        // フィルタ情報が空の場合は同期取得
+                                        val syncFilterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
+                                        filterItemSelectViewModel.updateFilterItems(syncFilterItems)
+                                    }
                                     showFilterDialog = true
                                 } catch (e: Exception) {
                                     // エラーハンドリング
+                                    showFilterDialog = true // ダイアログは表示する
                                 }
                             }
                         }) {
@@ -173,16 +195,54 @@ fun RouteInfoScreen(
                 }
                 
                 // 路線詳細リスト
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    items(displayRouteDetails) { routeDetail ->
-                        RouteInfoItemCompose(
-                            routeDetail = routeDetail,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                if (displayRouteDetails.isEmpty()) {
+                    // データが空の場合の表示
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "路線詳細データがありません",
+                                color = colorResource(id = R.color.textGray),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = "路線データ件数: ${routeItems.size}",
+                                color = colorResource(id = R.color.textGray),
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                text = "フィルタ件数: ${filterInfo.size}",
+                                color = colorResource(id = R.color.textGray),
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                text = "現在のダイヤ: ${currentDiagramType}",
+                                color = colorResource(id = R.color.textGray),
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        items(displayRouteDetails) { routeDetail ->
+                            RouteInfoItemCompose(
+                                routeDetail = routeDetail,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
