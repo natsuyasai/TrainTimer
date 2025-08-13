@@ -16,6 +16,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
@@ -78,7 +79,10 @@ fun RouteListScreen(
                         IconButton(onClick = { 
                             routeListViewModel.switchManualSortMode()
                         }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "手動ソート")
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_add_24px),
+                                contentDescription = "手動ソート"
+                            )
                         }
                         
                         // 設定ボタン
