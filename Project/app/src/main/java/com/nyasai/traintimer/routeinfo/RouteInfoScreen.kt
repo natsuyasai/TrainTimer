@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -24,6 +24,8 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
+// import com.nyasai.traintimer.commonparts.RouteInfoItemCompose
+// import com.nyasai.traintimer.commonparts.RouteInfoTitleCompose
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -59,27 +61,16 @@ fun RouteInfoScreen(
     // 表示用の路線詳細リスト
     val displayRouteDetails = remember { mutableStateListOf<RouteDetail>() }
     
-    // 初期化とタイマー設定
+    // 初期化処理（簡略化）
     LaunchedEffect(parentDataId) {
-        routeInfoViewModel.initializeAsync()
-        
-        // タイマー処理（簡略化）
-        val timer = Timer()
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                currentCountItem.value?.let { countItem ->
-                    // カウントダウン計算ロジック
-                    // 実装は既存のRouteInfoFragmentから移植
-                    countdownText = calculateCountdown(countItem)
-                    nextTimeInfo = buildNextTimeInfo(countItem)
-                }
-            }
-        }, 0, 1000)
+        // TODO: 初期化ロジックの実装
+        // routeInfoViewModel.initializeAsync()
     }
     
     LaunchedEffect(routeInfoViewModel) {
-        displayRouteDetails.clear()
-        displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
+        // TODO: 表示リストの更新ロジック
+        // displayRouteDetails.clear()
+        // displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
     }
     
     Box(modifier = modifier.fillMaxSize()) {
@@ -96,15 +87,16 @@ fun RouteInfoScreen(
                         IconButton(onClick = { 
                             scope.launch {
                                 try {
-                                    val filterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
-                                    filterItemSelectViewModel.updateFilterItems(filterItems)
+                                    // TODO: フィルタ項目の取得
+                                    // val filterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
+                                    // filterItemSelectViewModel.updateFilterItems(filterItems)
                                     showFilterDialog = true
                                 } catch (e: Exception) {
                                     // エラーハンドリング
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.FilterList, contentDescription = "フィルタ")
+                            Icon(Icons.Default.Settings, contentDescription = "フィルタ")
                         }
                     }
                 )
@@ -119,17 +111,19 @@ fun RouteInfoScreen(
             ) {
                 // タイトル部分
                 routeInfo?.let { route ->
-                    RouteInfoTitleCompose(
-                        routeListItem = route,
-                        currentDiagramType = currentDiagramType,
-                        onTitleClick = {
-                            // ダイヤ種別切り替えロジック
-                            routeInfoViewModel.switchDiagramType()
-                        },
+                    // TODO: RouteInfoTitleComposeの実装
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                    )
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "${route.routeName} - ${route.destination}",
+                            modifier = Modifier.padding(16.dp),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 
                 // カウントダウン表示部分
@@ -173,10 +167,17 @@ fun RouteInfoScreen(
                         .weight(1f)
                 ) {
                     items(displayRouteDetails) { routeDetail ->
-                        RouteInfoItemCompose(
-                            routeDetail = routeDetail,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        // TODO: RouteInfoItemComposeの実装
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${routeDetail.departureTime} - ${routeDetail.trainType}",
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -192,10 +193,11 @@ fun RouteInfoScreen(
                 onClickPositiveButtonCallback = {
                     scope.launch {
                         try {
-                            routeInfoViewModel.updateFilterInfoListItem(filterItemsState)
+                            // TODO: フィルタ情報の更新
+                            // routeInfoViewModel.updateFilterInfoListItem(filterItemsState)
                             // 表示リストを更新
-                            displayRouteDetails.clear()
-                            displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
+                            // displayRouteDetails.clear()
+                            // displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems())
                         } catch (e: Exception) {
                             // エラーハンドリング
                         }

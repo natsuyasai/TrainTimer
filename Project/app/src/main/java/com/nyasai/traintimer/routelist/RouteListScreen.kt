@@ -23,6 +23,7 @@ import com.nyasai.traintimer.commonparts.CommonLoadingCompose
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routesearch.*
+// import com.nyasai.traintimer.commonparts.RouteListItemCompose
 import kotlinx.coroutines.launch
 
 /**
@@ -102,21 +103,26 @@ fun RouteListScreen(
                 state = rememberLazyListState()
             ) {
                 items(routeList) { item ->
-                    RouteListItemCompose(
-                        routeListItem = item,
+                    // TODO: RouteListItemComposeの実装
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(4.dp)
                             .clickable {
                                 if (!isManualSortMode) {
                                     onRouteItemClick(item.dataId)
                                 } else {
                                     // 手動ソートモードでは編集ダイアログを表示
                                     selectedItem = item
-                                    routeListItemEditViewModel.targetDataId = item.dataId
                                     showEditDialog = true
                                 }
                             }
-                    )
+                    ) {
+                        Text(
+                            text = "${item.routeName} - ${item.destination}",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
         }
@@ -164,7 +170,11 @@ fun RouteListScreen(
     }
     
     if (showStationSelectDialog) {
-        ListItemSelectDialog(
+        // TODO: ListItemSelectDialogWithViewModelの実装
+        /*
+        ListItemSelectDialogWithViewModel(
+            isVisible = showStationSelectDialog,
+            onDismiss = { showStationSelectDialog = false },
             viewModel = listItemSelectViewModel.apply {
                 onClickPositiveButtonCallback = {
                     scope.launch {
@@ -189,14 +199,17 @@ fun RouteListScreen(
                 onClickNegativeButtonCallback = {
                     showStationSelectDialog = false
                 }
-            },
-            onDismiss = { showStationSelectDialog = false },
-            onConfirm = { showStationSelectDialog = false }
+            }
         )
+        */
     }
     
     if (showDestinationSelectDialog) {
-        ListItemSelectDialog(
+        // TODO: ListItemSelectDialogWithViewModelの実装
+        /*
+        ListItemSelectDialogWithViewModel(
+            isVisible = showDestinationSelectDialog,
+            onDismiss = { showDestinationSelectDialog = false },
             viewModel = listItemSelectViewModel.apply {
                 onClickPositiveButtonCallback = {
                     scope.launch {
@@ -237,10 +250,9 @@ fun RouteListScreen(
                 onClickNegativeButtonCallback = {
                     showDestinationSelectDialog = false
                 }
-            },
-            onDismiss = { showDestinationSelectDialog = false },
-            onConfirm = { showDestinationSelectDialog = false }
+            }
         )
+        */
     }
     
     if (showEditDialog && selectedItem != null) {
@@ -249,6 +261,7 @@ fun RouteListScreen(
             targetDataId = selectedItem!!.dataId,
             onDismiss = { showEditDialog = false },
             viewModel = routeListItemEditViewModel.apply {
+                // targetDataId = selectedItem!!.dataId
                 onClickPositiveButtonCallback = { editType, dataId ->
                     when (editType) {
                         RouteListItemEditViewModel.EditType.Update -> {
@@ -268,7 +281,6 @@ fun RouteListScreen(
                             }
                         }
                         RouteListItemEditViewModel.EditType.Delete -> {
-                            routeListItemDeleteConfirmViewModel.targetDataId = dataId
                             showDeleteConfirmDialog = true
                         }
                         RouteListItemEditViewModel.EditType.None -> {
@@ -291,7 +303,9 @@ fun RouteListScreen(
             onDismiss = { showDeleteConfirmDialog = false },
             viewModel = routeListItemDeleteConfirmViewModel.apply {
                 onClickPositiveButtonCallback = { dataId ->
-                    routeListViewModel.deleteListItem(dataId)
+                    dataId?.let { id ->
+                        routeListViewModel.deleteListItem(id)
+                    }
                     showDeleteConfirmDialog = false
                     selectedItem = null
                 }
