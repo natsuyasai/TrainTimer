@@ -10,9 +10,17 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- Fragment版（元の実装） -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="false">
+        </activity>
+        
+        <!-- Compose版（新しい実装） -->
+        <activity
+            android:name=".MainComposeActivity"
+            android:exported="true"
+            android:theme="@style/Theme.TrainTimer">
             <intent-filter>
                 <action
                     android:name="android.intent.action.MAIN"
