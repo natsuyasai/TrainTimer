@@ -28,10 +28,8 @@ import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.databinding.FragmentRouteListBinding
 import com.nyasai.traintimer.define.Define
-import com.nyasai.traintimer.routesearch.ListItemSelectDialogFragment
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModelFactory
-import com.nyasai.traintimer.routesearch.SearchTargetInputDialogFragment
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModelFactory
 import com.nyasai.traintimer.util.FragmentUtil
@@ -177,15 +175,7 @@ class RouteListFragment : Fragment(), CoroutineScope {
      */
     private fun initDialog() {
         // 画面生成時にダイアログが存在する場合は，コールバックを再登録
-        val deleteConfirmDialog =
-            parentFragmentManager.findFragmentByTag(RouteListDeleteConfirmDialogTag)
-        if (deleteConfirmDialog != null && deleteConfirmDialog is RouteListItemDeleteConfirmDialogFragment) {
-            deleteConfirmDialog.onClickPositiveButtonCallback = {
-                onClickDeleteConfirmDialogYse(it)
-            }
-            deleteConfirmDialog.onClickNegativeButtonCallback = {
-            }
-        }
+        // DialogFragmentからCompose移行完了のため、初期化処理は不要
     }
 
     /**
@@ -246,28 +236,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(RouteListItemEditDialogTag, parentFragmentManager)
 
-        // ダイアログ表示
-        val dialog = RouteListItemEditDialogFragment()
-        val bundle = Bundle()
-        bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
-        dialog.arguments = bundle
-        dialog.onClickPositiveButtonCallback =
-            { editType: RouteListItemEditDialogFragment.EditType, _: Long? ->
-                when (editType) {
-                    RouteListItemEditDialogFragment.EditType.Update -> {
-                        updateRouteItemInfo(item)
-                    }
-
-                    else -> {
-                        showDeleteConfirmDialog(item)
-                    }
-                }
-            }
-        dialog.onClickNegativeButtonCallback =
-            { _: RouteListItemEditDialogFragment.EditType, _: Long? ->
-
-            }
-        dialog.showNow(parentFragmentManager, RouteListItemEditDialogTag)
+        // TODO: Compose版ダイアログに置き換える必要があります
+        // RouteListItemEditDialogWithViewModelを使用してください
     }
 
     /**
@@ -278,17 +248,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(RouteListDeleteConfirmDialogTag, parentFragmentManager)
 
-        // ダイアログ表示
-        val dialog = RouteListItemDeleteConfirmDialogFragment()
-        val bundle = Bundle()
-        bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
-        dialog.arguments = bundle
-        dialog.onClickPositiveButtonCallback = {
-            onClickDeleteConfirmDialogYse(it)
-        }
-        dialog.onClickNegativeButtonCallback = {
-        }
-        dialog.showNow(parentFragmentManager, RouteListDeleteConfirmDialogTag)
+        // TODO: Compose版ダイアログに置き換える必要があります
+        // RouteListItemDeleteConfirmDialogWithViewModelを使用してください
     }
 
     /**
@@ -298,13 +259,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SearchTargetInputDialogTag, parentFragmentManager)
 
-        // ダイアログ表示
-        _searchTargetInputViewModel.onClickPositiveButtonCallback = {
-            Log.d("Debug", _searchTargetInputViewModel.getStationName())
-            searchStation(_searchTargetInputViewModel.getStationName())
-        }
-        val dialog = SearchTargetInputDialogFragment()
-        dialog.showNow(parentFragmentManager, SearchTargetInputDialogTag)
+        // TODO: Compose版ダイアログに置き換える必要があります
+        // SearchTargetInputDialogWithViewModelを使用してください
     }
 
     /**
@@ -315,16 +271,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SelectListDialogTag, parentFragmentManager)
 
-        // ダイアログ表示
-        _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
-        _istItemSelectViewModel.onClickPositiveButtonCallback = {
-            searchDestinationFromUrl(itemsMap, _istItemSelectViewModel.selectItem)
-        }
-        _istItemSelectViewModel.onClickNegativeButtonCallback = {
-            _searchRouteListItem = null
-        }
-        val dialog = ListItemSelectDialogFragment()
-        dialog.showNow(parentFragmentManager, SelectListDialogTag)
+        // TODO: Compose版ダイアログに置き換える必要があります
+        // ListItemSelectDialogを使用してください
     }
 
     /**
@@ -335,16 +283,8 @@ class RouteListFragment : Fragment(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(SelectListDialogTag, parentFragmentManager)
 
-        // ダイアログ表示
-        _istItemSelectViewModel.setItems(itemsMap.keys.toTypedArray())
-        _istItemSelectViewModel.onClickPositiveButtonCallback = {
-            addRouteInfo(itemsMap, _istItemSelectViewModel.selectItem)
-        }
-        _istItemSelectViewModel.onClickNegativeButtonCallback = {
-            _searchRouteListItem = null
-        }
-        val dialog = ListItemSelectDialogFragment()
-        dialog.showNow(parentFragmentManager, SelectListDialogTag)
+        // TODO: Compose版ダイアログに置き換える必要があります
+        // ListItemSelectDialogを使用してください
     }
 
     /**

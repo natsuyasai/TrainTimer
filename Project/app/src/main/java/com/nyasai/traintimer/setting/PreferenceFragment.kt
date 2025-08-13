@@ -96,9 +96,8 @@ class PreferenceFragment : PreferenceFragmentCompat(), CoroutineScope {
         // 前回分削除
         FragmentUtil.deletePrevDialog(AppInfoDialogTag, parentFragmentManager)
 
-        // ダイアログ表示
-        val dialog = AppInfoDialogFragment()
-        dialog.showNow(parentFragmentManager, AppInfoDialogTag)
+        // TODO: Compose版ダイアログに置き換える必要があります
+        // AppInfoDialogWithViewModelを使用してください
     }
 
     // region エクスポート処理(

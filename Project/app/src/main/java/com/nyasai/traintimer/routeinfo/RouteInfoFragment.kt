@@ -243,8 +243,8 @@ class RouteInfoFragment : Fragment(), CoroutineScope {
                 }
                 _filterItemSelectViewModel.onClickNegativeButtonCallback = {
                 }
-                val dialog = FilterItemSelectDialogFragment()
-                dialog.showNow(parentFragmentManager, SelectFilterDialogTag)
+                // TODO: Compose版ダイアログに置き換える必要があります
+                // FilterItemSelectDialogWithViewModelを使用してください
             }
         }
     }
