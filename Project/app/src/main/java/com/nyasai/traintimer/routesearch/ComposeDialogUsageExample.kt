@@ -13,6 +13,8 @@ import com.nyasai.traintimer.routelist.RouteListItemDeleteConfirmViewModel
 import com.nyasai.traintimer.routeinfo.FilterItemSelectDialogWithViewModel
 import com.nyasai.traintimer.routeinfo.FilterItemSelectViewModel
 import com.nyasai.traintimer.database.FilterInfo
+import com.nyasai.traintimer.setting.AppInfoDialogWithViewModel
+import com.nyasai.traintimer.setting.AppInfoViewModel
 
 /**
  * Composeダイアログの使用例
@@ -197,6 +199,29 @@ fun FilterItemSelectDialogUsageExample() {
 }
 
 /**
+ * AppInfoDialog の使用例
+ */
+@Composable
+fun AppInfoDialogUsageExample() {
+    var showDialog by remember { mutableStateOf(false) }
+    val viewModel: AppInfoViewModel = viewModel()
+    
+    // コールバック設定
+    viewModel.onCloseCallback = {
+        // 閉じる処理
+        showDialog = false
+    }
+
+    if (showDialog) {
+        AppInfoDialogWithViewModel(
+            isVisible = showDialog,
+            onDismiss = { showDialog = false },
+            viewModel = viewModel
+        )
+    }
+}
+
+/**
  * 従来のFragmentベースからCompose呼び出しへの移行ガイド
  * 
  * SearchTargetInputDialog 従来版:
@@ -333,6 +358,35 @@ fun FilterItemSelectDialogUsageExample() {
  *         FilterItemSelectDialogWithViewModel(
  *             isVisible = showFilterDialog,
  *             onDismiss = { showFilterDialog = false },
+ *             viewModel = viewModel
+ *         )
+ *     }
+ * }
+ * ```
+ * 
+ * AppInfoDialog 従来版:
+ * ```
+ * val dialog = AppInfoDialogFragment()
+ * dialog.show(supportFragmentManager, "app_info")
+ * ```
+ * 
+ * AppInfoDialog Compose版:
+ * ```
+ * @Composable
+ * fun MyScreen() {
+ *     var showAppInfoDialog by remember { mutableStateOf(false) }
+ *     val viewModel: AppInfoViewModel = viewModel()
+ *     
+ *     // コールバック設定
+ *     viewModel.onCloseCallback = {
+ *         // 閉じる処理
+ *     }
+ *     
+ *     // ダイアログ
+ *     if (showAppInfoDialog) {
+ *         AppInfoDialogWithViewModel(
+ *             isVisible = showAppInfoDialog,
+ *             onDismiss = { showAppInfoDialog = false },
  *             viewModel = viewModel
  *         )
  *     }
