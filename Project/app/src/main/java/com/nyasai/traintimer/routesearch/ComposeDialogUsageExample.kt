@@ -10,6 +10,9 @@ import com.nyasai.traintimer.routelist.RouteListItemEditDialogWithViewModel
 import com.nyasai.traintimer.routelist.RouteListItemEditViewModel
 import com.nyasai.traintimer.routelist.RouteListItemDeleteConfirmDialogWithViewModel
 import com.nyasai.traintimer.routelist.RouteListItemDeleteConfirmViewModel
+import com.nyasai.traintimer.routeinfo.FilterItemSelectDialogWithViewModel
+import com.nyasai.traintimer.routeinfo.FilterItemSelectViewModel
+import com.nyasai.traintimer.database.FilterInfo
 
 /**
  * Composeダイアログの使用例
@@ -157,6 +160,43 @@ fun RouteListItemDeleteConfirmDialogUsageExample() {
 }
 
 /**
+ * FilterItemSelectDialog の使用例
+ */
+@Composable
+fun FilterItemSelectDialogUsageExample() {
+    var showDialog by remember { mutableStateOf(false) }
+    val viewModel: FilterItemSelectViewModel = viewModel()
+    
+    // ダイアログ表示前にフィルタアイテムを設定
+    val filterItems = listOf(
+        FilterInfo(1L, 100L, "普通 - 新宿", true),
+        FilterInfo(2L, 100L, "快速 - 池袋", false),
+        FilterInfo(3L, 100L, "特急 - 横浜", true)
+    )
+    viewModel.updateFilterItems(filterItems)
+    
+    // コールバック設定
+    viewModel.onClickPositiveButtonCallback = {
+        // フィルタ設定の保存処理
+        // viewModel.filterItemsState を使って設定を保存
+        showDialog = false
+    }
+    
+    viewModel.onClickNegativeButtonCallback = {
+        // キャンセル処理
+        showDialog = false
+    }
+
+    if (showDialog) {
+        FilterItemSelectDialogWithViewModel(
+            isVisible = showDialog,
+            onDismiss = { showDialog = false },
+            viewModel = viewModel
+        )
+    }
+}
+
+/**
  * 従来のFragmentベースからCompose呼び出しへの移行ガイド
  * 
  * SearchTargetInputDialog 従来版:
@@ -253,6 +293,46 @@ fun RouteListItemDeleteConfirmDialogUsageExample() {
  *             isVisible = showDeleteDialog,
  *             targetDataId = item.dataId,
  *             onDismiss = { showDeleteDialog = false },
+ *             viewModel = viewModel
+ *         )
+ *     }
+ * }
+ * ```
+ * 
+ * FilterItemSelectDialog 従来版:
+ * ```
+ * val viewModel = ViewModelProvider(requireActivity())[FilterItemSelectViewModel::class.java]
+ * viewModel.filterItemList = mutableListOf(/* フィルタアイテム */)
+ * viewModel.onClickPositiveButtonCallback = {
+ *     // フィルタ設定処理
+ * }
+ * val dialog = FilterItemSelectDialogFragment()
+ * dialog.show(supportFragmentManager, "filter_select")
+ * ```
+ * 
+ * FilterItemSelectDialog Compose版:
+ * ```
+ * @Composable
+ * fun MyScreen() {
+ *     var showFilterDialog by remember { mutableStateOf(false) }
+ *     val viewModel: FilterItemSelectViewModel = viewModel()
+ *     
+ *     // フィルタアイテムを設定
+ *     LaunchedEffect(Unit) {
+ *         viewModel.updateFilterItems(filterItems)
+ *     }
+ *     
+ *     // コールバック設定
+ *     viewModel.onClickPositiveButtonCallback = {
+ *         // フィルタ設定処理
+ *         // viewModel.filterItemsState を使用
+ *     }
+ *     
+ *     // ダイアログ
+ *     if (showFilterDialog) {
+ *         FilterItemSelectDialogWithViewModel(
+ *             isVisible = showFilterDialog,
+ *             onDismiss = { showFilterDialog = false },
  *             viewModel = viewModel
  *         )
  *     }
