@@ -24,8 +24,8 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-// import com.nyasai.traintimer.commonparts.RouteInfoItemCompose
-// import com.nyasai.traintimer.commonparts.RouteInfoTitleCompose
+import com.nyasai.traintimer.commonparts.RouteInfoItemCompose
+import com.nyasai.traintimer.commonparts.RouteInfoTitleCompose
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -111,19 +111,17 @@ fun RouteInfoScreen(
             ) {
                 // タイトル部分
                 routeInfo?.let { route ->
-                    // TODO: RouteInfoTitleComposeの実装
-                    Card(
+                    RouteInfoTitleCompose(
+                        routeListItem = route,
+                        currentDiagramType = currentDiagramType,
+                        onTitleClick = {
+                            // TODO: ダイヤ種別切り替えロジック
+                            // routeInfoViewModel.switchDiagramType()
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "${route.routeName} - ${route.destination}",
-                            modifier = Modifier.padding(16.dp),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                            .height(IntrinsicSize.Min)
+                    )
                 }
                 
                 // カウントダウン表示部分
@@ -167,17 +165,10 @@ fun RouteInfoScreen(
                         .weight(1f)
                 ) {
                     items(displayRouteDetails) { routeDetail ->
-                        // TODO: RouteInfoItemComposeの実装
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "${routeDetail.departureTime} - ${routeDetail.trainType}",
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
+                        RouteInfoItemCompose(
+                            routeDetail = routeDetail,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }

@@ -23,7 +23,7 @@ import com.nyasai.traintimer.commonparts.CommonLoadingCompose
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routesearch.*
-// import com.nyasai.traintimer.commonparts.RouteListItemCompose
+import com.nyasai.traintimer.commonparts.RouteListItemCompose
 import kotlinx.coroutines.launch
 
 /**
@@ -103,11 +103,10 @@ fun RouteListScreen(
                 state = rememberLazyListState()
             ) {
                 items(routeList) { item ->
-                    // TODO: RouteListItemComposeの実装
-                    Card(
+                    RouteListItemCompose(
+                        routeListItem = item,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(4.dp)
                             .clickable {
                                 if (!isManualSortMode) {
                                     onRouteItemClick(item.dataId)
@@ -117,12 +116,7 @@ fun RouteListScreen(
                                     showEditDialog = true
                                 }
                             }
-                    ) {
-                        Text(
-                            text = "${item.routeName} - ${item.destination}",
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -170,11 +164,10 @@ fun RouteListScreen(
     }
     
     if (showStationSelectDialog) {
-        // TODO: ListItemSelectDialogWithViewModelの実装
-        /*
         ListItemSelectDialogWithViewModel(
             isVisible = showStationSelectDialog,
             onDismiss = { showStationSelectDialog = false },
+            title = "駅を選択してください",
             viewModel = listItemSelectViewModel.apply {
                 onClickPositiveButtonCallback = {
                     scope.launch {
@@ -201,15 +194,13 @@ fun RouteListScreen(
                 }
             }
         )
-        */
     }
     
     if (showDestinationSelectDialog) {
-        // TODO: ListItemSelectDialogWithViewModelの実装
-        /*
         ListItemSelectDialogWithViewModel(
             isVisible = showDestinationSelectDialog,
             onDismiss = { showDestinationSelectDialog = false },
+            title = "行先を選択してください",
             viewModel = listItemSelectViewModel.apply {
                 onClickPositiveButtonCallback = {
                     scope.launch {
@@ -252,7 +243,6 @@ fun RouteListScreen(
                 }
             }
         )
-        */
     }
     
     if (showEditDialog && selectedItem != null) {
