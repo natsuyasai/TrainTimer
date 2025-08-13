@@ -8,6 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.routelist.RouteListItemEditDialogWithViewModel
 import com.nyasai.traintimer.routelist.RouteListItemEditViewModel
+import com.nyasai.traintimer.routelist.RouteListItemDeleteConfirmDialogWithViewModel
+import com.nyasai.traintimer.routelist.RouteListItemDeleteConfirmViewModel
 
 /**
  * Composeダイアログの使用例
@@ -124,6 +126,37 @@ fun RouteListItemEditDialogUsageExample() {
 }
 
 /**
+ * RouteListItemDeleteConfirmDialog の使用例
+ */
+@Composable
+fun RouteListItemDeleteConfirmDialogUsageExample() {
+    var showDialog by remember { mutableStateOf(false) }
+    val viewModel: RouteListItemDeleteConfirmViewModel = viewModel()
+    val testDataId = 999L
+    
+    // コールバック設定
+    viewModel.onClickPositiveButtonCallback = { dataId ->
+        // 削除実行処理
+        // dataId を使って削除処理をここに記述
+        showDialog = false
+    }
+    
+    viewModel.onClickNegativeButtonCallback = { _ ->
+        // キャンセル処理
+        showDialog = false
+    }
+
+    if (showDialog) {
+        RouteListItemDeleteConfirmDialogWithViewModel(
+            isVisible = showDialog,
+            targetDataId = testDataId,
+            onDismiss = { showDialog = false },
+            viewModel = viewModel
+        )
+    }
+}
+
+/**
  * 従来のFragmentベースからCompose呼び出しへの移行ガイド
  * 
  * SearchTargetInputDialog 従来版:
@@ -184,6 +217,42 @@ fun RouteListItemEditDialogUsageExample() {
  *             isVisible = showEditDialog,
  *             targetDataId = item.dataId,
  *             onDismiss = { showEditDialog = false },
+ *             viewModel = viewModel
+ *         )
+ *     }
+ * }
+ * ```
+ * 
+ * RouteListItemDeleteConfirmDialog 従来版:
+ * ```
+ * val dialog = RouteListItemDeleteConfirmDialogFragment()
+ * val bundle = Bundle()
+ * bundle.putLong(Define.RouteListDeleteConfirmArgentDataId, item.dataId)
+ * dialog.arguments = bundle
+ * dialog.onClickPositiveButtonCallback = { dataId ->
+ *     // 削除処理
+ * }
+ * dialog.show(supportFragmentManager, "delete_confirm")
+ * ```
+ * 
+ * RouteListItemDeleteConfirmDialog Compose版:
+ * ```
+ * @Composable
+ * fun MyScreen() {
+ *     var showDeleteDialog by remember { mutableStateOf(false) }
+ *     val viewModel: RouteListItemDeleteConfirmViewModel = viewModel()
+ *     
+ *     // コールバック設定
+ *     viewModel.onClickPositiveButtonCallback = { dataId ->
+ *         // 削除処理
+ *     }
+ *     
+ *     // ダイアログ
+ *     if (showDeleteDialog) {
+ *         RouteListItemDeleteConfirmDialogWithViewModel(
+ *             isVisible = showDeleteDialog,
+ *             targetDataId = item.dataId,
+ *             onDismiss = { showDeleteDialog = false },
  *             viewModel = viewModel
  *         )
  *     }
