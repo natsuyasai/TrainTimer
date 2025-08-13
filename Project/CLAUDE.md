@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+- 必ず日本語で回答してください。
+- ユーザーからの指示や仕様に疑問などがあれば作業を中断し、質問すること。
+- コードエクセレンスの原則に基づき、テスト駆動開発を必須で実施すること。
+- TDDおよびテスト駆動開発で実装する際は、すべてt-wadaの推奨する進め方に従ってください。
+- リファクタリングはMartin Fowloerが推奨する進め方に従ってください。
+- セキュリティルールに従うこと。
+- 実装時は可能な限りテストコードも作成してください
+- 実装時は適宜コミットを行ってください
+
 ## Development Commands
 
 ### Build and Test
