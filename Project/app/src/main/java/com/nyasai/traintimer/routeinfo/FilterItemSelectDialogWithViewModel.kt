@@ -1,152 +1,128 @@
 package com.nyasai.traintimer.routeinfo
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
+import com.nyasai.traintimer.database.FilterInfo
 
 /**
- * フィルタアイテム選択ダイアログのComposeコンポーネント
+ * フィルタ対象選択ダイアログ (Jetpack Compose版)
+ */
+@Composable
+fun FilterItemSelectDialog(
+    isVisible: Boolean,
+    filterItems: List<FilterInfo>,
+    onItemToggle: (Int) -> Unit,
+    onPositiveClick: () -> Unit,
+    onNegativeClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (isVisible) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = stringResource(id = R.string.select_filter_message),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    filterItems.forEachIndexed { index, filterInfo ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = filterInfo.isShow,
+                                onCheckedChange = {
+                                    onItemToggle(index)
+                                }
+                            )
+                            Text(
+                                text = filterInfo.trainTypeAndDestination,
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .weight(1f),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+
+                    if (filterItems.isEmpty()) {
+                        Text(
+                            text = "表示対象がありません",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onPositiveClick()
+                        onDismiss()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.select_filter_yes))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        onNegativeClick()
+                        onDismiss()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.select_filter_no))
+                }
+            }
+        )
+    }
+}
+
+/**
+ * ViewModelと統合されたFilterItemSelectDialog
  */
 @Composable
 fun FilterItemSelectDialogWithViewModel(
     isVisible: Boolean,
     onDismiss: () -> Unit,
-    viewModel: FilterItemSelectViewModel,
-    title: String = "表示フィルタ設定",
-    modifier: Modifier = Modifier
+    viewModel: FilterItemSelectViewModel = viewModel()
 ) {
-    if (isVisible) {
-        Dialog(
-            onDismissRequest = onDismiss,
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = true
-            )
-        ) {
-            Card(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorResource(id = R.color.colorNormalBackground)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    // タイトル
-                    Text(
-                        text = title,
-                        color = colorResource(id = R.color.textColor),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                    )
-                    
-                    // フィルタアイテムリスト
-                    val filterItems = viewModel.filterItemsState
-                    
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 400.dp)
-                    ) {
-                        itemsIndexed(filterItems) { index, filterItem ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Checkbox(
-                                    checked = filterItem.isShow,
-                                    onCheckedChange = { _ ->
-                                        viewModel.toggleItemVisibility(index)
-                                    },
-                                    colors = CheckboxDefaults.colors(
-                                        checkedColor = colorResource(id = R.color.actionBar),
-                                        uncheckedColor = colorResource(id = R.color.textColor),
-                                        checkmarkColor = colorResource(id = R.color.textColorPrimary)
-                                    )
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                
-                                Column(
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    // 種別名+行先の組み合わせ
-                                    Text(
-                                        text = filterItem.trainTypeAndDestination,
-                                        color = colorResource(id = R.color.textColor),
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                            
-                            if (index < filterItems.size - 1) {
-                                Divider(
-                                    color = colorResource(id = R.color.textGray),
-                                    thickness = 0.5.dp,
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                )
-                            }
-                        }
-                    }
-                    
-                    // ボタン群
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = {
-                                viewModel.onNegativeButtonClick()
-                                onDismiss()
-                            }
-                        ) {
-                            Text(
-                                text = "キャンセル",
-                                color = colorResource(id = R.color.textColor)
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Button(
-                            onClick = {
-                                viewModel.onPositiveButtonClick()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.actionBar)
-                            )
-                        ) {
-                            Text(
-                                text = "OK",
-                                color = colorResource(id = R.color.textColorPrimary)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+    FilterItemSelectDialog(
+        isVisible = isVisible,
+        filterItems = viewModel.filterItemsState,
+        onItemToggle = viewModel::toggleItemVisibility,
+        onPositiveClick = {
+            viewModel.onPositiveButtonClick()
+        },
+        onNegativeClick = {
+            viewModel.onNegativeButtonClick()
+        },
+        onDismiss = onDismiss
+    )
 }

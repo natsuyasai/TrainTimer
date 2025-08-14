@@ -12,8 +12,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -36,7 +34,7 @@ fun SearchTargetInputDialog(
 ) {
     if (isVisible) {
         val focusManager = LocalFocusManager.current
-        
+
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
@@ -50,7 +48,7 @@ fun SearchTargetInputDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     OutlinedTextField(
                         value = stationName,
                         onValueChange = onStationNameChange,
