@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
+import java.time.LocalTime
+import java.time.format.DateTimeParseException
 
 /**
  * 路線詳細情報のアイテムのComposeコンポーネント
@@ -26,10 +29,13 @@ fun RouteInfoItemCompose(
     routeDetail: RouteDetail,
     modifier: Modifier = Modifier
 ) {
+    val isPastTime = isPastTime(routeDetail)
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 2.dp),
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .let { if (isPastTime) it.alpha(0.5f) else it },
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = R.color.colorNormalBackground)
         ),
@@ -81,12 +87,54 @@ fun RouteInfoItemCompose(
 }
 
 /**
- * 時刻の色を取得（元のdata bindingのgetTimeTextColorロジックを移植）
+ * 時刻の色を取得（現在時刻との比較による）
  */
 @Composable
 private fun getTimeTextColor(routeDetail: RouteDetail): androidx.compose.ui.graphics.Color {
-    // 簡略化：現在時刻との比較ロジックは後で実装
-    return colorResource(id = R.color.textColor)
+    val timeStatus = getTimeStatus(routeDetail)
+    return when (timeStatus) {
+        TimeStatus.PAST -> colorResource(id = R.color.textGray)
+        TimeStatus.FUTURE -> colorResource(id = R.color.textColor)
+        TimeStatus.CURRENT -> colorResource(id = R.color.textRed)
+        TimeStatus.INVALID -> colorResource(id = R.color.textColor)
+    }
+}
+
+/**
+ * 時刻の状態enum
+ */
+private enum class TimeStatus {
+    PAST, FUTURE, CURRENT, INVALID
+}
+
+/**
+ * 時刻の状態を取得
+ */
+private fun getTimeStatus(routeDetail: RouteDetail): TimeStatus {
+    return try {
+        val departureTime = routeDetail.departureTime
+        if (departureTime.isNullOrEmpty()) {
+            TimeStatus.INVALID
+        } else {
+            val now = LocalTime.now()
+            val trainTime = LocalTime.parse(departureTime)
+            
+            when {
+                trainTime.isBefore(now) -> TimeStatus.PAST
+                trainTime.isAfter(now) -> TimeStatus.FUTURE
+                else -> TimeStatus.CURRENT
+            }
+        }
+    } catch (e: DateTimeParseException) {
+        TimeStatus.INVALID
+    }
+}
+
+/**
+ * 過去の時刻かどうかを判定
+ */
+private fun isPastTime(routeDetail: RouteDetail): Boolean {
+    return getTimeStatus(routeDetail) == TimeStatus.PAST
 }
 
 @Preview(showBackground = true)

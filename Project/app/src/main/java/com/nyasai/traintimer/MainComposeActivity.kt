@@ -23,8 +23,6 @@ import com.nyasai.traintimer.routelist.RouteListScreen
 import com.nyasai.traintimer.routelist.RouteListViewModel
 import com.nyasai.traintimer.routelist.RouteListViewModelFactory
 import com.nyasai.traintimer.routeinfo.RouteInfoScreen
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModelFactory
 import com.nyasai.traintimer.setting.PreferenceScreen
 import com.nyasai.traintimer.ui.theme.TrainTimerTheme
 
@@ -115,24 +113,11 @@ fun TrainTimerNavigation(
         composable("route_info/{parentDataId}") { backStackEntry ->
             val parentDataId = backStackEntry.arguments?.getString("parentDataId")?.toLongOrNull() ?: 0L
             
-            val routeInfoViewModel = remember(parentDataId) {
-                val application = (context as ComponentActivity).application
-                ViewModelProvider(
-                    context,
-                    RouteInfoViewModelFactory(
-                        RouteDatabase.getInstance(application).routeDatabaseDao,
-                        application,
-                        parentDataId
-                    )
-                )[RouteInfoViewModel::class.java]
-            }
-            
             RouteInfoScreen(
                 parentDataId = parentDataId,
                 onBackClick = {
                     navController.popBackStack()
-                },
-                routeInfoViewModel = routeInfoViewModel
+                }
             )
         }
         

@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
@@ -24,10 +26,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import com.nyasai.traintimer.commonparts.RouteInfoItemCompose
 import com.nyasai.traintimer.commonparts.RouteInfoTitleCompose
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeParseException
 import java.util.*
 
 /**
@@ -38,11 +43,15 @@ import java.util.*
 fun RouteInfoScreen(
     parentDataId: Long,
     onBackClick: () -> Unit,
-    routeInfoViewModel: RouteInfoViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    
+    // ViewModelをFactoryを使って作成し、parentDataIdを渡す
+    val database = RouteDatabase.getInstance(context).routeDatabaseDao
+    val factory = RouteInfoViewModelFactory(database, context.applicationContext as android.app.Application, parentDataId)
+    val routeInfoViewModel: RouteInfoViewModel = viewModel(factory = factory)
     
     // ViewModelの状態を観察
     val routeInfo by routeInfoViewModel.routeInfo.observeAsState()
@@ -56,7 +65,7 @@ fun RouteInfoScreen(
     val filterItemSelectViewModel: FilterItemSelectViewModel = viewModel()
     
     // タイマー状態
-    var countdownText by remember { mutableStateOf("--:--:--") }
+    var countdownText by remember { mutableStateOf("--:--") }
     var nextTimeInfo by remember { mutableStateOf("") }
     
     // カウントダウンタイマー
@@ -67,7 +76,7 @@ fun RouteInfoScreen(
                 countdownText = formatCountdownTime(diffSeconds)
                 nextTimeInfo = buildNextTimeInfo(countItem)
             } ?: run {
-                countdownText = "--:--:--"
+                countdownText = "--:--"
                 nextTimeInfo = ""
             }
             kotlinx.coroutines.delay(1000) // 1秒ごとに更新
@@ -76,6 +85,9 @@ fun RouteInfoScreen(
     
     // 表示用の路線詳細リスト
     val displayRouteDetails = remember { mutableStateListOf<RouteDetail>() }
+    
+    // LazyColumnのスクロール状態
+    val listState = rememberLazyListState()
     
     // 路線アイテムデータの監視
     val routeItems by routeInfoViewModel.routeItems.observeAsState(emptyList())
@@ -86,13 +98,28 @@ fun RouteInfoScreen(
         routeInfoViewModel.initializeAsync()
     }
     
+    // フィルター更新用のトリガー
+    var filterUpdateTrigger by remember { mutableStateOf(0) }
+    
     // 表示リストの更新ロジック（データが変更されたときに実行）
-    LaunchedEffect(currentDiagramType, routeItems, filterInfo) {
-        // キャッシュをクリアして最新データを取得
-        routeInfoViewModel.clearDisplayCache()
-        displayRouteDetails.clear()
-        displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
-        routeInfoViewModel.updateCurrentCountItem(false)
+    LaunchedEffect(currentDiagramType, routeItems, filterInfo, filterUpdateTrigger) {
+        // データが存在する場合のみ処理
+        if (routeItems.isNotEmpty()) {
+            // キャッシュをクリアして最新データを取得
+            routeInfoViewModel.clearDisplayCache()
+            val newDisplayItems = routeInfoViewModel.getDisplayRouteDetailItems(false)
+            displayRouteDetails.clear()
+            displayRouteDetails.addAll(newDisplayItems)
+            routeInfoViewModel.updateCurrentCountItem(false)
+            
+            // 自動スクロール処理
+            if (displayRouteDetails.isNotEmpty()) {
+                val nextTrainIndex = findNextTrainIndex(displayRouteDetails)
+                if (nextTrainIndex >= 0) {
+                    listState.animateScrollToItem(nextTrainIndex)
+                }
+            }
+        }
     }
     
     // 強制的な初期データロード（parentDataIdが変更されたとき）
@@ -156,7 +183,10 @@ fun RouteInfoScreen(
                         routeListItem = route,
                         currentDiagramType = currentDiagramType,
                         onTitleClick = {
+                            // ダイヤ種別を切り替え
                             routeInfoViewModel.setNextDiagramType()
+                            // フィルター更新トリガーを増加させて表示を更新
+                            filterUpdateTrigger++
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -181,7 +211,7 @@ fun RouteInfoScreen(
                             .weight(0.3f)
                             .fillMaxHeight()
                             .wrapContentHeight(Alignment.CenterVertically)
-                            .padding(start = 5.dp)
+                            .padding(start = 10.dp)
                     )
                     
                     // カウントダウン
@@ -190,11 +220,12 @@ fun RouteInfoScreen(
                         color = colorResource(id = R.color.textRed),
                         fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.End,
                         modifier = Modifier
                             .weight(0.7f)
                             .fillMaxHeight()
                             .wrapContentHeight(Alignment.CenterVertically)
+                            .padding(end = 10.dp)
                     )
                 }
                 
@@ -245,9 +276,10 @@ fun RouteInfoScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .weight(1f),
+                        state = listState
                     ) {
-                        items(displayRouteDetails) { routeDetail ->
+                        itemsIndexed(displayRouteDetails) { index, routeDetail ->
                             RouteInfoItemCompose(
                                 routeDetail = routeDetail,
                                 modifier = Modifier.fillMaxWidth()
@@ -269,11 +301,8 @@ fun RouteInfoScreen(
                     scope.launch {
                         try {
                             routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
-                            // 表示リストを更新（キャッシュクリア）
-                            displayRouteDetails.clear()
-                            displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
-                            // カウントアイテムも更新
-                            routeInfoViewModel.updateCurrentCountItem(false)
+                            // フィルター更新トリガーを増加させてLaunchedEffectを実行
+                            filterUpdateTrigger++
                         } catch (e: Exception) {
                             // エラーハンドリング
                         }
@@ -289,22 +318,40 @@ fun RouteInfoScreen(
 }
 
 /**
- * カウントダウン時間をフォーマット
+ * 現在時刻より先で最も近い電車のインデックスを取得
+ */
+private fun findNextTrainIndex(routeDetails: List<RouteDetail>): Int {
+    val now = LocalTime.now()
+    
+    return routeDetails.indexOfFirst { routeDetail ->
+        try {
+            val departureTime = routeDetail.departureTime
+            if (!departureTime.isNullOrEmpty()) {
+                val trainTime = LocalTime.parse(departureTime)
+                trainTime.isAfter(now)
+            } else {
+                false
+            }
+        } catch (e: DateTimeParseException) {
+            false
+        }
+    }
+}
+
+/**
+ * カウントダウン時間をMM:SS形式でフォーマット
  */
 private fun formatCountdownTime(diffSeconds: Long): String {
     return when {
-        diffSeconds < 0 -> "--:--:--"
-        diffSeconds < 60 -> "00:00:${String.format("%02d", diffSeconds)}"
-        diffSeconds < 3600 -> {
-            val minutes = diffSeconds / 60
+        diffSeconds < 0 -> "--:--"
+        diffSeconds < 60 -> {
             val seconds = diffSeconds % 60
-            "00:${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+            "00:${String.format("%02d", seconds)}"
         }
         else -> {
-            val hours = diffSeconds / 3600
-            val minutes = (diffSeconds % 3600) / 60
+            val minutes = diffSeconds / 60
             val seconds = diffSeconds % 60
-            "${String.format("%02d", hours)}:${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+            "${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
         }
     }
 }
