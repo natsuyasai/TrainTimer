@@ -1,14 +1,13 @@
 package com.nyasai.traintimer.routelist
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nyasai.traintimer.R
@@ -25,17 +24,18 @@ fun RouteListItemCompose(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 5.dp, vertical = 5.dp),
-        shape = RoundedCornerShape(8.dp),
+            .padding(horizontal = 4.dp, vertical = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = R.color.colorNormalBackground)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             // 路線名
             Text(
@@ -44,16 +44,16 @@ fun RouteListItemCompose(
                 fontSize = 18.sp,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            // 駅名
+            
+            // 駅名（メイン表示）
             Text(
                 text = routeListItem.stationName ?: "",
                 color = colorResource(id = R.color.textColor),
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth()
             )
-
+            
             // 方面
             Text(
                 text = routeListItem.destination ?: "",
@@ -63,4 +63,18 @@ fun RouteListItemCompose(
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RouteListItemComposePreview() {
+    val sampleRoute = RouteListItem().apply {
+        routeName = "JR山手線"
+        stationName = "新宿駅"
+        destination = "池袋・上野方面"
+    }
+    
+    RouteListItemCompose(
+        routeListItem = sampleRoute
+    )
 }

@@ -3,12 +3,10 @@ package com.nyasai.traintimer.routeinfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -17,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,11 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import com.nyasai.traintimer.commonparts.RouteInfoItemCompose
-import com.nyasai.traintimer.commonparts.RouteInfoTitleCompose
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
@@ -217,7 +211,7 @@ fun RouteInfoScreen(
                     // カウントダウン
                     Text(
                         text = countdownText,
-                        color = colorResource(id = R.color.textRed),
+                        color = colorResource(id = R.color.textColor),
                         fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End,
