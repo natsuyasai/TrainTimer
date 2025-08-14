@@ -80,7 +80,11 @@ fun RouteListScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("路線一覧") },
+                    title = { 
+                        Text(
+                            if (isEditMode) "路線一覧 (編集モード)" else "路線一覧"
+                        ) 
+                    },
                     actions = {
                         // 路線追加ボタン
                         IconButton(onClick = { showSearchDialog = true }) {
@@ -110,12 +114,7 @@ fun RouteListScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .background(
-                        if (isEditMode)
-                            colorResource(id = R.color.colorSortBackground)
-                        else 
-                            colorResource(id = R.color.colorNormalBackground)
-                    ),
+                    .background(colorResource(id = R.color.colorNormalBackground)),
                 state = rememberLazyListState()
             ) {
                 itemsIndexed(routeList) { index, item ->
