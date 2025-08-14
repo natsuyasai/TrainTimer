@@ -36,14 +36,14 @@ class RouteListViewModel(
     val routeList = database.getAllRouteListItems()
 
     // 手動ソートモード中か
-    private var _isManualSortMode: MutableLiveData<Boolean> = MutableLiveData()
-    var isManualSortMode: LiveData<Boolean> = _isManualSortMode
+    private var _isEditMode: MutableLiveData<Boolean> = MutableLiveData()
+    var isEditMode: LiveData<Boolean> = _isEditMode
 
     // Yahoo路線情報取得用
     private val _yahooRouteInfoGetter = YahooRouteInfoGetter()
 
     init {
-        _isManualSortMode.value = false
+        _isEditMode.value = false
     }
 
     /**
@@ -52,7 +52,7 @@ class RouteListViewModel(
     override fun onCleared() {
         _yahooRouteInfoGetter.dispose()
         _job.cancel()
-        _isManualSortMode.value = false
+        _isEditMode.value = false
         super.onCleared()
     }
 
@@ -303,9 +303,9 @@ class RouteListViewModel(
 //        }
     }
 
-    fun switchManualSortMode() {
-        val current = (isManualSortMode.value ?: true)
-        _isManualSortMode.value = !current
+    fun switchEditMode() {
+        val current = (isEditMode.value ?: true)
+        _isEditMode.value = !current
     }
 
     /**

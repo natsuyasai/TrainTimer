@@ -50,7 +50,7 @@ fun RouteListScreen(
     
     // ViewModelの状態を観察
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())
-    val isManualSortMode by routeListViewModel.isManualSortMode.observeAsState(false)
+    val isEditMode by routeListViewModel.isEditMode.observeAsState(false)
     
     // ダイアログの状態
     var showSearchDialog by remember { mutableStateOf(false) }
@@ -87,13 +87,13 @@ fun RouteListScreen(
                             Icon(Icons.Default.Add, contentDescription = "路線追加")
                         }
                         
-                        // ソートボタン
+                        // 編集
                         IconButton(onClick = { 
-                            routeListViewModel.switchManualSortMode()
+                            routeListViewModel.switchEditMode()
                         }) {
                             Icon(
                                 Icons.Default.Edit,
-                                contentDescription = "手動ソート"
+                                contentDescription = "編集"
                             )
                         }
                         
@@ -111,7 +111,7 @@ fun RouteListScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .background(
-                        if (isManualSortMode) 
+                        if (isEditMode)
                             colorResource(id = R.color.colorSortBackground)
                         else 
                             colorResource(id = R.color.colorNormalBackground)
@@ -120,7 +120,7 @@ fun RouteListScreen(
             ) {
                 itemsIndexed(routeList) { index, item ->
                     val isDragged = draggedItem == item
-                    val itemModifier = if (isManualSortMode) {
+                    val itemModifier = if (isEditMode) {
                         Modifier
                             .fillMaxWidth()
                             .then(
@@ -165,7 +165,7 @@ fun RouteListScreen(
                                 )
                             }
                             .clickable {
-                                if (!isManualSortMode) {
+                                if (!isEditMode) {
                                     onRouteItemClick(item.dataId)
                                 } else {
                                     // 手動ソートモードでは編集ダイアログを表示
