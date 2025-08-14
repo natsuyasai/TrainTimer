@@ -175,32 +175,66 @@ class YahooRouteInfoGetter : CoroutineScope {
         if (tableUrls.size != DiagramType.Max.ordinal) {
             return timeTableInfoList
         }
+        
+        // 事前に全ての詳細URLを取得して総カウント数を計算
+        val allDetailUrls = tableUrls.map { url -> getTimeDetailsUrlList(url) }
+        val totalCount = allDetailUrls.sumOf { it.size }
+        
+        // 最大カウント値を1回だけ通知
+        notifyMaxCountCallback(totalCount)
+        
         coroutineScope {
             val awaitList = listOf(
                 async {
-                    getTimeInfoList(
+                    getTimeInfoListWithPreloadedUrls(
                         tableUrls[DiagramType.Weekday.ordinal],
-                        notifyMaxCountCallback,
+                        allDetailUrls[DiagramType.Weekday.ordinal],
                         notifyCountCallback
                     )
                 },
                 async {
-                    getTimeInfoList(
+                    getTimeInfoListWithPreloadedUrls(
                         tableUrls[DiagramType.Saturday.ordinal],
-                        notifyMaxCountCallback,
+                        allDetailUrls[DiagramType.Saturday.ordinal],
                         notifyCountCallback
                     )
                 },
                 async {
-                    getTimeInfoList(
+                    getTimeInfoListWithPreloadedUrls(
                         tableUrls[DiagramType.Holiday.ordinal],
-                        notifyMaxCountCallback,
+                        allDetailUrls[DiagramType.Holiday.ordinal],
                         notifyCountCallback
                     )
                 })
             timeTableInfoList = awaitList.awaitAll()
         }
         return timeTableInfoList
+    }
+
+    /**
+     * 時刻情報リスト取得（事前にロードしたURLを使用）
+     * @param tableUrl 時刻表ページURL（ログ用）
+     * @param detailUrls 事前にロードした詳細ページURLリスト
+     * @param notifyCountCallback カウント通知コールバック関数
+     * @return 時刻情報情報
+     */
+    private fun getTimeInfoListWithPreloadedUrls(
+        tableUrl: String,
+        detailUrls: List<String>,
+        notifyCountCallback: (() -> Unit)
+    ): List<TimeInfo> {
+        val timeInfoList = mutableListOf<TimeInfo>()
+        for (detailUrl in detailUrls) {
+            // 解析して結果を保持
+            val info: TimeInfo = getTimeInfo(detailUrl) ?: return mutableListOf()
+            timeInfoList.add(info)
+            notifyCountCallback()
+        }
+        if (timeInfoList.count() != detailUrls.count()) {
+            // 件数が一致しないため失敗
+            return mutableListOf()
+        }
+        return timeInfoList
     }
 
     /**
