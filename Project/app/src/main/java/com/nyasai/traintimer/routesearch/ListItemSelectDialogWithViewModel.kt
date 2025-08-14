@@ -9,61 +9,43 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 
 /**
- * リストアイテム選択ダイアログのComposeコンポーネント
+ * リストアイテム選択ダイアログ (Jetpack Compose版)
  */
 @Composable
-fun ListItemSelectDialogWithViewModel(
+fun ListItemSelectDialog(
     isVisible: Boolean,
-    onDismiss: () -> Unit,
-    viewModel: ListItemSelectViewModel,
-    title: String = "選択してください",
-    modifier: Modifier = Modifier
+    title: String,
+    items: List<String>,
+    selectedItem: String,
+    onItemSelect: (String) -> Unit,
+    onPositiveClick: () -> Unit,
+    onNegativeClick: () -> Unit,
+    onDismiss: () -> Unit
 ) {
     if (isVisible) {
-        Dialog(
+        var currentSelectedItem by remember { mutableStateOf(selectedItem) }
+
+        AlertDialog(
             onDismissRequest = onDismiss,
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = true
-            )
-        ) {
-            Card(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorResource(id = R.color.colorNormalBackground)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
+            title = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = colorResource(id = R.color.textColor)
+                )
+            },
+            text = {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // タイトル
-                    Text(
-                        text = title,
-                        color = colorResource(id = R.color.textColor),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                    )
-                    
-                    // アイテムリスト
-                    val items = viewModel.itemsState
-                    var selectedItem by remember { mutableStateOf(viewModel.selectedItemState) }
-                    
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -74,20 +56,20 @@ fun ListItemSelectDialogWithViewModel(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .selectable(
-                                        selected = (item == selectedItem),
+                                        selected = (item == currentSelectedItem),
                                         onClick = {
-                                            selectedItem = item
-                                            viewModel.updateSelectedItem(item)
+                                            currentSelectedItem = item
+                                            onItemSelect(item)
                                         }
                                     )
                                     .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
-                                    selected = (item == selectedItem),
+                                    selected = (item == currentSelectedItem),
                                     onClick = {
-                                        selectedItem = item
-                                        viewModel.updateSelectedItem(item)
+                                        currentSelectedItem = item
+                                        onItemSelect(item)
                                     },
                                     colors = RadioButtonDefaults.colors(
                                         selectedColor = colorResource(id = R.color.actionBar),
@@ -104,44 +86,60 @@ fun ListItemSelectDialogWithViewModel(
                             }
                         }
                     }
-                    
-                    // ボタン群
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = {
-                                viewModel.onClickNegativeButtonCallback?.invoke()
-                                onDismiss()
-                            }
-                        ) {
-                            Text(
-                                text = "キャンセル",
-                                color = colorResource(id = R.color.textColor)
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Button(
-                            onClick = {
-                                viewModel.onClickPositiveButtonCallback?.invoke()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.actionBar)
-                            )
-                        ) {
-                            Text(
-                                text = "OK",
-                                color = colorResource(id = R.color.textColorPrimary)
-                            )
-                        }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onPositiveClick()
+                        onDismiss()
                     }
+                ) {
+                    Text(
+                        text = "OK",
+                        color = colorResource(id = R.color.actionBar)
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        onNegativeClick()
+                        onDismiss()
+                    }
+                ) {
+                    Text(
+                        text = "キャンセル",
+                        color = colorResource(id = R.color.textColor)
+                    )
                 }
             }
-        }
+        )
     }
+}
+
+/**
+ * ViewModelと統合されたListItemSelectDialog
+ */
+@Composable
+fun ListItemSelectDialogWithViewModel(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    viewModel: ListItemSelectViewModel = viewModel(),
+    title: String = "選択してください"
+) {
+    ListItemSelectDialog(
+        isVisible = isVisible,
+        title = title,
+        items = viewModel.itemsState,
+        selectedItem = viewModel.selectedItemState,
+        onItemSelect = viewModel::updateSelectedItem,
+        onPositiveClick = {
+            viewModel.onClickPositiveButtonCallback?.invoke()
+        },
+        onNegativeClick = {
+            viewModel.onClickNegativeButtonCallback?.invoke()
+        },
+        onDismiss = onDismiss
+    )
 }

@@ -109,7 +109,7 @@ fun SearchTargetInputDialogWithViewModel(
         onStationNameChange = viewModel::updateStationName,
         onPositiveClick = {
             viewModel.onClickPositiveButtonCallback?.invoke()
-            viewModel.clearUIData()
+            // clearUIData()はコールバック内で適切なタイミングで呼ぶ
         },
         onNegativeClick = {
             viewModel.onClickNegativeButtonCallback?.invoke()

@@ -33,7 +33,9 @@ import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routesearch.*
 import com.nyasai.traintimer.commonparts.RouteListItemCompose
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 路線一覧画面のComposeスクリーン
@@ -65,6 +67,7 @@ fun RouteListScreen(
     // ダイアログ用のデータ
     var stationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var destinationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var currentStationName by remember { mutableStateOf("") }
     
     // ドラッグ&ドロップ状態
     var draggedItem by remember { mutableStateOf<RouteListItem?>(null) }
@@ -203,14 +206,25 @@ fun RouteListScreen(
                 commonLoadingViewModel.showLoading()
                 
                 try {
-                    val stationListMap = routeListViewModel.getStationList(searchTargetInputViewModel.getStationName())
+                    val stationName = searchTargetInputViewModel.getStationName()
+                    currentStationName = stationName // 駅名を保存
+                    
+                    // IOディスパッチャーでネットワーク処理を実行
+                    val (stationListMap, destinationListMap) = withContext(Dispatchers.IO) {
+                        val stationList = routeListViewModel.getStationList(stationName)
+                        val destinationList = if (stationList?.isEmpty() != false) {
+                            routeListViewModel.getDestinationFromStationName(stationName)
+                        } else {
+                            emptyMap<String, String>()
+                        }
+                        Pair(stationList, destinationList)
+                    }
+                    
                     if (stationListMap?.isNotEmpty() == true) {
                         stationOptions = stationListMap
                         listItemSelectViewModel.updateItems(stationListMap.keys.toList())
                         showStationSelectDialog = true
                     } else {
-                        // 直接行先検索
-                        val destinationListMap = routeListViewModel.getDestinationFromStationName(searchTargetInputViewModel.getStationName())
                         destinationOptions = destinationListMap
                         listItemSelectViewModel.updateItems(destinationListMap.keys.toList())
                         showDestinationSelectDialog = true
@@ -219,6 +233,8 @@ fun RouteListScreen(
                     // エラーハンドリング
                 } finally {
                     commonLoadingViewModel.closeLoading()
+                    // 処理完了後にデータをクリア
+                    searchTargetInputViewModel.clearUIData()
                 }
             }
         }
@@ -242,9 +258,16 @@ fun RouteListScreen(
                 
                 try {
                     val selectedStation = listItemSelectViewModel.selectedItemState
-                    val destinationListMap = routeListViewModel.getDestinationFromUrl(
-                        stationOptions.getValue(selectedStation)
-                    )
+                    // 複数候補がある場合は、選択された情報を保持（○○（○○県）表記になる）
+                    currentStationName = selectedStation
+                    
+                    // IOディスパッチャーでネットワーク処理を実行
+                    val destinationListMap = withContext(Dispatchers.IO) {
+                        routeListViewModel.getDestinationFromUrl(
+                            stationOptions.getValue(selectedStation)
+                        )
+                    }
+                    
                     destinationOptions = destinationListMap
                     listItemSelectViewModel.updateItems(destinationListMap.keys.toList())
                     showDestinationSelectDialog = true
@@ -278,25 +301,33 @@ fun RouteListScreen(
                     val selectedDestination = listItemSelectViewModel.selectedItemState
                     val url = destinationOptions.getValue(selectedDestination)
                     
-                    // 路線情報を追加
-                    val routeInfo = routeListViewModel.getTimeTableInfo(
-                        url,
-                        { commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                        { commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
-                    )
+                    // IOディスパッチャーでネットワーク処理を実行
+                    val (routeInfo, parentDataId) = withContext(Dispatchers.IO) {
+                        // 路線情報を取得
+                        val routeInfo = routeListViewModel.getTimeTableInfo(
+                            url,
+                            { commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                            { commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
+                        )
+                        
+                        // 新しい路線アイテムを作成
+                        val newRouteListItem = RouteListItem().apply {
+                            val splitDestinationKey = routeListViewModel.splitDestinationKey(selectedDestination)
+                            routeName = splitDestinationKey.first
+                            destination = splitDestinationKey.second
+                            stationName = currentStationName
+                        }
+                        
+                        val parentDataId = routeListViewModel.registerRouteListItem(routeInfo, newRouteListItem)
+                        Pair(routeInfo, parentDataId)
+                    }
                     
                     commonLoadingViewModel.changeText("時刻情報登録中")
                     
-                    // 新しい路線アイテムを作成
-                    val newRouteListItem = RouteListItem().apply {
-                        val splitDestinationKey = routeListViewModel.splitDestinationKey(selectedDestination)
-                        routeName = splitDestinationKey.first
-                        destination = splitDestinationKey.second
-                        stationName = searchTargetInputViewModel.getStationName()
+                    // データベース操作もIOディスパッチャーで実行
+                    withContext(Dispatchers.IO) {
+                        routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
                     }
-                    
-                    val parentDataId = routeListViewModel.registerRouteListItem(routeInfo, newRouteListItem)
-                    routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
                     
                 } catch (e: Exception) {
                     // エラーハンドリング
@@ -325,11 +356,14 @@ fun RouteListScreen(
                     scope.launch {
                         commonLoadingViewModel.showLoading("時刻情報更新中")
                         try {
-                            routeListViewModel.updateRouteInfo(
-                                selectedItem!!,
-                                { commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                                { commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
-                            )
+                            // IOディスパッチャーでネットワーク処理を実行
+                            withContext(Dispatchers.IO) {
+                                routeListViewModel.updateRouteInfo(
+                                    selectedItem!!,
+                                    { commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                                    { commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
+                                )
+                            }
                         } catch (e: Exception) {
                             // エラーハンドリング
                         } finally {
