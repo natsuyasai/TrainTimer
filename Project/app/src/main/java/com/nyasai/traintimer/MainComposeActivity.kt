@@ -115,7 +115,7 @@ fun TrainTimerNavigation(
         composable("route_info/{parentDataId}") { backStackEntry ->
             val parentDataId = backStackEntry.arguments?.getString("parentDataId")?.toLongOrNull() ?: 0L
             
-            val routeInfoViewModel = remember {
+            val routeInfoViewModel = remember(parentDataId) {
                 val application = (context as ComponentActivity).application
                 ViewModelProvider(
                     context,

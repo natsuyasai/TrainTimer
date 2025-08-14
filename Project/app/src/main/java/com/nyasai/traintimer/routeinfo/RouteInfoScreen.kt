@@ -88,17 +88,17 @@ fun RouteInfoScreen(
     
     // 表示リストの更新ロジック（データが変更されたときに実行）
     LaunchedEffect(currentDiagramType, routeItems, filterInfo) {
-        if (routeItems.isNotEmpty()) { // データがある場合のみ更新
-            displayRouteDetails.clear()
-            displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
-            // キャッシュクリアのためfalseを指定
-            routeInfoViewModel.updateCurrentCountItem(false)
-        }
+        // キャッシュをクリアして最新データを取得
+        routeInfoViewModel.clearDisplayCache()
+        displayRouteDetails.clear()
+        displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
+        routeInfoViewModel.updateCurrentCountItem(false)
     }
     
-    // 強制的な初期データロード（LiveDataが初期化されてから）
-    LaunchedEffect(routeItems) {
-        if (routeItems.isNotEmpty() && displayRouteDetails.isEmpty()) {
+    // 強制的な初期データロード（parentDataIdが変更されたとき）
+    LaunchedEffect(parentDataId, routeItems) {
+        if (routeItems.isNotEmpty()) {
+            routeInfoViewModel.clearDisplayCache()
             displayRouteDetails.clear()
             displayRouteDetails.addAll(routeInfoViewModel.getDisplayRouteDetailItems(false))
         }
@@ -229,6 +229,12 @@ fun RouteInfoScreen(
                             )
                             Text(
                                 text = "現在のダイヤ: ${currentDiagramType}",
+                                color = colorResource(id = R.color.textGray),
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                text = "親データID: ${parentDataId}",
                                 color = colorResource(id = R.color.textGray),
                                 textAlign = TextAlign.Center,
                                 fontSize = 12.sp

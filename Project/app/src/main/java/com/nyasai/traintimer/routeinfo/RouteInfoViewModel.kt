@@ -88,8 +88,17 @@ class RouteInfoViewModel(
      */
     fun setNextDiagramType() {
         _currentDiagramType.value = _diagramTypeModel.getNextDiagramType(_currentDiagramType.value)
+        // 表示キャッシュをクリア
+        clearDisplayCache()
         // タイマ表示用に対象データを更新しておく
         updateCurrentCountItem()
+    }
+    
+    /**
+     * 表示キャッシュクリア
+     */
+    fun clearDisplayCache() {
+        _displayRouteDetailItemCache = null
     }
 
     /**

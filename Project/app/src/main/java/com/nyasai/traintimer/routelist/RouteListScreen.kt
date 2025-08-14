@@ -80,7 +80,7 @@ fun RouteListScreen(
                             routeListViewModel.switchManualSortMode()
                         }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_add_24px),
+                                painter = painterResource(id = R.drawable.ic_sort_24px),
                                 contentDescription = "手動ソート"
                             )
                         }
