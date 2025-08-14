@@ -1,11 +1,18 @@
 package com.nyasai.traintimer.setting
 
+import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,9 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
+import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.datamigration.DataExport
 import com.nyasai.traintimer.datamigration.DataImport
+import com.nyasai.traintimer.datamigration.writeLine
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 設定画面のComposeスクリーン
@@ -39,10 +50,65 @@ fun PreferenceScreen(
     // ViewModelインスタンス
     val appInfoViewModel: AppInfoViewModel = viewModel()
     
-    // データエクスポート/インポート（簡略化実装）
+    // データベースアクセス
+    val database = RouteDatabase.getInstance(context).routeDatabaseDao
+    
+    // データエクスポート/インポート
     val dataExport = remember { DataExport() }
-    // Note: Compose環境では Activity Result Contract を使用するため
-    // 完全な実装にはActivity側での対応が必要
+    val dataImport = remember { DataImport(database) }
+    
+    // ファイル作成用ランチャー（バックアップ）
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                scope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                                val allRouteListItems = database.getAllRouteListItemsSync()
+                                val allRouteDetailItems = database.getAllRouteDetailItemsSync()
+                                val allFilterInfoItems = database.getAllFilterInfoItemSync()
+                                
+                                dataExport.export(
+                                    outputStream,
+                                    allRouteListItems,
+                                    allRouteDetailItems,
+                                    allFilterInfoItems
+                                )
+                            }
+                        }
+                        Toast.makeText(context, "バックアップが完了しました", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "バックアップに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+    
+    // ファイル選択用ランチャー（リストア）
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                scope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                                dataImport.import(inputStream)
+                            }
+                        }
+                        Toast.makeText(context, "リストアが完了しました", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "リストアに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
     
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -78,15 +144,12 @@ fun PreferenceScreen(
                     PreferenceCard(
                         title = "バックアップ",
                         description = "データをエクスポート",
-                        icon = Icons.Default.Share,
+                        icon = Icons.Default.Backup,
                         onClick = {
-                            scope.launch {
-                                try {
-                                    // TODO: バックアップ処理の実装
-                                    // dataExport.launchFolderSelector(exportLauncher)
-                                } catch (e: Exception) {
-                                    // エラーハンドリング
-                                }
+                            try {
+                                dataExport.launchFolderSelector(exportLauncher)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "バックアップ開始に失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
                             }
                         }
                     )
@@ -96,15 +159,12 @@ fun PreferenceScreen(
                     PreferenceCard(
                         title = "リストア",
                         description = "データをインポート",
-                        icon = Icons.Default.Search,
+                        icon = Icons.Default.Restore,
                         onClick = {
-                            scope.launch {
-                                try {
-                                    // TODO: リストア処理の実装
-                                    // dataImport?.launchFileSelector(importLauncher)
-                                } catch (e: Exception) {
-                                    // エラーハンドリング
-                                }
+                            try {
+                                dataImport.launchFileSelector(importLauncher)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "リストア開始に失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
                             }
                         }
                     )
@@ -144,8 +204,7 @@ private fun PreferenceCard(
         onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = R.color.colorNormalBackground)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        )
     ) {
         Row(
             modifier = Modifier
