@@ -109,6 +109,14 @@ class RouteInfoViewModel(
     }
 
     /**
+     * カウントダウン対象アイテムを手動で設定
+     * @param routeDetail 設定する路線詳細アイテム
+     */
+    fun setCurrentCountItem(routeDetail: RouteDetail) {
+        _currentCountItem.value = routeDetail
+    }
+
+    /**
      * 表示用路線詳細アイテム取得
      */
     fun getDisplayRouteDetailItems(useCache: Boolean = false): List<RouteDetail> {

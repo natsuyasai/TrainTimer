@@ -1,5 +1,6 @@
 package com.nyasai.traintimer.routeinfo
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -26,6 +27,8 @@ import java.time.format.DateTimeParseException
 @Composable
 fun RouteInfoItemCompose(
     routeDetail: RouteDetail,
+    isSelected: Boolean = false,
+    onItemClick: ((RouteDetail) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isPastTime = isPastTime(routeDetail)
@@ -34,9 +37,20 @@ fun RouteInfoItemCompose(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 0.dp)
-            .let { if (isPastTime) it.alpha(0.5f) else it },
+            .let { if (isPastTime) it.alpha(0.5f) else it }
+            .let { 
+                if (onItemClick != null) {
+                    it.clickable { onItemClick(routeDetail) }
+                } else {
+                    it
+                }
+            },
         colors = CardDefaults.cardColors(
-            containerColor = colorResource(id = R.color.colorNormalBackground)
+            containerColor = if (isSelected) {
+                colorResource(id = R.color.colorSortBackground)
+            } else {
+                colorResource(id = R.color.colorNormalBackground)
+            }
         ),
     ) {
         Row(
@@ -143,7 +157,14 @@ private fun RouteInfoItemComposePreview() {
         destination = "新宿方面"
     }
     
-    RouteInfoItemCompose(
-        routeDetail = sampleRouteDetail
-    )
+    Column {
+        RouteInfoItemCompose(
+            routeDetail = sampleRouteDetail,
+            isSelected = false
+        )
+        RouteInfoItemCompose(
+            routeDetail = sampleRouteDetail,
+            isSelected = true
+        )
+    }
 }

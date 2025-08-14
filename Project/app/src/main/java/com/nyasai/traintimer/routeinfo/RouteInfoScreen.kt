@@ -125,6 +125,7 @@ fun RouteInfoScreen(
         }
     }
     
+    
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -276,6 +277,10 @@ fun RouteInfoScreen(
                         itemsIndexed(displayRouteDetails) { index, routeDetail ->
                             RouteInfoItemCompose(
                                 routeDetail = routeDetail,
+                                isSelected = routeDetail.dataId == currentCountItem?.dataId,
+                                onItemClick = { selectedRouteDetail ->
+                                    routeInfoViewModel.setCurrentCountItem(selectedRouteDetail)
+                                },
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
