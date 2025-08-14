@@ -3,6 +3,8 @@ package com.nyasai.traintimer.routelist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,6 +32,7 @@ import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routesearch.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -65,10 +68,22 @@ fun RouteListScreen(
     var destinationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var currentStationName by remember { mutableStateOf("") }
     
-    // ドラッグ&ドロップ状態
-    var draggedItem by remember { mutableStateOf<RouteListItem?>(null) }
-    var draggedIndex by remember { mutableStateOf(-1) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    // ドラッグ&ドロップ状態（AndroidX公式デモに基づくアプローチ）
+    var isDragging by remember { mutableStateOf(false) }
+    var draggedDistance by remember { mutableStateOf(0f) }
+    var initialDraggedIndex by remember { mutableStateOf<Int?>(null) }
+    var currentDragOverIndex by remember { mutableStateOf<Int?>(null) }
+    val listState = rememberLazyListState()
+    
+    // ローカル状態でリストを管理
+    var localRouteList by remember { mutableStateOf(routeList) }
+    
+    // routeListが変更されたときにローカル状態を同期
+    LaunchedEffect(routeList) {
+        if (!isDragging) {
+            localRouteList = routeList
+        }
+    }
     
     // ViewModelインスタンス
     val searchTargetInputViewModel: SearchTargetInputViewModel = viewModel()
@@ -114,71 +129,103 @@ fun RouteListScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .background(colorResource(id = R.color.colorNormalBackground)),
-                state = rememberLazyListState()
-            ) {
-                itemsIndexed(routeList) { index, item ->
-                    val isDragged = draggedItem == item
-                    val itemModifier = if (isEditMode) {
-                        Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (isDragged) {
-                                    Modifier
-                                        .zIndex(1f)
-                                        .graphicsLayer {
-                                            translationX = dragOffset.x
-                                            translationY = dragOffset.y
+                    .background(colorResource(id = R.color.colorNormalBackground))
+                    .pointerInput(Unit) {
+                        if (isEditMode) {
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    listState.layoutInfo.visibleItemsInfo
+                                        .firstOrNull { item ->
+                                            offset.y.toInt() in item.offset..(item.offset + item.size)
+                                        }?.also { itemInfo ->
+                                            isDragging = true
+                                            initialDraggedIndex = itemInfo.index
+                                            currentDragOverIndex = itemInfo.index
+                                            draggedDistance = 0f
                                         }
-                                        .shadow(8.dp)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                            .pointerInput(item.dataId) {
-                                detectDragGestures(
-                                    onDragStart = { offset ->
-                                        draggedItem = item
-                                        draggedIndex = index
-                                        dragOffset = Offset.Zero
-                                    },
-                                    onDragEnd = {
-                                        // ドラッグ終了時の処理
-                                        draggedItem?.let { draggedRouteItem ->
-                                            val currentIndex = routeList.indexOf(draggedRouteItem)
-                                            val targetIndex = calculateTargetIndex(dragOffset.y, routeList.size, currentIndex)
-                                            
-                                            if (currentIndex != targetIndex && targetIndex >= 0 && targetIndex < routeList.size) {
-                                                routeListViewModel.updateSortIndex(currentIndex, targetIndex)
+                                },
+                                onDragEnd = {
+                                    // 並び替え処理の実行
+                                    initialDraggedIndex?.let { fromIndex ->
+                                        currentDragOverIndex?.let { toIndex ->
+                                            if (fromIndex != toIndex) {
+                                                // ローカルリストの並び替え
+                                                val mutableList = localRouteList.toMutableList()
+                                                val draggedItem = mutableList.removeAt(fromIndex)
+                                                mutableList.add(toIndex, draggedItem)
+                                                localRouteList = mutableList
+                                                
+                                                // ViewModelに変更を通知
+                                                routeListViewModel.updateSortIndex(fromIndex, toIndex)
                                             }
                                         }
-                                        
-                                        // 状態リセット
-                                        draggedItem = null
-                                        draggedIndex = -1
-                                        dragOffset = Offset.Zero
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        dragOffset += dragAmount
                                     }
-                                )
-                            }
-                            .clickable {
-                                if (!isEditMode) {
-                                    onRouteItemClick(item.dataId)
-                                } else {
-                                    // 手動ソートモードでは編集ダイアログを表示
-                                    selectedItem = item
-                                    showEditDialog = true
+                                    
+                                    // 状態リセット
+                                    draggedDistance = 0f
+                                    currentDragOverIndex = null
+                                    initialDraggedIndex = null
+                                    isDragging = false
+                                },
+                                onDrag = { _, dragAmount ->
+                                    draggedDistance += dragAmount.y
+                                    
+                                    // ドラッグ中のホバー対象を計算
+                                    initialDraggedIndex?.let { draggedIndex ->
+                                        val draggedItem = listState.layoutInfo.visibleItemsInfo
+                                            .firstOrNull { it.index == draggedIndex }
+                                        
+                                        draggedItem?.let { item ->
+                                            val draggedItemCenter = item.offset + item.size / 2 + draggedDistance
+                                            
+                                            val targetItem = listState.layoutInfo.visibleItemsInfo
+                                                .minByOrNull { targetItem ->
+                                                    kotlin.math.abs(
+                                                        (targetItem.offset + targetItem.size / 2) - draggedItemCenter
+                                                    )
+                                                }
+                                            
+                                            targetItem?.let { target ->
+                                                if (target.index != currentDragOverIndex) {
+                                                    currentDragOverIndex = target.index
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
+                            )
+                        }
+                    },
+                state = listState
+            ) {
+                itemsIndexed(localRouteList) { index, item ->
+                    val isBeingDragged = isDragging && initialDraggedIndex == index
+                    
+                    val itemModifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (isBeingDragged) {
+                                Modifier
+                                    .zIndex(1f)
+                                    .graphicsLayer {
+                                        translationY = draggedDistance
+                                        scaleX = 1.05f
+                                        scaleY = 1.05f
+                                    }
+                                    .shadow(8.dp)
+                            } else {
+                                Modifier
                             }
-                    } else {
-                        Modifier
-                            .fillMaxWidth()
-                            .clickable {
+                        )
+                        .clickable(enabled = !isDragging) {
+                            if (!isEditMode) {
                                 onRouteItemClick(item.dataId)
+                            } else {
+                                // 手動ソートモードでは編集ダイアログを表示
+                                selectedItem = item
+                                showEditDialog = true
                             }
-                    }
+                        }
                     
                     RouteListItemCompose(
                         routeListItem = item,
@@ -409,17 +456,3 @@ fun RouteListScreen(
     }
 }
 
-/**
- * ドラッグオフセットから移動先インデックスを計算
- */
-private fun calculateTargetIndex(dragOffsetY: Float, listSize: Int, currentIndex: Int): Int {
-    val itemHeight = 80 // 大体のアイテム高さ (dp -> px変換は概算)
-    val moveCount = (dragOffsetY / itemHeight).toInt()
-    val targetIndex = currentIndex + moveCount
-    
-    return when {
-        targetIndex < 0 -> 0
-        targetIndex >= listSize -> listSize - 1
-        else -> targetIndex
-    }
-}
