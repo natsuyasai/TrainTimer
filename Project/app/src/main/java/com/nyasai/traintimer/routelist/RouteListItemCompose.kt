@@ -1,10 +1,12 @@
 package com.nyasai.traintimer.routelist
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,14 +23,14 @@ fun RouteListItemCompose(
     routeListItem: RouteListItem,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    OutlinedCard (
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp, vertical = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = R.color.colorNormalBackground)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(width = 1.dp, color = Color.Black),
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(
