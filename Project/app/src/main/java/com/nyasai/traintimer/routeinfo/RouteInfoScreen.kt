@@ -24,7 +24,9 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
 import java.util.*
@@ -288,7 +290,14 @@ fun RouteInfoScreen(
                 onClickPositiveButtonCallback = {
                     scope.launch {
                         try {
-                            routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
+                            // IOディスパッチャーでデータベース更新を実行
+                            withContext(Dispatchers.IO) {
+                                routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
+                            }
+                            // ViewModelのキャッシュをクリア
+                            routeInfoViewModel.clearDisplayCache()
+                            // 少し遅延を入れてからUIを更新（データベース更新の完了を確実にするため）
+                            kotlinx.coroutines.delay(100)
                             // フィルター更新トリガーを増加させてLaunchedEffectを実行
                             filterUpdateTrigger++
                         } catch (e: Exception) {
