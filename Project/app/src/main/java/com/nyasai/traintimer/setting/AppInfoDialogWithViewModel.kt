@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
@@ -86,5 +87,17 @@ fun AppInfoDialogWithViewModel(
             viewModel.onCloseButtonClick()
         },
         onDismiss = onDismiss
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AppInfoDialogPreview() {
+    AppInfoDialog(
+        isVisible = true,
+        appTitle = "TrainTimer v1.0.0",
+        twitterInfo = "開発者: @developer\nお問い合わせやご意見をお待ちしております。",
+        onClose = {},
+        onDismiss = {}
     )
 }

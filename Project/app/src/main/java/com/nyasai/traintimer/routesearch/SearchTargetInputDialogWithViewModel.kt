@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
@@ -114,5 +115,18 @@ fun SearchTargetInputDialogWithViewModel(
             viewModel.clearUIData()
         },
         onDismiss = onDismiss
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SearchTargetInputDialogPreview() {
+    SearchTargetInputDialog(
+        isVisible = true,
+        stationName = "新宿",
+        onStationNameChange = {},
+        onPositiveClick = {},
+        onNegativeClick = {},
+        onDismiss = {}
     )
 }

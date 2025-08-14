@@ -38,23 +38,50 @@ open class DataImport(private val _routeDatabaseDao: RouteDatabaseDao) {
     fun import(inputStream: InputStream) {
         dataState = DataState.INIT
         try {
-            _routeDatabaseDao.clearAllFilterInfo()
-            _routeDatabaseDao.clearAllRouteDetailItem()
-            _routeDatabaseDao.clearAllRouteListItem()
-            inputStream.bufferedReader().use { reader ->
-                if (!isEnableVersion(reader.readLine())) {
-                    return@use
-                }
-                reader.forEachLine { line ->
-                    setDataState(line)
-                    importCore(line)
-                }
-            }
+            clearExistingData()
+            processImportFile(inputStream)
         } catch (e: Exception) {
             Log.e("Exception", e.toString())
             throw e
         } finally {
             dataState = DataState.INIT
+        }
+    }
+
+    /**
+     * 既存データのクリア
+     */
+    private fun clearExistingData() {
+        _routeDatabaseDao.clearAllFilterInfo()
+        _routeDatabaseDao.clearAllRouteDetailItem()
+        _routeDatabaseDao.clearAllRouteListItem()
+    }
+
+    /**
+     * インポートファイルの処理
+     */
+    private fun processImportFile(inputStream: InputStream) {
+        inputStream.bufferedReader().use { reader ->
+            if (!isValidVersion(reader)) return@use
+            processDataLines(reader)
+        }
+    }
+
+    /**
+     * バージョンの検証
+     */
+    private fun isValidVersion(reader: java.io.BufferedReader): Boolean {
+        val versionLine = reader.readLine()
+        return isEnableVersion(versionLine)
+    }
+
+    /**
+     * データ行の処理
+     */
+    private fun processDataLines(reader: java.io.BufferedReader) {
+        reader.forEachLine { line ->
+            setDataState(line)
+            importCore(line)
         }
     }
 
@@ -121,53 +148,71 @@ open class DataImport(private val _routeDatabaseDao: RouteDatabaseDao) {
      * 路線一覧データインポート
      */
     private fun importRouteListData(line: String) {
+        val routeListItem = parseRouteListItem(line)
+        routeListItem?.let { _routeDatabaseDao.insertRouteListItem(it) }
+    }
+
+    /**
+     * 路線リストアイテムの解析
+     */
+    private fun parseRouteListItem(line: String): RouteListItem? {
         val splitData = line.split(DataMigrationDefine.DELIMITER)
-        if (splitData.size < RouteListItem.DataSize) {
-            return
-        }
-        val insertData = RouteListItem(
-            splitData[0].toLong(),
-            splitData[1],
-            splitData[2],
-            splitData[3],
-            splitData[4].toLong()
-        )
-        _routeDatabaseDao.insertRouteListItem(insertData)
+        return if (splitData.size >= RouteListItem.DataSize) {
+            RouteListItem(
+                splitData[0].toLong(),
+                splitData[1],
+                splitData[2],
+                splitData[3],
+                splitData[4].toLong()
+            )
+        } else null
     }
 
     /**
      * 路線詳細情報データインポート
      */
     private fun importRouteDetailData(line: String) {
+        val routeDetail = parseRouteDetailItem(line)
+        routeDetail?.let { _routeDatabaseDao.insertRouteDetailItem(it) }
+    }
+
+    /**
+     * 路線詳細アイテムの解析
+     */
+    private fun parseRouteDetailItem(line: String): RouteDetail? {
         val splitData = line.split(DataMigrationDefine.DELIMITER)
-        if (splitData.size < RouteDetail.DataSize) {
-            return
-        }
-        val insertData = RouteDetail(
-            splitData[0].toLong(),
-            splitData[1].toLong(),
-            splitData[2].toInt(),
-            splitData[3],
-            splitData[4],
-            splitData[5]
-        )
-        _routeDatabaseDao.insertRouteDetailItem(insertData)
+        return if (splitData.size >= RouteDetail.DataSize) {
+            RouteDetail(
+                splitData[0].toLong(),
+                splitData[1].toLong(),
+                splitData[2].toInt(),
+                splitData[3],
+                splitData[4],
+                splitData[5]
+            )
+        } else null
     }
 
     /**
      * フィルター情報インポート
      */
     private fun importFilterInfoData(line: String) {
+        val filterInfo = parseFilterInfoItem(line)
+        filterInfo?.let { _routeDatabaseDao.insertFilterInfoItem(it) }
+    }
+
+    /**
+     * フィルター情報アイテムの解析
+     */
+    private fun parseFilterInfoItem(line: String): FilterInfo? {
         val splitData = line.split(DataMigrationDefine.DELIMITER)
-        if (splitData.size < FilterInfo.DataSize) {
-            return
-        }
-        val insertData = FilterInfo(
-            splitData[0].toLong(),
-            splitData[1].toLong(),
-            splitData[2],
-            splitData[3].toBoolean()
-        )
-        _routeDatabaseDao.insertFilterInfoItem(insertData)
+        return if (splitData.size >= FilterInfo.DataSize) {
+            FilterInfo(
+                splitData[0].toLong(),
+                splitData[1].toLong(),
+                splitData[2],
+                splitData[3].toBoolean()
+            )
+        } else null
     }
 }

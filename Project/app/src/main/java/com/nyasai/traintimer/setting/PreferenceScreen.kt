@@ -61,53 +61,14 @@ fun PreferenceScreen(
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                scope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                                val allRouteListItems = database.getAllRouteListItemsSync()
-                                val allRouteDetailItems = database.getAllRouteDetailItemsSync()
-                                val allFilterInfoItems = database.getAllFilterInfoItemSync()
-                                
-                                dataExport.export(
-                                    outputStream,
-                                    allRouteListItems,
-                                    allRouteDetailItems,
-                                    allFilterInfoItems
-                                )
-                            }
-                        }
-                        Toast.makeText(context, "バックアップが完了しました", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "バックアップに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        }
+        handleExportResult(result, scope, context, database, dataExport)
     }
     
     // ファイル選択用ランチャー（リストア）
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                scope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                                dataImport.import(inputStream)
-                            }
-                        }
-                        Toast.makeText(context, "リストアが完了しました", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "リストアに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        }
+        handleImportResult(result, scope, context, dataImport)
     }
     
     Box(modifier = modifier.fillMaxSize()) {
@@ -235,6 +196,93 @@ private fun PreferenceCard(
                     fontSize = 14.sp
                 )
             }
+        }
+    }
+}
+
+/**
+ * エクスポート結果の処理
+ */
+private fun handleExportResult(
+    result: androidx.activity.result.ActivityResult,
+    scope: kotlinx.coroutines.CoroutineScope,
+    context: android.content.Context,
+    database: com.nyasai.traintimer.database.RouteDatabaseDao,
+    dataExport: DataExport
+) {
+    if (result.resultCode == android.app.Activity.RESULT_OK) {
+        result.data?.data?.let { uri ->
+            scope.launch {
+                try {
+                    performDataExport(context, uri, database, dataExport)
+                    Toast.makeText(context, "バックアップが完了しました", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "バックアップに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+}
+
+/**
+ * データエクスポートの実行
+ */
+private suspend fun performDataExport(
+    context: android.content.Context,
+    uri: android.net.Uri,
+    database: com.nyasai.traintimer.database.RouteDatabaseDao,
+    dataExport: DataExport
+) {
+    withContext(Dispatchers.IO) {
+        context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+            val allRouteListItems = database.getAllRouteListItemsSync()
+            val allRouteDetailItems = database.getAllRouteDetailItemsSync()
+            val allFilterInfoItems = database.getAllFilterInfoItemSync()
+            
+            dataExport.export(
+                outputStream,
+                allRouteListItems,
+                allRouteDetailItems,
+                allFilterInfoItems
+            )
+        }
+    }
+}
+
+/**
+ * インポート結果の処理
+ */
+private fun handleImportResult(
+    result: androidx.activity.result.ActivityResult,
+    scope: kotlinx.coroutines.CoroutineScope,
+    context: android.content.Context,
+    dataImport: DataImport
+) {
+    if (result.resultCode == android.app.Activity.RESULT_OK) {
+        result.data?.data?.let { uri ->
+            scope.launch {
+                try {
+                    performDataImport(context, uri, dataImport)
+                    Toast.makeText(context, "リストアが完了しました", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "リストアに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+}
+
+/**
+ * データインポートの実行
+ */
+private suspend fun performDataImport(
+    context: android.content.Context,
+    uri: android.net.Uri,
+    dataImport: DataImport
+) {
+    withContext(Dispatchers.IO) {
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            dataImport.import(inputStream)
         }
     }
 }

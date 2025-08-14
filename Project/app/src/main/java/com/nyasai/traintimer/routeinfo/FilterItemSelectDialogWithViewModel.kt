@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
@@ -124,5 +125,39 @@ fun FilterItemSelectDialogWithViewModel(
             viewModel.onNegativeButtonClick()
         },
         onDismiss = onDismiss
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FilterItemSelectDialogPreview() {
+    val sampleFilterItems = listOf(
+        FilterInfo().apply {
+            dataId = 1
+            parentDataId = 1
+            trainTypeAndDestination = "快速 新宿方面"
+            isShow = true
+        },
+        FilterInfo().apply {
+            dataId = 2
+            parentDataId = 1
+            trainTypeAndDestination = "普通 立川方面"
+            isShow = false
+        },
+        FilterInfo().apply {
+            dataId = 3
+            parentDataId = 1
+            trainTypeAndDestination = "特急 高尾方面"
+            isShow = true
+        }
+    )
+    
+    FilterItemSelectDialog(
+        isVisible = true,
+        filterItems = sampleFilterItems,
+        onItemToggle = {},
+        onPositiveClick = {},
+        onNegativeClick = {},
+        onDismiss = {}
     )
 }

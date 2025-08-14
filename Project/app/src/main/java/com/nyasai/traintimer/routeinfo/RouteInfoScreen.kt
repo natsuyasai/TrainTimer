@@ -97,23 +97,12 @@ fun RouteInfoScreen(
     
     // 表示リストの更新ロジック（データが変更されたときに実行）
     LaunchedEffect(currentDiagramType, routeItems, filterInfo, filterUpdateTrigger) {
-        // データが存在する場合のみ処理
-        if (routeItems.isNotEmpty()) {
-            // キャッシュをクリアして最新データを取得
-            routeInfoViewModel.clearDisplayCache()
-            val newDisplayItems = routeInfoViewModel.getDisplayRouteDetailItems(false)
-            displayRouteDetails.clear()
-            displayRouteDetails.addAll(newDisplayItems)
-            routeInfoViewModel.updateCurrentCountItem(false)
-            
-            // 自動スクロール処理
-            if (displayRouteDetails.isNotEmpty()) {
-                val nextTrainIndex = findNextTrainIndex(displayRouteDetails)
-                if (nextTrainIndex >= 0) {
-                    listState.animateScrollToItem(nextTrainIndex)
-                }
-            }
-        }
+        updateDisplayRouteDetails(
+            routeItems,
+            routeInfoViewModel,
+            displayRouteDetails,
+            listState
+        )
     }
     
     // 強制的な初期データロード（parentDataIdが変更されたとき）
@@ -363,5 +352,49 @@ private fun buildNextTimeInfo(countItem: RouteDetail): String {
         append("${countItem.departureTime ?: "--:--"}\n")
         append("${countItem.trainType ?: "--"}\n")
         append("${countItem.destination ?: "--"}")
+    }
+}
+
+/**
+ * 表示用路線詳細の更新処理
+ */
+private suspend fun updateDisplayRouteDetails(
+    routeItems: List<RouteDetail>,
+    viewModel: RouteInfoViewModel,
+    displayRouteDetails: androidx.compose.runtime.snapshots.SnapshotStateList<RouteDetail>,
+    listState: androidx.compose.foundation.lazy.LazyListState
+) {
+    if (routeItems.isNotEmpty()) {
+        refreshDisplayRouteDetails(viewModel, displayRouteDetails)
+        performAutoScroll(displayRouteDetails, listState)
+    }
+}
+
+/**
+ * 表示リストの更新
+ */
+private fun refreshDisplayRouteDetails(
+    viewModel: RouteInfoViewModel,
+    displayRouteDetails: androidx.compose.runtime.snapshots.SnapshotStateList<RouteDetail>
+) {
+    viewModel.clearDisplayCache()
+    val newDisplayItems = viewModel.getDisplayRouteDetailItems(false)
+    displayRouteDetails.clear()
+    displayRouteDetails.addAll(newDisplayItems)
+    viewModel.updateCurrentCountItem(false)
+}
+
+/**
+ * 自動スクロール処理
+ */
+private suspend fun performAutoScroll(
+    displayRouteDetails: List<RouteDetail>,
+    listState: androidx.compose.foundation.lazy.LazyListState
+) {
+    if (displayRouteDetails.isNotEmpty()) {
+        val nextTrainIndex = findNextTrainIndex(displayRouteDetails)
+        if (nextTrainIndex >= 0) {
+            listState.animateScrollToItem(nextTrainIndex)
+        }
     }
 }

@@ -10,12 +10,6 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!-- Fragment版（元の実装） -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false">
-        </activity>
-        
         <!-- Compose版（新しい実装） -->
         <activity
             android:name=".MainComposeActivity"

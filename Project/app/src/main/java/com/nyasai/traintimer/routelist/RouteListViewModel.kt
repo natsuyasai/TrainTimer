@@ -194,44 +194,76 @@ class RouteListViewModel(
         notifyMaxCountCallback: ((Int) -> Unit),
         notifyCountCallback: (() -> Unit)
     ): Boolean {
-        // 路線アイテム情報に一致する情報を取得する
+        val destinationListMap = getDestinationListForItem(item) ?: return false
+        val destinationKey = createDestinationKey(item)
+        
+        if (!destinationListMap.containsKey(destinationKey)) {
+            return false
+        }
+        
+        val routeInfo = fetchRouteInfo(destinationListMap, destinationKey, notifyMaxCountCallback, notifyCountCallback)
+        if (!isValidRouteInfo(routeInfo)) {
+            return false
+        }
+        
+        updateRouteData(item, routeInfo)
+        return true
+    }
+
+    /**
+     * アイテムに対応する目的地リストマップを取得
+     */
+    private suspend fun getDestinationListForItem(item: RouteListItem): Map<String, String>? {
         val stationListMap = _yahooRouteInfoGetter.getStationList(item.stationName)
-        val destinationListMap: Map<String, String> = if (stationListMap?.isNotEmpty() == true) {
-            if (stationListMap.containsKey(item.stationName)) {
-                _yahooRouteInfoGetter.getDestinationFromUrl(stationListMap.getValue(item.stationName))
-            } else {
-                mapOf()
-            }
+        
+        return if (stationListMap?.isNotEmpty() == true && stationListMap.containsKey(item.stationName)) {
+            _yahooRouteInfoGetter.getDestinationFromUrl(stationListMap.getValue(item.stationName))
         } else {
             _yahooRouteInfoGetter.getDestinationFromStationName(item.stationName)
         }
-        val destinationKey =
-            item.routeName + YahooRouteInfoGetter.KeyDelimiterSir + item.destination
-        if (!destinationListMap.containsKey(destinationKey)) {
-            // キーが見つからない
-            return false
-        }
-        val routeInfo =
-            _yahooRouteInfoGetter.getTimeTableInfo(
-                destinationListMap.getValue(destinationKey),
-                notifyMaxCountCallback,
-                notifyCountCallback
-            )
-        if (routeInfo.isEmpty()
-            || (routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isEmpty()
-                    || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isEmpty()
-                    || routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isEmpty())
-        ) {
-            return false
-        }
-        // 既にある路線アイテムを全消去
+    }
+
+    /**
+     * 目的地キーを作成
+     */
+    private fun createDestinationKey(item: RouteListItem): String {
+        return item.routeName + YahooRouteInfoGetter.KeyDelimiterSir + item.destination
+    }
+
+    /**
+     * 路線情報を取得
+     */
+    private suspend fun fetchRouteInfo(
+        destinationListMap: Map<String, String>,
+        destinationKey: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): List<List<YahooRouteInfoGetter.TimeInfo>> {
+        return _yahooRouteInfoGetter.getTimeTableInfo(
+            destinationListMap.getValue(destinationKey),
+            notifyMaxCountCallback,
+            notifyCountCallback
+        )
+    }
+
+    /**
+     * 路線情報が有効かチェック
+     */
+    private fun isValidRouteInfo(routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>): Boolean {
+        return routeInfo.isNotEmpty() &&
+                routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Weekday.ordinal].isNotEmpty() &&
+                routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Saturday.ordinal].isNotEmpty() &&
+                routeInfo[YahooRouteInfoGetter.Companion.DiagramType.Holiday.ordinal].isNotEmpty()
+    }
+
+    /**
+     * 路線データを更新
+     */
+    private fun updateRouteData(item: RouteListItem, routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>) {
         database.deleteRouteDetailItemWithParentId(item.dataId)
-        // 登録
         val registerItem = createRegisterRouteInfoDetailItemsAndFilterInfo(routeInfo, item.dataId)
         insertRouteDetailItems(registerItem.first)
         database.updateFilterInfoListItem(registerItem.second.distinctBy { it.trainTypeAndDestination })
-
-        return true
     }
 
     /**
@@ -262,45 +294,6 @@ class RouteListViewModel(
         launch(coroutineContext) {
             database.updateRouteListItems(routeListItems)
         }
-
-//        var needBreak = false
-//        for ((index, item) in routeList.value!!.withIndex()) {
-//            if (index.toLong() < from && index.toLong() < to) {
-//                item.sortIndex = index.toLong()
-//                database.updateRouteListItem(item)
-//                continue
-//            }
-//
-//            if (from < to) {
-//                // 上から下へ移動
-//                if (index.toLong() == from) {
-//                    item.sortIndex = to
-//                    needBreak = true
-//                } else {
-//                    if ((index - 1).toLong() == to) {
-//                        item.sortIndex = (index - 2).toLong()
-//                    } else {
-//                        item.sortIndex = (index - 1).toLong()
-//                    }
-//                }
-//            } else {
-//                // 下から上へ移動
-//                if (index.toLong() == from) {
-//                    item.sortIndex = to
-//                    needBreak = true
-//                } else {
-//                    if ((index + 1).toLong() == to) {
-//                        item.sortIndex = (index + 2).toLong()
-//                    } else {
-//                        item.sortIndex = (index + 1).toLong()
-//                    }
-//                }
-//            }
-//            database.updateRouteListItem(item)
-//            if (needBreak) {
-//                break
-//            }
-//        }
     }
 
     fun switchEditMode() {

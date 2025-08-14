@@ -323,37 +323,70 @@ class YahooRouteInfoGetter : CoroutineScope {
      * @return 時刻情報
      */
     private fun getTimeInfo(timeInfoDetailUrl: String): TimeInfo? {
-        // データ取得
-        val timeInfo = TimeInfo()
         val document = getHTMLDocument(timeInfoDetailUrl) ?: return null
-
-        // 時刻情報部分取得
+        val timeInfo = TimeInfo()
+        
         val timeInfoRootElement = document.getElementById("mdDiaStopSta") ?: return timeInfo
-        val headerElements = timeInfoRootElement.select(".labelMedium > .title")
-        val detailElements = timeInfoRootElement.getElementsByClass("txtTrainInfo")
-        if (headerElements.size < 1 || detailElements.size < 1) {
-            return null
-        }
+        val (headerElements, detailElements) = extractTimeInfoElements(timeInfoRootElement) 
+            ?: return null
+        
         val headerTexts = headerElements[0].text().split("[ 　]".toRegex())
         val detailTexts = detailElements[0].text().split("[ 　]".toRegex())
 
-        // 文字列からTimeInfo生成
+        populateTimeInfo(timeInfo, headerTexts, detailTexts)
+        return timeInfo
+    }
+
+    /**
+     * 時刻情報要素の抽出
+     */
+    private fun extractTimeInfoElements(rootElement: org.jsoup.nodes.Element): Pair<org.jsoup.select.Elements, org.jsoup.select.Elements>? {
+        val headerElements = rootElement.select(".labelMedium > .title")
+        val detailElements = rootElement.getElementsByClass("txtTrainInfo")
+        
+        return if (headerElements.size >= 1 && detailElements.size >= 1) {
+            Pair(headerElements, detailElements)
+        } else null
+    }
+
+    /**
+     * TimeInfoオブジェクトに時刻情報を設定
+     */
+    private fun populateTimeInfo(timeInfo: TimeInfo, headerTexts: List<String>, detailTexts: List<String>) {
+        populateTimeAndType(timeInfo, detailTexts)
+        populateDestination(timeInfo, headerTexts)
+    }
+
+    /**
+     * 時刻と種別の設定
+     */
+    private fun populateTimeAndType(timeInfo: TimeInfo, detailTexts: List<String>) {
         if (detailTexts.size >= 5) {
-            // HH:MM形式に合わせるため，2文字目にコロンがあれば0追加
-            timeInfo.time = when {
-                (detailTexts[0].substring(1, 2) == ":") -> "0" + detailTexts[0]
-                else -> detailTexts[0]
-            }
+            timeInfo.time = formatTimeString(detailTexts[0])
             timeInfo.type = detailTexts[3]
         }
+    }
+
+    /**
+     * 時刻文字列のフォーマット
+     */
+    private fun formatTimeString(timeString: String): String {
+        return when {
+            timeString.length > 1 && timeString.substring(1, 2) == ":" -> "0$timeString"
+            else -> timeString
+        }
+    }
+
+    /**
+     * 行先の設定
+     */
+    private fun populateDestination(timeInfo: TimeInfo, headerTexts: List<String>) {
         if (headerTexts.size >= 3) {
             val splitText = headerTexts[1].split("→|行き".toRegex())
             if (splitText.size >= 2) {
                 timeInfo.destination = splitText[1]
             }
         }
-
-        return timeInfo
     }
 
     /**
@@ -365,15 +398,24 @@ class YahooRouteInfoGetter : CoroutineScope {
         var retryCount = 0
         do {
             tryWait()
-            val syncResponse = url.httpGet().response()
-            if (syncResponse.second.isSuccessful) {
-                return Jsoup.parse(String(syncResponse.second.data))
-            } else {
-                retryCount++
-                Thread.sleep(3000)
-            }
+            val result = attemptHttpRequest(url)
+            if (result != null) return result
+            retryCount++
         } while (retryCount <= 10)
         return null
+    }
+
+    /**
+     * HTTPリクエストを試行
+     */
+    private fun attemptHttpRequest(url: String): org.jsoup.nodes.Document? {
+        val syncResponse = url.httpGet().response()
+        return if (syncResponse.second.isSuccessful) {
+            Jsoup.parse(String(syncResponse.second.data))
+        } else {
+            Thread.sleep(3000)
+            null
+        }
     }
 
     /**

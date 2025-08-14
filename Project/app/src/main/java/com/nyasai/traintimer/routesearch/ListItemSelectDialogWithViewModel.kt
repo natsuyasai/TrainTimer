@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -141,5 +142,20 @@ fun ListItemSelectDialogWithViewModel(
             viewModel.onClickNegativeButtonCallback?.invoke()
         },
         onDismiss = onDismiss
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ListItemSelectDialogPreview() {
+    ListItemSelectDialog(
+        isVisible = true,
+        title = "路線を選択してください",
+        items = listOf("JR山手線", "JR中央線", "東京メトロ丸ノ内線", "都営新宿線"),
+        selectedItem = "JR山手線",
+        onItemSelect = {},
+        onPositiveClick = {},
+        onNegativeClick = {},
+        onDismiss = {}
     )
 }

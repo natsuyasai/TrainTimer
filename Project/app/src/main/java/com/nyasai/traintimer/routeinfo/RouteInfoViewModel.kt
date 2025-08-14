@@ -33,8 +33,8 @@ class RouteInfoViewModel(
     val routeItems = database.getRouteDetailItemsWithParentId(parentId)
 
     // 現在カウント中のアイテム
-    private var _currentCountItem: MutableLiveData<RouteDetail> = MutableLiveData()
-    var currentCountItem: LiveData<RouteDetail> = _currentCountItem
+    private var _currentCountItem: MutableLiveData<RouteDetail?> = MutableLiveData()
+    var currentCountItem: LiveData<RouteDetail?> = _currentCountItem
 
     // 現在の表示ダイア種別
     private var _currentDiagramType: MutableLiveData<YahooRouteInfoGetter.Companion.DiagramType> =
@@ -120,35 +120,71 @@ class RouteInfoViewModel(
      * 表示用路線詳細アイテム取得
      */
     fun getDisplayRouteDetailItems(useCache: Boolean = false): List<RouteDetail> {
-        if (useCache && _displayRouteDetailItemCache != null) {
+        if (shouldUseCachedItems(useCache)) {
             return _displayRouteDetailItemCache!!
         }
-        return if (routeItems.value == null) {
-            listOf()
-        } else {
-            val filter = routeItems.value?.filter { routeItem ->
-                // 表示中のダイア種別かつフィルタONのものだけ抽出
-                routeItem.diagramType == currentDiagramType.value?.ordinal
-                        && filterInfo.value?.any {
-                    it.trainTypeAndDestination == FilterInfo.createFilterKey(
-                        routeItem.trainType,
-                        routeItem.destination
-                    ) && it.isShow
-                } ?: true
-            }
-            // 時刻順ソート
-            _displayRouteDetailItemCache = filter?.sortedWith { v1, v2 ->
-                val correctedV1 = correctDepartureTimeForSort(v1.departureTime)
-                val correctedV2 = correctDepartureTimeForSort(v2.departureTime)
-                val diffHour = correctedV1.first - correctedV2.first
-                if (diffHour != 0) {
-                    diffHour
-                } else {
-                    correctedV1.second - correctedV2.second
-                }
-            }
-            _displayRouteDetailItemCache ?: listOf()
+        
+        val items = routeItems.value ?: return listOf()
+        val filteredItems = filterRouteItems(items)
+        val sortedItems = sortRouteItemsByTime(filteredItems)
+        
+        _displayRouteDetailItemCache = sortedItems
+        return sortedItems
+    }
+
+    /**
+     * キャッシュを使用するかどうかの判定
+     */
+    private fun shouldUseCachedItems(useCache: Boolean): Boolean {
+        return useCache && _displayRouteDetailItemCache != null
+    }
+
+    /**
+     * 路線アイテムのフィルタリング
+     */
+    private fun filterRouteItems(items: List<RouteDetail>): List<RouteDetail> {
+        return items.filter { routeItem ->
+            isCurrentDiagramType(routeItem) && isFilterEnabled(routeItem)
         }
+    }
+
+    /**
+     * 現在のダイア種別かどうかの判定
+     */
+    private fun isCurrentDiagramType(routeItem: RouteDetail): Boolean {
+        return routeItem.diagramType == currentDiagramType.value?.ordinal
+    }
+
+    /**
+     * フィルタが有効かどうかの判定
+     */
+    private fun isFilterEnabled(routeItem: RouteDetail): Boolean {
+        return filterInfo.value?.any { filterItem ->
+            filterItem.trainTypeAndDestination == FilterInfo.createFilterKey(
+                routeItem.trainType,
+                routeItem.destination
+            ) && filterItem.isShow
+        } ?: true
+    }
+
+    /**
+     * 時刻順ソート
+     */
+    private fun sortRouteItemsByTime(items: List<RouteDetail>): List<RouteDetail> {
+        return items.sortedWith { v1, v2 ->
+            compareRouteItemsByTime(v1, v2)
+        }
+    }
+
+    /**
+     * 路線アイテムの時刻比較
+     */
+    private fun compareRouteItemsByTime(item1: RouteDetail, item2: RouteDetail): Int {
+        val correctedTime1 = correctDepartureTimeForSort(item1.departureTime)
+        val correctedTime2 = correctDepartureTimeForSort(item2.departureTime)
+        
+        val hourDiff = correctedTime1.first - correctedTime2.first
+        return if (hourDiff != 0) hourDiff else correctedTime1.second - correctedTime2.second
     }
 
     /**

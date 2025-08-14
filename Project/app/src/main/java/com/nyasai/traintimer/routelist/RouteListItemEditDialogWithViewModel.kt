@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
@@ -129,5 +130,18 @@ fun RouteListItemEditDialogWithViewModel(
             viewModel.clearUIData()
         },
         onDismiss = onDismiss
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RouteListItemEditDialogPreview() {
+    RouteListItemEditDialog(
+        isVisible = true,
+        selectedEditType = RouteListItemEditViewModel.EditType.Update,
+        onEditTypeChange = {},
+        onPositiveClick = {},
+        onNegativeClick = {},
+        onDismiss = {}
     )
 }

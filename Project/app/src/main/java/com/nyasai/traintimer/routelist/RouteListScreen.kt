@@ -243,42 +243,19 @@ fun RouteListScreen(
     if (showSearchDialog) {
         // コールバックを事前に設定
         searchTargetInputViewModel.onClickPositiveButtonCallback = {
-            scope.launch {
-                showSearchDialog = false
-                commonLoadingViewModel.showLoading()
-                
-                try {
-                    val stationName = searchTargetInputViewModel.getStationName()
-                    currentStationName = stationName // 駅名を保存
-                    
-                    // IOディスパッチャーでネットワーク処理を実行
-                    val (stationListMap, destinationListMap) = withContext(Dispatchers.IO) {
-                        val stationList = routeListViewModel.getStationList(stationName)
-                        val destinationList = if (stationList?.isEmpty() != false) {
-                            routeListViewModel.getDestinationFromStationName(stationName)
-                        } else {
-                            emptyMap<String, String>()
-                        }
-                        Pair(stationList, destinationList)
-                    }
-                    
-                    if (stationListMap?.isNotEmpty() == true) {
-                        stationOptions = stationListMap
-                        listItemSelectViewModel.updateItems(stationListMap.keys.toList())
-                        showStationSelectDialog = true
-                    } else {
-                        destinationOptions = destinationListMap
-                        listItemSelectViewModel.updateItems(destinationListMap.keys.toList())
-                        showDestinationSelectDialog = true
-                    }
-                } catch (e: Exception) {
-                    // エラーハンドリング
-                } finally {
-                    commonLoadingViewModel.closeLoading()
-                    // 処理完了後にデータをクリア
-                    searchTargetInputViewModel.clearUIData()
-                }
-            }
+            handleSearchDialogPositiveClick(
+                scope,
+                searchTargetInputViewModel,
+                commonLoadingViewModel,
+                routeListViewModel,
+                listItemSelectViewModel,
+                { name -> currentStationName = name },
+                { options -> stationOptions = options },
+                { options -> destinationOptions = options },
+                { showSearchDialog = false },
+                { showStationSelectDialog = true },
+                { showDestinationSelectDialog = true }
+            )
         }
         searchTargetInputViewModel.onClickNegativeButtonCallback = {
             showSearchDialog = false
@@ -453,6 +430,91 @@ fun RouteListScreen(
             onDismiss = { showDeleteConfirmDialog = false },
             viewModel = routeListItemDeleteConfirmViewModel
         )
+    }
+}
+
+/**
+ * 検索ダイアログの肯定ボタンクリック処理
+ */
+private fun handleSearchDialogPositiveClick(
+    scope: kotlinx.coroutines.CoroutineScope,
+    searchViewModel: SearchTargetInputViewModel,
+    loadingViewModel: CommonLoadingViewModel,
+    routeListViewModel: RouteListViewModel,
+    listSelectViewModel: ListItemSelectViewModel,
+    setCurrentStationName: (String) -> Unit,
+    setStationOptions: (Map<String, String>) -> Unit,
+    setDestinationOptions: (Map<String, String>) -> Unit,
+    hideSearchDialog: () -> Unit,
+    showStationDialog: () -> Unit,
+    showDestinationDialog: () -> Unit
+) {
+    scope.launch {
+        hideSearchDialog()
+        loadingViewModel.showLoading()
+        
+        try {
+            val stationName = searchViewModel.getStationName()
+            setCurrentStationName(stationName)
+            
+            val (stationListMap, destinationListMap) = withContext(Dispatchers.IO) {
+                fetchStationAndDestinationData(routeListViewModel, stationName)
+            }
+            
+            handleSearchResults(
+                stationListMap,
+                destinationListMap,
+                listSelectViewModel,
+                setStationOptions,
+                setDestinationOptions,
+                showStationDialog,
+                showDestinationDialog
+            )
+        } catch (e: Exception) {
+            // エラーハンドリング
+        } finally {
+            loadingViewModel.closeLoading()
+            searchViewModel.clearUIData()
+        }
+    }
+}
+
+/**
+ * 駅と目的地データの取得
+ */
+private suspend fun fetchStationAndDestinationData(
+    routeListViewModel: RouteListViewModel,
+    stationName: String
+): Pair<Map<String, String>?, Map<String, String>> {
+    val stationList = routeListViewModel.getStationList(stationName)
+    val destinationList = if (stationList?.isEmpty() != false) {
+        routeListViewModel.getDestinationFromStationName(stationName)
+    } else {
+        emptyMap<String, String>()
+    }
+    return Pair(stationList, destinationList)
+}
+
+/**
+ * 検索結果の処理
+ */
+private fun handleSearchResults(
+    stationListMap: Map<String, String>?,
+    destinationListMap: Map<String, String>,
+    listSelectViewModel: ListItemSelectViewModel,
+    setStationOptions: (Map<String, String>) -> Unit,
+    setDestinationOptions: (Map<String, String>) -> Unit,
+    showStationDialog: () -> Unit,
+    showDestinationDialog: () -> Unit
+) {
+    if (stationListMap?.isNotEmpty() == true) {
+        setStationOptions(stationListMap)
+        listSelectViewModel.updateItems(stationListMap.keys.toList())
+        showStationDialog()
+    } else {
+        setDestinationOptions(destinationListMap)
+        listSelectViewModel.updateItems(destinationListMap.keys.toList())
+        showDestinationDialog()
     }
 }
 

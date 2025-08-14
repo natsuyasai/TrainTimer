@@ -37,25 +37,74 @@ open class DataExport {
         allFilterInfoItems: List<FilterInfo>
     ) {
         try {
-            outputStream.writeLine(DataMigrationDefine.DATA_VERSION_INFO)
-            outputStream.writeLine(DataMigrationDefine.ROUTE_LIST_DATA_START_WORD)
-            for (item in allRouteLists) {
-                outputStream.writeLine("${item.dataId}${DELIMITER}${item.routeName}${DELIMITER}${item.stationName}${DELIMITER}${item.destination}${DELIMITER}${item.sortIndex}")
-            }
-            outputStream.writeLine()
-            outputStream.writeLine(DataMigrationDefine.ROUTE_DETAIL_DATA_START_WORD)
-            for (item in allRouteDetailItems) {
-                outputStream.writeLine("${item.dataId}${DELIMITER}${item.parentDataId}${DELIMITER}${item.diagramType}${DELIMITER}${item.departureTime}${DELIMITER}${item.trainType}${DELIMITER}${item.destination}")
-            }
-            outputStream.writeLine()
-            outputStream.writeLine(DataMigrationDefine.FILTER_INFO_DATA_START_WORD)
-            for (item in allFilterInfoItems) {
-                outputStream.writeLine("${item.dataId}${DELIMITER}${item.parentDataId}${DELIMITER}${item.trainTypeAndDestination}${DELIMITER}${item.isShow}")
-            }
+            writeVersionInfo(outputStream)
+            writeRouteListData(outputStream, allRouteLists)
+            writeRouteDetailData(outputStream, allRouteDetailItems)
+            writeFilterInfoData(outputStream, allFilterInfoItems)
         } catch (e: Exception) {
             Log.e("Exception", e.toString())
             throw e
         }
+    }
+
+    /**
+     * バージョン情報を書き込み
+     */
+    private fun writeVersionInfo(outputStream: OutputStream) {
+        outputStream.writeLine(DataMigrationDefine.DATA_VERSION_INFO)
+    }
+
+    /**
+     * 路線リストデータを書き込み
+     */
+    private fun writeRouteListData(outputStream: OutputStream, routeLists: List<RouteListItem>) {
+        outputStream.writeLine(DataMigrationDefine.ROUTE_LIST_DATA_START_WORD)
+        routeLists.forEach { item ->
+            outputStream.writeLine(formatRouteListItem(item))
+        }
+        outputStream.writeLine()
+    }
+
+    /**
+     * 路線詳細データを書き込み
+     */
+    private fun writeRouteDetailData(outputStream: OutputStream, routeDetails: List<RouteDetail>) {
+        outputStream.writeLine(DataMigrationDefine.ROUTE_DETAIL_DATA_START_WORD)
+        routeDetails.forEach { item ->
+            outputStream.writeLine(formatRouteDetailItem(item))
+        }
+        outputStream.writeLine()
+    }
+
+    /**
+     * フィルタ情報データを書き込み
+     */
+    private fun writeFilterInfoData(outputStream: OutputStream, filterInfos: List<FilterInfo>) {
+        outputStream.writeLine(DataMigrationDefine.FILTER_INFO_DATA_START_WORD)
+        filterInfos.forEach { item ->
+            outputStream.writeLine(formatFilterInfoItem(item))
+        }
+    }
+
+    /**
+     * 路線リストアイテムのフォーマット
+     */
+    private fun formatRouteListItem(item: RouteListItem): String {
+        return "${item.dataId}${DELIMITER}${item.routeName}${DELIMITER}${item.stationName}${DELIMITER}${item.destination}${DELIMITER}${item.sortIndex}"
+    }
+
+    /**
+     * 路線詳細アイテムのフォーマット
+     */
+    private fun formatRouteDetailItem(item: RouteDetail): String {
+        return "${item.dataId}${DELIMITER}${item.parentDataId}${DELIMITER}${item.diagramType}${DELIMITER}${item.departureTime}${DELIMITER}${item.trainType}${DELIMITER}${item.destination}"
+    }
+
+    /**
+     * フィルタ情報アイテムのフォーマット
+     */
+    private fun formatFilterInfoItem(item: FilterInfo): String {
+        return "${item.dataId}${DELIMITER}${item.parentDataId}${DELIMITER}${item.trainTypeAndDestination}${DELIMITER}${item.isShow}"
     }
 
     protected open fun getIntent(filename: String): Intent {
