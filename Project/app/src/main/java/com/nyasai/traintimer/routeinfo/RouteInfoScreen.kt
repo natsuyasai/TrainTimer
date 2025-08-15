@@ -25,12 +25,7 @@ import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.time.LocalTime
-import java.time.format.DateTimeParseException
-import java.util.*
 
 /**
  * 路線詳細情報画面のComposeスクリーン
@@ -44,6 +39,12 @@ fun RouteInfoScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    
+    // マネージャクラスの初期化
+    val countdownManager = remember { CountdownManager() }
+    val routeDisplayManager = remember { RouteDisplayManager(countdownManager) }
+    val filterManager = remember { FilterManager() }
+    val interactionManager = remember { InteractionManager() }
     
     // ViewModelをFactoryを使って作成し、parentDataIdを渡す
     val database = RouteDatabase.getInstance(context).routeDatabaseDao
@@ -70,8 +71,8 @@ fun RouteInfoScreen(
         while (true) {
             currentCountItem?.let { countItem ->
                 val diffSeconds = routeInfoViewModel.getNextDiffTime()
-                countdownText = formatCountdownTime(diffSeconds)
-                nextTimeInfo = buildNextTimeInfo(countItem)
+                countdownText = countdownManager.formatCountdownTime(diffSeconds)
+                nextTimeInfo = countdownManager.buildNextTimeInfo(countItem)
             } ?: run {
                 countdownText = "--:--"
                 nextTimeInfo = ""
@@ -100,7 +101,7 @@ fun RouteInfoScreen(
     
     // 表示リストの更新ロジック（データが変更されたときに実行）
     LaunchedEffect(currentDiagramType, routeItems, filterInfo, filterUpdateTrigger) {
-        updateDisplayRouteDetails(
+        routeDisplayManager.updateDisplayRouteDetails(
             routeItems,
             routeInfoViewModel,
             displayRouteDetails,
@@ -130,7 +131,8 @@ fun RouteInfoScreen(
                     },
                     actions = {
                         IconButton(onClick = {
-                            handleFilterButtonClick(scope,
+                            filterManager.handleFilterButtonClick(
+                                scope,
                                 filterInfo,
                                 filterItemSelectViewModel,
                                 routeInfoViewModel
@@ -158,7 +160,7 @@ fun RouteInfoScreen(
                         routeListItem = route,
                         currentDiagramType = currentDiagramType,
                         onTitleClick = {
-                            handleTitleClick(
+                            interactionManager.handleTitleClick(
                                 routeInfoViewModel
                             ) { filterUpdateTrigger++ }
                         },
@@ -258,7 +260,7 @@ fun RouteInfoScreen(
                                 routeDetail = routeDetail,
                                 isSelected = routeDetail.dataId == currentCountItem?.dataId,
                                 onItemClick = { selectedRouteDetail ->
-                                    handleItemClick(routeInfoViewModel, selectedRouteDetail)
+                                    interactionManager.handleItemClick(routeInfoViewModel, selectedRouteDetail)
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -276,7 +278,7 @@ fun RouteInfoScreen(
             onDismiss = { showFilterDialog = false },
             viewModel = filterItemSelectViewModel.apply {
                 onClickPositiveButtonCallback = {
-                    handleFilterPositiveClick(
+                    filterManager.handleFilterPositiveClick(
                         scope,
                         routeInfoViewModel,
                         filterItemSelectViewModel,
@@ -285,205 +287,10 @@ fun RouteInfoScreen(
                     )
                 }
                 onClickNegativeButtonCallback = {
-                    handleFilterNegativeClick { showFilterDialog = false }
+                    filterManager.handleFilterNegativeClick { showFilterDialog = false }
                 }
             }
         )
     }
 }
 
-/**
- * 現在時刻より先で最も近い電車のインデックスを取得
- * 深夜0時～3時は24時～27時として扱う
- */
-private fun findNextTrainIndex(routeDetails: List<RouteDetail>): Int {
-    val now = LocalTime.now()
-    
-    // 現在時刻を分単位で計算（深夜0時～3時59分は24時～27時59分として扱う）
-    val nowMinutes = if (now.hour < 4) {
-        (now.hour + 24) * 60 + now.minute
-    } else {
-        now.hour * 60 + now.minute
-    }
-    
-    return routeDetails.indexOfFirst { routeDetail ->
-        try {
-            val departureTime = routeDetail.departureTime
-            if (departureTime.isNotEmpty()) {
-                val trainTime = LocalTime.parse(departureTime)
-                val trainMinutes = if (trainTime.hour < 4) {
-                    (trainTime.hour + 24) * 60 + trainTime.minute
-                } else {
-                    trainTime.hour * 60 + trainTime.minute
-                }
-                trainMinutes > nowMinutes
-            } else {
-                false
-            }
-        } catch (e: DateTimeParseException) {
-            false
-        }
-    }
-}
-
-/**
- * カウントダウン時間をMM:SS形式でフォーマット
- */
-private fun formatCountdownTime(diffSeconds: Long): String {
-    return when {
-        diffSeconds < 0 -> "--:--"
-        diffSeconds < 60 -> {
-            val seconds = diffSeconds % 60
-            "00:${String.format(Locale.JAPAN,"%02d", seconds)}"
-        }
-        else -> {
-            val minutes = diffSeconds / 60
-            val seconds = diffSeconds % 60
-            "${String.format(Locale.JAPAN,"%02d", minutes)}:${String.format(Locale.JAPAN,"%02d", seconds)}"
-        }
-    }
-}
-
-/**
- * 次の時刻情報構築
- */
-private fun buildNextTimeInfo(countItem: RouteDetail): String {
-    return buildString {
-        append("${countItem.departureTime.ifEmpty { "--:--" }}\n")
-        append("${countItem.trainType.ifEmpty { "--"}}\n")
-        append(countItem.destination.ifEmpty { "--" })
-    }
-}
-
-/**
- * 表示用路線詳細の更新処理
- */
-private suspend fun updateDisplayRouteDetails(
-    routeItems: List<RouteDetail>,
-    viewModel: RouteInfoViewModel,
-    displayRouteDetails: androidx.compose.runtime.snapshots.SnapshotStateList<RouteDetail>,
-    listState: androidx.compose.foundation.lazy.LazyListState
-) {
-    if (routeItems.isNotEmpty()) {
-        refreshDisplayRouteDetails(viewModel, displayRouteDetails)
-        performAutoScroll(displayRouteDetails, listState)
-    }
-}
-
-/**
- * 表示リストの更新
- */
-private fun refreshDisplayRouteDetails(
-    viewModel: RouteInfoViewModel,
-    displayRouteDetails: androidx.compose.runtime.snapshots.SnapshotStateList<RouteDetail>
-) {
-    viewModel.clearDisplayCache()
-    val newDisplayItems = viewModel.getDisplayRouteDetailItems(false)
-    displayRouteDetails.clear()
-    displayRouteDetails.addAll(newDisplayItems)
-    viewModel.updateCurrentCountItem(false)
-}
-
-/**
- * 自動スクロール処理
- */
-private suspend fun performAutoScroll(
-    displayRouteDetails: List<RouteDetail>,
-    listState: androidx.compose.foundation.lazy.LazyListState
-) {
-    if (displayRouteDetails.isNotEmpty()) {
-        val nextTrainIndex = findNextTrainIndex(displayRouteDetails)
-        if (nextTrainIndex >= 0) {
-            listState.animateScrollToItem(nextTrainIndex)
-        }
-    }
-}
-
-/**
- * フィルターボタンクリック処理
- */
-private fun handleFilterButtonClick(
-    scope: kotlinx.coroutines.CoroutineScope,
-    filterInfo: List<FilterInfo>,
-    filterItemSelectViewModel: FilterItemSelectViewModel,
-    routeInfoViewModel: RouteInfoViewModel,
-    showDialog: () -> Unit
-) {
-    scope.launch {
-        try {
-            // 現在のフィルタ情報を取得してダイアログに設定
-            if (filterInfo.isNotEmpty()) {
-                filterItemSelectViewModel.updateFilterItems(filterInfo)
-            } else {
-                // フィルタ情報が空の場合は同期取得
-                val syncFilterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
-                filterItemSelectViewModel.updateFilterItems(syncFilterItems)
-            }
-            showDialog()
-        } catch (e: Exception) {
-            // エラーハンドリング
-            showDialog() // ダイアログは表示する
-        }
-    }
-}
-
-/**
- * タイトルクリック処理
- */
-private fun handleTitleClick(
-    routeInfoViewModel: RouteInfoViewModel,
-    triggerUpdate: () -> Unit
-) {
-    // ダイヤ種別を切り替え
-    routeInfoViewModel.setNextDiagramType()
-    // フィルター更新トリガーを増加させて表示を更新
-    triggerUpdate()
-}
-
-/**
- * アイテムクリック処理
- */
-private fun handleItemClick(
-    routeInfoViewModel: RouteInfoViewModel,
-    selectedRouteDetail: RouteDetail
-) {
-    routeInfoViewModel.setCurrentCountItem(selectedRouteDetail)
-}
-
-/**
- * フィルターダイアログ肯定ボタンクリック処理
- */
-private fun handleFilterPositiveClick(
-    scope: kotlinx.coroutines.CoroutineScope,
-    routeInfoViewModel: RouteInfoViewModel,
-    filterItemSelectViewModel: FilterItemSelectViewModel,
-    triggerUpdate: () -> Unit,
-    hideDialog: () -> Unit
-) {
-    scope.launch {
-        try {
-            // IOディスパッチャーでデータベース更新を実行
-            withContext(Dispatchers.IO) {
-                routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
-            }
-            // ViewModelのキャッシュをクリア
-            routeInfoViewModel.clearDisplayCache()
-            // 少し遅延を入れてからUIを更新（データベース更新の完了を確実にするため）
-            kotlinx.coroutines.delay(100)
-            // フィルター更新トリガーを増加させてLaunchedEffectを実行
-            triggerUpdate()
-        } catch (e: Exception) {
-            // エラーハンドリング
-        }
-    }
-    hideDialog()
-}
-
-/**
- * フィルターダイアログ否定ボタンクリック処理
- */
-private fun handleFilterNegativeClick(
-    hideDialog: () -> Unit
-) {
-    hideDialog()
-}
