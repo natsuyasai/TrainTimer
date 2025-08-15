@@ -65,6 +65,15 @@ fun RouteListScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
+    // DragAndDropManagerの初期化
+    val dragAndDropManager = remember { DragAndDropManager(routeListViewModel) }
+    
+    // DialogManagerの初期化
+    val dialogManager = remember { DialogManager() }
+    
+    // EditModeManagerの初期化
+    val editModeManager = remember { EditModeManager(routeListViewModel) }
+    
     // ViewModelの状態を観察
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())
     val isEditMode by routeListViewModel.isEditMode.observeAsState(false)
@@ -122,7 +131,7 @@ fun RouteListScreen(
                         
                         // 編集
                         IconButton(onClick = { 
-                            handleEditModeToggle(routeListViewModel)
+                            editModeManager.handleEditModeToggle()
                         }) {
                             Icon(
                                 Icons.Default.Edit,
@@ -148,7 +157,7 @@ fun RouteListScreen(
                         if (isEditMode) {
                             detectDragGestures(
                                 onDragStart = { offset ->
-                                    handleDragStart(
+                                    dragAndDropManager.handleDragStart(
                                         offset,
                                         listState
                                     ) { itemInfo ->
@@ -159,16 +168,15 @@ fun RouteListScreen(
                                     }
                                 },
                                 onDragEnd = {
-                                    handleDragEnd(
+                                    dragAndDropManager.handleDragEnd(
                                         initialDraggedIndex,
                                         currentDragOverIndex,
-                                        localRouteList,
-                                        routeListViewModel
+                                        localRouteList
                                     ) { newList ->
                                         localRouteList = newList
                                     }
                                     
-                                    handleResetDragState {
+                                    dragAndDropManager.resetDragState {
                                         draggedDistance = 0f
                                         currentDragOverIndex = null
                                         initialDraggedIndex = null
@@ -176,7 +184,7 @@ fun RouteListScreen(
                                     }
                                 },
                                 onDrag = { _, dragAmount ->
-                                    handleDrag(
+                                    dragAndDropManager.handleDrag(
                                         dragAmount,
                                         initialDraggedIndex,
                                         listState,
@@ -213,7 +221,7 @@ fun RouteListScreen(
                             }
                         )
                         .clickable(enabled = !isDragging) {
-                            handleRouteItemClick(
+                            dialogManager.handleRouteItemClick(
                                 isEditMode,
                                 item,
                                 onRouteItemClick,
@@ -317,11 +325,10 @@ fun RouteListScreen(
     if (showEditDialog && selectedItem != null) {
         // コールバックを事前に設定
         routeListItemEditViewModel.onClickPositiveButtonCallback = { editType, dataId ->
-            handleEditDialogPositiveClick(
+            editModeManager.handleEditDialogPositiveClick(
                 editType,
                 scope,
                 commonLoadingViewModel,
-                routeListViewModel,
                 selectedItem!!,
                 { showDeleteConfirmDialog = true },
                 { showEditDialog = false }
@@ -342,7 +349,7 @@ fun RouteListScreen(
     if (showDeleteConfirmDialog && selectedItem != null) {
         // コールバックを事前に設定
         routeListItemDeleteConfirmViewModel.onClickPositiveButtonCallback = { dataId ->
-            handleDeleteConfirmPositiveClick(
+            dialogManager.handleDeleteConfirmPositiveClick(
                 dataId,
                 routeListViewModel,
                 { showDeleteConfirmDialog = false },
@@ -537,194 +544,5 @@ private fun handleDestinationSelectPositiveClick(
     }
 }
 
-/**
- * 編集ダイアログの肯定ボタンクリック処理
- */
-private fun handleEditDialogPositiveClick(
-    editType: RouteListItemEditViewModel.EditType,
-    scope: kotlinx.coroutines.CoroutineScope,
-    loadingViewModel: CommonLoadingViewModel,
-    routeListViewModel: RouteListViewModel,
-    selectedItem: RouteListItem,
-    showDeleteDialog: () -> Unit,
-    hideEditDialog: () -> Unit
-) {
-    when (editType) {
-        RouteListItemEditViewModel.EditType.Update -> {
-            scope.launch {
-                loadingViewModel.showLoading("時刻情報更新中")
-                try {
-                    withContext(Dispatchers.IO) {
-                        routeListViewModel.updateRouteInfo(
-                            selectedItem,
-                            { loadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                            { loadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
-                        )
-                    }
-                } catch (e: Exception) {
-                    // エラーハンドリング
-                } finally {
-                    loadingViewModel.closeLoading()
-                }
-            }
-        }
-        RouteListItemEditViewModel.EditType.Delete -> {
-            showDeleteDialog()
-        }
-        RouteListItemEditViewModel.EditType.None -> {
-            // 何もしない
-        }
-    }
-    hideEditDialog()
-}
 
-/**
- * 削除確認ダイアログの肯定ボタンクリック処理
- */
-private fun handleDeleteConfirmPositiveClick(
-    dataId: Long?,
-    routeListViewModel: RouteListViewModel,
-    hideDeleteDialog: () -> Unit,
-    clearSelectedItem: () -> Unit
-) {
-    dataId?.let { id ->
-        routeListViewModel.deleteListItem(id)
-    }
-    hideDeleteDialog()
-    clearSelectedItem()
-}
-
-/**
- * 路線アイテムクリック処理
- */
-private fun handleRouteItemClick(
-    isEditMode: Boolean,
-    item: RouteListItem,
-    onRouteItemClick: (Long) -> Unit,
-    setSelectedItem: () -> Unit,
-    showEditDialog: () -> Unit
-) {
-    if (!isEditMode) {
-        onRouteItemClick(item.dataId)
-    } else {
-        setSelectedItem()
-        showEditDialog()
-    }
-}
-
-/**
- * 編集モード切り替え処理
- */
-private fun handleEditModeToggle(
-    routeListViewModel: RouteListViewModel
-) {
-    routeListViewModel.switchEditMode()
-}
-
-/**
- * ドラッグ開始処理
- */
-private fun handleDragStart(
-    offset: androidx.compose.ui.geometry.Offset,
-    listState: androidx.compose.foundation.lazy.LazyListState,
-    onItemFound: (androidx.compose.foundation.lazy.LazyListItemInfo) -> Unit
-) {
-    listState.layoutInfo.visibleItemsInfo
-        .firstOrNull { item ->
-            offset.y.toInt() in item.offset..(item.offset + item.size)
-        }?.also { itemInfo ->
-            onItemFound(itemInfo)
-        }
-}
-
-/**
- * ドラッグ終了処理
- */
-private fun handleDragEnd(
-    initialDraggedIndex: Int?,
-    currentDragOverIndex: Int?,
-    localRouteList: List<RouteListItem>,
-    routeListViewModel: RouteListViewModel,
-    updateLocalRouteList: (List<RouteListItem>) -> Unit
-) {
-    initialDraggedIndex?.let { fromIndex ->
-        currentDragOverIndex?.let { toIndex ->
-            if (fromIndex != toIndex) {
-                performSortUpdate(fromIndex, toIndex, localRouteList, routeListViewModel, updateLocalRouteList)
-            }
-        }
-    }
-}
-
-/**
- * ドラッグ中の処理
- */
-private fun handleDrag(
-    dragAmount: androidx.compose.ui.geometry.Offset,
-    initialDraggedIndex: Int?,
-    listState: androidx.compose.foundation.lazy.LazyListState,
-    currentDraggedDistance: Float,
-    onDragUpdate: (Float, Int?) -> Unit
-) {
-    val newDistance = currentDraggedDistance + dragAmount.y
-    
-    initialDraggedIndex?.let { draggedIndex ->
-        val newDragOverIndex = calculateDragOverIndex(draggedIndex, newDistance, listState)
-        onDragUpdate(newDistance, newDragOverIndex)
-    } ?: run {
-        onDragUpdate(newDistance, null)
-    }
-}
-
-/**
- * ドラッグ状態リセット処理
- */
-private fun handleResetDragState(resetAction: () -> Unit) {
-    resetAction()
-}
-
-/**
- * 並び替え実行処理
- */
-private fun performSortUpdate(
-    fromIndex: Int,
-    toIndex: Int,
-    localRouteList: List<RouteListItem>,
-    routeListViewModel: RouteListViewModel,
-    updateLocalRouteList: (List<RouteListItem>) -> Unit
-) {
-    // ローカルリストの並び替え
-    val mutableList = localRouteList.toMutableList()
-    val draggedItem = mutableList.removeAt(fromIndex)
-    mutableList.add(toIndex, draggedItem)
-    updateLocalRouteList(mutableList)
-    
-    // ViewModelに変更を通知
-    routeListViewModel.updateSortIndex(fromIndex, toIndex)
-}
-
-/**
- * ドラッグ中のホバー対象インデックス計算
- */
-private fun calculateDragOverIndex(
-    draggedIndex: Int,
-    draggedDistance: Float,
-    listState: androidx.compose.foundation.lazy.LazyListState
-): Int? {
-    val draggedItem = listState.layoutInfo.visibleItemsInfo
-        .firstOrNull { it.index == draggedIndex }
-    
-    return draggedItem?.let { item ->
-        val draggedItemCenter = item.offset + item.size / 2 + draggedDistance
-        
-        val targetItem = listState.layoutInfo.visibleItemsInfo
-            .minByOrNull { targetItem ->
-                kotlin.math.abs(
-                    (targetItem.offset + targetItem.size / 2) - draggedItemCenter
-                )
-            }
-        
-        targetItem?.index
-    }
-}
 
