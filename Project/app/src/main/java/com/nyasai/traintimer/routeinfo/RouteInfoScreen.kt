@@ -294,16 +294,29 @@ fun RouteInfoScreen(
 
 /**
  * 現在時刻より先で最も近い電車のインデックスを取得
+ * 深夜0時～3時は24時～27時として扱う
  */
 private fun findNextTrainIndex(routeDetails: List<RouteDetail>): Int {
     val now = LocalTime.now()
+    
+    // 現在時刻を分単位で計算（深夜0時～3時59分は24時～27時59分として扱う）
+    val nowMinutes = if (now.hour < 4) {
+        (now.hour + 24) * 60 + now.minute
+    } else {
+        now.hour * 60 + now.minute
+    }
     
     return routeDetails.indexOfFirst { routeDetail ->
         try {
             val departureTime = routeDetail.departureTime
             if (departureTime.isNotEmpty()) {
                 val trainTime = LocalTime.parse(departureTime)
-                trainTime.isAfter(now)
+                val trainMinutes = if (trainTime.hour < 4) {
+                    (trainTime.hour + 24) * 60 + trainTime.minute
+                } else {
+                    trainTime.hour * 60 + trainTime.minute
+                }
+                trainMinutes > nowMinutes
             } else {
                 false
             }

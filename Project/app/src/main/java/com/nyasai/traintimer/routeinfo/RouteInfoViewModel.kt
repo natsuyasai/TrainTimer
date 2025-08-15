@@ -189,6 +189,7 @@ class RouteInfoViewModel(
 
     /**
      * 次に表示するアイテムの現在時刻からの差分時間取得
+     * 深夜0時～3時は24時～27時として扱う
      */
     fun getNextDiffTime(): Long {
         // 画面に一番近いデータへの残り時間を設定する(1秒毎)
@@ -197,12 +198,33 @@ class RouteInfoViewModel(
         }
         // データが取得できなければ，ハイフン表示とするために-1を設定
         return when {
-            currentCountItem.value != null -> ChronoUnit.SECONDS.between(
-                LocalTime.now(), LocalTime.parse(
-                    currentCountItem.value?.departureTime
-                )
-            )
-
+            currentCountItem.value != null -> {
+                try {
+                    val now = LocalTime.now()
+                    val trainTime = LocalTime.parse(currentCountItem.value?.departureTime)
+                    
+                    // 分単位で時刻を計算（深夜0時～3時59分は24時～27時59分として扱う）
+                    val nowMinutes = if (now.hour < 4) {
+                        (now.hour + 24) * 60 + now.minute
+                    } else {
+                        now.hour * 60 + now.minute
+                    }
+                    
+                    val trainMinutes = if (trainTime.hour < 4) {
+                        (trainTime.hour + 24) * 60 + trainTime.minute
+                    } else {
+                        trainTime.hour * 60 + trainTime.minute
+                    }
+                    
+                    // 秒も考慮した差分計算
+                    val diffMinutes = trainMinutes - nowMinutes
+                    val diffSeconds = diffMinutes * 60 - now.second + trainTime.second
+                    
+                    diffSeconds.toLong()
+                } catch (e: Exception) {
+                    -1L
+                }
+            }
             else -> -1L
         }
     }
@@ -225,12 +247,33 @@ class RouteInfoViewModel(
 
     /**
      * 直近の時刻のアイテムを取得する
+     * 深夜0時～3時は24時～27時として扱う
      */
     private fun getNearTimeItem(useCache: Boolean = false): RouteDetail? {
         val now = LocalTime.now()
+        
+        // 現在時刻を分単位で計算（深夜0時～3時59分は24時～27時59分として扱う）
+        val nowMinutes = if (now.hour < 4) {
+            (now.hour + 24) * 60 + now.minute
+        } else {
+            now.hour * 60 + now.minute
+        }
+        
         for (item in getDisplayRouteDetailItems(useCache)) {
-            if (LocalTime.parse(item.departureTime) > now) {
-                return item
+            try {
+                val trainTime = LocalTime.parse(item.departureTime)
+                val trainMinutes = if (trainTime.hour < 4) {
+                    (trainTime.hour + 24) * 60 + trainTime.minute
+                } else {
+                    trainTime.hour * 60 + trainTime.minute
+                }
+                
+                if (trainMinutes > nowMinutes) {
+                    return item
+                }
+            } catch (e: Exception) {
+                // 時刻解析エラーの場合はスキップ
+                continue
             }
         }
         return null

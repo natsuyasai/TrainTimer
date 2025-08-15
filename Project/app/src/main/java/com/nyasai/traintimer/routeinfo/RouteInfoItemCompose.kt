@@ -125,6 +125,7 @@ private enum class TimeStatus {
 
 /**
  * 時刻の状態を取得
+ * 深夜0時～3時は24時～27時として扱う
  */
 private fun getTimeStatus(routeDetail: RouteDetail): TimeStatus {
     return try {
@@ -135,13 +136,28 @@ private fun getTimeStatus(routeDetail: RouteDetail): TimeStatus {
             val now = LocalTime.now()
             val trainTime = LocalTime.parse(departureTime)
             
+            // 分単位で時刻を計算（深夜0時～3時59分は24時～27時59分として扱う）
+            val nowMinutes = if (now.hour < 4) {
+                (now.hour + 24) * 60 + now.minute
+            } else {
+                now.hour * 60 + now.minute
+            }
+            
+            val trainMinutes = if (trainTime.hour < 4) {
+                (trainTime.hour + 24) * 60 + trainTime.minute
+            } else {
+                trainTime.hour * 60 + trainTime.minute
+            }
+            
             when {
-                trainTime.isBefore(now) -> TimeStatus.PAST
-                trainTime.isAfter(now) -> TimeStatus.FUTURE
+                trainMinutes < nowMinutes -> TimeStatus.PAST
+                trainMinutes > nowMinutes -> TimeStatus.FUTURE
                 else -> TimeStatus.CURRENT
             }
         }
     } catch (e: DateTimeParseException) {
+        TimeStatus.INVALID
+    } catch (e: Exception) {
         TimeStatus.INVALID
     }
 }
