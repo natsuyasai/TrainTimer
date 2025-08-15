@@ -2,7 +2,6 @@
 
 package com.nyasai.traintimer.routeinfo
 
-import com.github.kittinunf.fuel.core.Body
 import com.github.kittinunf.fuel.core.Response
 import com.nyasai.traintimer.http.IHttpClient
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import io.mockk.*
-import java.net.URL
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
@@ -81,11 +79,11 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：平日`() {
-        val calendarMock = mockk<Calendar>()
-        every { calendarMock.get(any()) } returns 2
-        val body = mockk<Body>()
-        every { body.toByteArray() } returns ("else".toByteArray())
-        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        val calendarMock = mockk<Calendar>(relaxed = true)
+        every { calendarMock.get(Calendar.DAY_OF_WEEK) } returns 2 // Calendar.MONDAY
+        val response = mockk<Response>(relaxed = true)
+        every { response.isSuccessful } returns true
+        every { response.data } returns ("else".toByteArray())
         every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
@@ -94,11 +92,11 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：土曜`() {
-        val calendarMock = mockk<Calendar>()
-        every { calendarMock.get(any()) } returns 7
-        val body = mockk<Body>()
-        every { body.toByteArray() } returns ("else".toByteArray())
-        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        val calendarMock = mockk<Calendar>(relaxed = true)
+        every { calendarMock.get(Calendar.DAY_OF_WEEK) } returns 7 // Calendar.SATURDAY
+        val response = mockk<Response>(relaxed = true)
+        every { response.isSuccessful } returns true
+        every { response.data } returns ("else".toByteArray())
         every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
@@ -107,11 +105,11 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：日曜`() {
-        val calendarMock = mockk<Calendar>()
-        every { calendarMock.get(any()) } returns 1
-        val body = mockk<Body>()
-        every { body.toByteArray() } returns ("else".toByteArray())
-        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        val calendarMock = mockk<Calendar>(relaxed = true)
+        every { calendarMock.get(Calendar.DAY_OF_WEEK) } returns 1 // Calendar.SUNDAY
+        val response = mockk<Response>(relaxed = true)
+        every { response.isSuccessful } returns true
+        every { response.data } returns ("else".toByteArray())
         every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
@@ -120,11 +118,11 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 現在：平日（祝日）`() {
-        val calendarMock = mockk<Calendar>()
-        every { calendarMock.get(any()) } returns 2
-        val body = mockk<Body>()
-        every { body.toByteArray() } returns ("holiday".toByteArray())
-        val response = Response(url = URL("http", "localhost", 80, ""), 200, body = body)
+        val calendarMock = mockk<Calendar>(relaxed = true)
+        every { calendarMock.get(Calendar.DAY_OF_WEEK) } returns 2 // Calendar.MONDAY
+        val response = mockk<Response>(relaxed = true)
+        every { response.isSuccessful } returns true
+        every { response.data } returns ("holiday".toByteArray())
         every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)
@@ -133,11 +131,11 @@ internal class DiagramTypeModelTest {
 
     @Test
     fun `今日のダイア種別を取得 祝日判定有り 祝日判定失敗 現在：平日`() {
-        val calendarMock = mockk<Calendar>()
-        every { calendarMock.get(any()) } returns 2
-        val body = mockk<Body>()
-        every { body.toByteArray() } returns ("error".toByteArray())
-        val response = Response(url = URL("http", "localhost", 80, ""), 500, body = body)
+        val calendarMock = mockk<Calendar>(relaxed = true)
+        every { calendarMock.get(Calendar.DAY_OF_WEEK) } returns 2 // Calendar.MONDAY
+        val response = mockk<Response>(relaxed = true)
+        every { response.isSuccessful } returns false
+        every { response.data } returns ("error".toByteArray())
         every { _httpClientMock.httpGet(any(), null) } returns(response)
         val target = DiagramTypeModel(calendarMock, _httpClientMock)
         val result = target.getTodayDiagramType(true)

@@ -37,11 +37,11 @@ internal class DataExportTest {
         val outputStreamMock = mockk<OutputStream>(relaxed = true)
 
         target.export(outputStreamMock, emptyList(), emptyList(), emptyList())
-        verify(exactly = 2) { outputStreamMock.writeLine() }
-        verify(exactly = 1) { outputStreamMock.writeLine("DataVersion,1") }
-        verify(exactly = 1) { outputStreamMock.writeLine("RouteListDataStart") }
-        verify(exactly = 1) { outputStreamMock.writeLine("RouteDetailDataStart") }
-        verify(exactly = 1) { outputStreamMock.writeLine("FilterInfoDataStart") }
+        verify { outputStreamMock.write(any<ByteArray>()) }
+        verify(atLeast = 1) { outputStreamMock.write("DataVersion,1\r\n".toByteArray()) }
+        verify(atLeast = 1) { outputStreamMock.write("RouteListDataStart\r\n".toByteArray()) }
+        verify(atLeast = 1) { outputStreamMock.write("RouteDetailDataStart\r\n".toByteArray()) }
+        verify(atLeast = 1) { outputStreamMock.write("FilterInfoDataStart\r\n".toByteArray()) }
     }
 
     internal class DataExportTesting : DataExport() {

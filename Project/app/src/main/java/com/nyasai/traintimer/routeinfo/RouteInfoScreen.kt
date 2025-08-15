@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
+import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
@@ -169,10 +170,10 @@ fun RouteInfoScreen(
                         routeListItem = route,
                         currentDiagramType = currentDiagramType,
                         onTitleClick = {
-                            // ダイヤ種別を切り替え
-                            routeInfoViewModel.setNextDiagramType()
-                            // フィルター更新トリガーを増加させて表示を更新
-                            filterUpdateTrigger++
+                            handleTitleClick(
+                                routeInfoViewModel,
+                                { filterUpdateTrigger++ }
+                            )
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -270,7 +271,7 @@ fun RouteInfoScreen(
                                 routeDetail = routeDetail,
                                 isSelected = routeDetail.dataId == currentCountItem?.dataId,
                                 onItemClick = { selectedRouteDetail ->
-                                    routeInfoViewModel.setCurrentCountItem(selectedRouteDetail)
+                                    handleItemClick(routeInfoViewModel, selectedRouteDetail)
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -288,26 +289,16 @@ fun RouteInfoScreen(
             onDismiss = { showFilterDialog = false },
             viewModel = filterItemSelectViewModel.apply {
                 onClickPositiveButtonCallback = {
-                    scope.launch {
-                        try {
-                            // IOディスパッチャーでデータベース更新を実行
-                            withContext(Dispatchers.IO) {
-                                routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
-                            }
-                            // ViewModelのキャッシュをクリア
-                            routeInfoViewModel.clearDisplayCache()
-                            // 少し遅延を入れてからUIを更新（データベース更新の完了を確実にするため）
-                            kotlinx.coroutines.delay(100)
-                            // フィルター更新トリガーを増加させてLaunchedEffectを実行
-                            filterUpdateTrigger++
-                        } catch (e: Exception) {
-                            // エラーハンドリング
-                        }
-                    }
-                    showFilterDialog = false
+                    handleFilterPositiveClick(
+                        scope,
+                        routeInfoViewModel,
+                        filterItemSelectViewModel,
+                        { filterUpdateTrigger++ },
+                        { showFilterDialog = false }
+                    )
                 }
                 onClickNegativeButtonCallback = {
-                    showFilterDialog = false
+                    handleFilterNegativeClick { showFilterDialog = false }
                 }
             }
         )
@@ -406,4 +397,93 @@ private suspend fun performAutoScroll(
             listState.animateScrollToItem(nextTrainIndex)
         }
     }
+}
+
+/**
+ * フィルターボタンクリック処理
+ */
+private fun handleFilterButtonClick(
+    scope: kotlinx.coroutines.CoroutineScope,
+    filterInfo: List<FilterInfo>,
+    filterItemSelectViewModel: FilterItemSelectViewModel,
+    routeInfoViewModel: RouteInfoViewModel,
+    showDialog: () -> Unit
+) {
+    scope.launch {
+        try {
+            // 現在のフィルタ情報を取得してダイアログに設定
+            if (filterInfo.isNotEmpty()) {
+                filterItemSelectViewModel.updateFilterItems(filterInfo)
+            } else {
+                // フィルタ情報が空の場合は同期取得
+                val syncFilterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
+                filterItemSelectViewModel.updateFilterItems(syncFilterItems)
+            }
+            showDialog()
+        } catch (e: Exception) {
+            // エラーハンドリング
+            showDialog() // ダイアログは表示する
+        }
+    }
+}
+
+/**
+ * タイトルクリック処理
+ */
+private fun handleTitleClick(
+    routeInfoViewModel: RouteInfoViewModel,
+    triggerUpdate: () -> Unit
+) {
+    // ダイヤ種別を切り替え
+    routeInfoViewModel.setNextDiagramType()
+    // フィルター更新トリガーを増加させて表示を更新
+    triggerUpdate()
+}
+
+/**
+ * アイテムクリック処理
+ */
+private fun handleItemClick(
+    routeInfoViewModel: RouteInfoViewModel,
+    selectedRouteDetail: RouteDetail
+) {
+    routeInfoViewModel.setCurrentCountItem(selectedRouteDetail)
+}
+
+/**
+ * フィルターダイアログ肯定ボタンクリック処理
+ */
+private fun handleFilterPositiveClick(
+    scope: kotlinx.coroutines.CoroutineScope,
+    routeInfoViewModel: RouteInfoViewModel,
+    filterItemSelectViewModel: FilterItemSelectViewModel,
+    triggerUpdate: () -> Unit,
+    hideDialog: () -> Unit
+) {
+    scope.launch {
+        try {
+            // IOディスパッチャーでデータベース更新を実行
+            withContext(Dispatchers.IO) {
+                routeInfoViewModel.updateFilterInfoListItem(filterItemSelectViewModel.filterItemsState)
+            }
+            // ViewModelのキャッシュをクリア
+            routeInfoViewModel.clearDisplayCache()
+            // 少し遅延を入れてからUIを更新（データベース更新の完了を確実にするため）
+            kotlinx.coroutines.delay(100)
+            // フィルター更新トリガーを増加させてLaunchedEffectを実行
+            triggerUpdate()
+        } catch (e: Exception) {
+            // エラーハンドリング
+        }
+    }
+    hideDialog()
+}
+
+/**
+ * フィルターダイアログ否定ボタンクリック処理
+ */
+private fun handleFilterNegativeClick(
+    hideDialog: () -> Unit
+) {
+    hideDialog()
 }

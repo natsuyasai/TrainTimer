@@ -108,7 +108,7 @@ fun RouteListScreen(
                         
                         // 編集
                         IconButton(onClick = { 
-                            routeListViewModel.switchEditMode()
+                            handleEditModeToggle(routeListViewModel)
                         }) {
                             Icon(
                                 Icons.Default.Edit,
@@ -218,13 +218,13 @@ fun RouteListScreen(
                             }
                         )
                         .clickable(enabled = !isDragging) {
-                            if (!isEditMode) {
-                                onRouteItemClick(item.dataId)
-                            } else {
-                                // 手動ソートモードでは編集ダイアログを表示
-                                selectedItem = item
-                                showEditDialog = true
-                            }
+                            handleRouteItemClick(
+                                isEditMode,
+                                item,
+                                onRouteItemClick,
+                                { selectedItem = item },
+                                { showEditDialog = true }
+                            )
                         }
                     
                     RouteListItemCompose(
@@ -271,31 +271,17 @@ fun RouteListScreen(
     if (showStationSelectDialog) {
         // コールバックを事前に設定
         listItemSelectViewModel.onClickPositiveButtonCallback = {
-            scope.launch {
-                showStationSelectDialog = false
-                commonLoadingViewModel.showLoading()
-                
-                try {
-                    val selectedStation = listItemSelectViewModel.selectedItemState
-                    // 複数候補がある場合は、選択された情報を保持（○○（○○県）表記になる）
-                    currentStationName = selectedStation
-                    
-                    // IOディスパッチャーでネットワーク処理を実行
-                    val destinationListMap = withContext(Dispatchers.IO) {
-                        routeListViewModel.getDestinationFromUrl(
-                            stationOptions.getValue(selectedStation)
-                        )
-                    }
-                    
-                    destinationOptions = destinationListMap
-                    listItemSelectViewModel.updateItems(destinationListMap.keys.toList())
-                    showDestinationSelectDialog = true
-                } catch (e: Exception) {
-                    // エラーハンドリング
-                } finally {
-                    commonLoadingViewModel.closeLoading()
-                }
-            }
+            handleStationSelectPositiveClick(
+                scope,
+                listItemSelectViewModel,
+                commonLoadingViewModel,
+                routeListViewModel,
+                stationOptions,
+                { station -> currentStationName = station },
+                { options -> destinationOptions = options },
+                { showStationSelectDialog = false },
+                { showDestinationSelectDialog = true }
+            )
         }
         listItemSelectViewModel.onClickNegativeButtonCallback = {
             showStationSelectDialog = false
@@ -312,48 +298,15 @@ fun RouteListScreen(
     if (showDestinationSelectDialog) {
         // コールバックを事前に設定
         listItemSelectViewModel.onClickPositiveButtonCallback = {
-            scope.launch {
-                showDestinationSelectDialog = false
-                commonLoadingViewModel.showLoading("時刻情報取得中")
-                
-                try {
-                    val selectedDestination = listItemSelectViewModel.selectedItemState
-                    val url = destinationOptions.getValue(selectedDestination)
-                    
-                    // IOディスパッチャーでネットワーク処理を実行
-                    val (routeInfo, parentDataId) = withContext(Dispatchers.IO) {
-                        // 路線情報を取得
-                        val routeInfo = routeListViewModel.getTimeTableInfo(
-                            url,
-                            { commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                            { commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
-                        )
-                        
-                        // 新しい路線アイテムを作成
-                        val newRouteListItem = RouteListItem().apply {
-                            val splitDestinationKey = routeListViewModel.splitDestinationKey(selectedDestination)
-                            routeName = splitDestinationKey.first
-                            destination = splitDestinationKey.second
-                            stationName = currentStationName
-                        }
-                        
-                        val parentDataId = routeListViewModel.registerRouteListItem(routeInfo, newRouteListItem)
-                        Pair(routeInfo, parentDataId)
-                    }
-                    
-                    commonLoadingViewModel.changeText("時刻情報登録中")
-                    
-                    // データベース操作もIOディスパッチャーで実行
-                    withContext(Dispatchers.IO) {
-                        routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
-                    }
-                    
-                } catch (e: Exception) {
-                    // エラーハンドリング
-                } finally {
-                    commonLoadingViewModel.closeLoading()
-                }
-            }
+            handleDestinationSelectPositiveClick(
+                scope,
+                listItemSelectViewModel,
+                commonLoadingViewModel,
+                routeListViewModel,
+                destinationOptions,
+                currentStationName,
+                { showDestinationSelectDialog = false }
+            )
         }
         listItemSelectViewModel.onClickNegativeButtonCallback = {
             showDestinationSelectDialog = false
@@ -370,34 +323,15 @@ fun RouteListScreen(
     if (showEditDialog && selectedItem != null) {
         // コールバックを事前に設定
         routeListItemEditViewModel.onClickPositiveButtonCallback = { editType, dataId ->
-            when (editType) {
-                RouteListItemEditViewModel.EditType.Update -> {
-                    scope.launch {
-                        commonLoadingViewModel.showLoading("時刻情報更新中")
-                        try {
-                            // IOディスパッチャーでネットワーク処理を実行
-                            withContext(Dispatchers.IO) {
-                                routeListViewModel.updateRouteInfo(
-                                    selectedItem!!,
-                                    { commonLoadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                                    { commonLoadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
-                                )
-                            }
-                        } catch (e: Exception) {
-                            // エラーハンドリング
-                        } finally {
-                            commonLoadingViewModel.closeLoading()
-                        }
-                    }
-                }
-                RouteListItemEditViewModel.EditType.Delete -> {
-                    showDeleteConfirmDialog = true
-                }
-                RouteListItemEditViewModel.EditType.None -> {
-                    // 何もしない
-                }
-            }
-            showEditDialog = false
+            handleEditDialogPositiveClick(
+                editType,
+                scope,
+                commonLoadingViewModel,
+                routeListViewModel,
+                selectedItem!!,
+                { showDeleteConfirmDialog = true },
+                { showEditDialog = false }
+            )
         }
         routeListItemEditViewModel.onClickNegativeButtonCallback = { _, _ ->
             showEditDialog = false
@@ -414,11 +348,12 @@ fun RouteListScreen(
     if (showDeleteConfirmDialog && selectedItem != null) {
         // コールバックを事前に設定
         routeListItemDeleteConfirmViewModel.onClickPositiveButtonCallback = { dataId ->
-            dataId?.let { id ->
-                routeListViewModel.deleteListItem(id)
-            }
-            showDeleteConfirmDialog = false
-            selectedItem = null
+            handleDeleteConfirmPositiveClick(
+                dataId,
+                routeListViewModel,
+                { showDeleteConfirmDialog = false },
+                { selectedItem = null }
+            )
         }
         routeListItemDeleteConfirmViewModel.onClickNegativeButtonCallback = {
             showDeleteConfirmDialog = false
@@ -516,5 +451,179 @@ private fun handleSearchResults(
         listSelectViewModel.updateItems(destinationListMap.keys.toList())
         showDestinationDialog()
     }
+}
+
+/**
+ * 駅選択ダイアログの肯定ボタンクリック処理
+ */
+private fun handleStationSelectPositiveClick(
+    scope: kotlinx.coroutines.CoroutineScope,
+    listSelectViewModel: ListItemSelectViewModel,
+    loadingViewModel: CommonLoadingViewModel,
+    routeListViewModel: RouteListViewModel,
+    stationOptions: Map<String, String>,
+    setCurrentStationName: (String) -> Unit,
+    setDestinationOptions: (Map<String, String>) -> Unit,
+    hideStationDialog: () -> Unit,
+    showDestinationDialog: () -> Unit
+) {
+    scope.launch {
+        hideStationDialog()
+        loadingViewModel.showLoading()
+        
+        try {
+            val selectedStation = listSelectViewModel.selectedItemState
+            setCurrentStationName(selectedStation)
+            
+            val destinationListMap = withContext(Dispatchers.IO) {
+                routeListViewModel.getDestinationFromUrl(
+                    stationOptions.getValue(selectedStation)
+                )
+            }
+            
+            setDestinationOptions(destinationListMap)
+            listSelectViewModel.updateItems(destinationListMap.keys.toList())
+            showDestinationDialog()
+        } catch (e: Exception) {
+            // エラーハンドリング
+        } finally {
+            loadingViewModel.closeLoading()
+        }
+    }
+}
+
+/**
+ * 目的地選択ダイアログの肯定ボタンクリック処理
+ */
+private fun handleDestinationSelectPositiveClick(
+    scope: kotlinx.coroutines.CoroutineScope,
+    listSelectViewModel: ListItemSelectViewModel,
+    loadingViewModel: CommonLoadingViewModel,
+    routeListViewModel: RouteListViewModel,
+    destinationOptions: Map<String, String>,
+    currentStationName: String,
+    hideDestinationDialog: () -> Unit
+) {
+    scope.launch {
+        hideDestinationDialog()
+        loadingViewModel.showLoading("時刻情報取得中")
+        
+        try {
+            val selectedDestination = listSelectViewModel.selectedItemState
+            val url = destinationOptions.getValue(selectedDestination)
+            
+            val (routeInfo, parentDataId) = withContext(Dispatchers.IO) {
+                val routeInfo = routeListViewModel.getTimeTableInfo(
+                    url,
+                    { loadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                    { loadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
+                )
+                
+                val newRouteListItem = RouteListItem().apply {
+                    val splitDestinationKey = routeListViewModel.splitDestinationKey(selectedDestination)
+                    routeName = splitDestinationKey.first
+                    destination = splitDestinationKey.second
+                    stationName = currentStationName
+                }
+                
+                val parentDataId = routeListViewModel.registerRouteListItem(routeInfo, newRouteListItem)
+                Pair(routeInfo, parentDataId)
+            }
+            
+            loadingViewModel.changeText("時刻情報登録中")
+            
+            withContext(Dispatchers.IO) {
+                routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
+            }
+        } catch (e: Exception) {
+            // エラーハンドリング
+        } finally {
+            loadingViewModel.closeLoading()
+        }
+    }
+}
+
+/**
+ * 編集ダイアログの肯定ボタンクリック処理
+ */
+private fun handleEditDialogPositiveClick(
+    editType: RouteListItemEditViewModel.EditType,
+    scope: kotlinx.coroutines.CoroutineScope,
+    loadingViewModel: CommonLoadingViewModel,
+    routeListViewModel: RouteListViewModel,
+    selectedItem: RouteListItem,
+    showDeleteDialog: () -> Unit,
+    hideEditDialog: () -> Unit
+) {
+    when (editType) {
+        RouteListItemEditViewModel.EditType.Update -> {
+            scope.launch {
+                loadingViewModel.showLoading("時刻情報更新中")
+                try {
+                    withContext(Dispatchers.IO) {
+                        routeListViewModel.updateRouteInfo(
+                            selectedItem,
+                            { loadingViewModel.incrementMaxCountFromBackgroundTask(it) },
+                            { loadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
+                        )
+                    }
+                } catch (e: Exception) {
+                    // エラーハンドリング
+                } finally {
+                    loadingViewModel.closeLoading()
+                }
+            }
+        }
+        RouteListItemEditViewModel.EditType.Delete -> {
+            showDeleteDialog()
+        }
+        RouteListItemEditViewModel.EditType.None -> {
+            // 何もしない
+        }
+    }
+    hideEditDialog()
+}
+
+/**
+ * 削除確認ダイアログの肯定ボタンクリック処理
+ */
+private fun handleDeleteConfirmPositiveClick(
+    dataId: Long?,
+    routeListViewModel: RouteListViewModel,
+    hideDeleteDialog: () -> Unit,
+    clearSelectedItem: () -> Unit
+) {
+    dataId?.let { id ->
+        routeListViewModel.deleteListItem(id)
+    }
+    hideDeleteDialog()
+    clearSelectedItem()
+}
+
+/**
+ * 路線アイテムクリック処理
+ */
+private fun handleRouteItemClick(
+    isEditMode: Boolean,
+    item: RouteListItem,
+    onRouteItemClick: (Long) -> Unit,
+    setSelectedItem: () -> Unit,
+    showEditDialog: () -> Unit
+) {
+    if (!isEditMode) {
+        onRouteItemClick(item.dataId)
+    } else {
+        setSelectedItem()
+        showEditDialog()
+    }
+}
+
+/**
+ * 編集モード切り替え処理
+ */
+private fun handleEditModeToggle(
+    routeListViewModel: RouteListViewModel
+) {
+    routeListViewModel.switchEditMode()
 }
 
