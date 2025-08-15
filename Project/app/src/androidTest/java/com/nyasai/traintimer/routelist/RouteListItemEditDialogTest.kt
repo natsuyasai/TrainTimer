@@ -187,11 +187,11 @@ class RouteListItemEditDialogTest {
 
         // Then - 更新のラジオボタンが選択されていることを確認
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.RadioButton)[0]
+            .onNodeWithText("更新")
             .assertIsSelected()
         
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.RadioButton)[1]
+            .onNodeWithText("削除")
             .assertIsNotSelected()
     }
 }

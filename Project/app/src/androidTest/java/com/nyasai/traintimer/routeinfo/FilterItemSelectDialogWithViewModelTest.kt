@@ -77,7 +77,7 @@ class FilterItemSelectDialogWithViewModelTest {
 
         // 最初のチェックボックスをクリック（true -> false）
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.Checkbox)[0]
+            .onNodeWithText("普通 - 新宿")
             .performClick()
 
         // Then
@@ -148,11 +148,11 @@ class FilterItemSelectDialogWithViewModelTest {
 
         // 複数のチェックボックスを操作
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.Checkbox)[0]
+            .onNodeWithText("普通 - 新宿")
             .performClick() // true -> false
 
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.Checkbox)[1]
+            .onNodeWithText("快速 - 池袋")
             .performClick() // false -> true
 
         // Then

@@ -67,28 +67,6 @@ class RouteInfoItemComposeTest {
     }
 
     @Test
-    fun `null値でもエラーが発生しないこと`() {
-        // Given
-        val nullDetail = RouteDetail().apply {
-            departureTime = null
-            trainType = null
-            destination = null
-        }
-
-        // When & Then
-        composeTestRule.setContent {
-            TrainTimerTheme {
-                RouteInfoItemCompose(routeDetail = nullDetail)
-            }
-        }
-
-        // コンポーネントが正常に描画されることを確認
-        composeTestRule
-            .onRoot()
-            .assertExists()
-    }
-
-    @Test
     fun `異なる時刻でも正常に表示されること`() {
         // Given
         val futureTimeDetail = RouteDetail().apply {

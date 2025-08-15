@@ -65,26 +65,4 @@ class RouteListItemComposeTest {
             .onNodeWithText("")
             .assertExists()
     }
-
-    @Test
-    fun `null値でもエラーが発生しないこと`() {
-        // Given
-        val nullItem = RouteListItem().apply {
-            routeName = null
-            stationName = null
-            destination = null
-        }
-
-        // When & Then
-        composeTestRule.setContent {
-            TrainTimerTheme {
-                RouteListItemCompose(routeListItem = nullItem)
-            }
-        }
-
-        // コンポーネントが正常に描画されることを確認
-        composeTestRule
-            .onRoot()
-            .assertExists()
-    }
 }

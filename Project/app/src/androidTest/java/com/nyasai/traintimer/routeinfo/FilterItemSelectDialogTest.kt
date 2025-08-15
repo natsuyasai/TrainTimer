@@ -92,11 +92,11 @@ class FilterItemSelectDialogTest {
 
         // Then - チェックボックスの状態を確認
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.Checkbox)[0]
+            .onNodeWithText("普通 - 新宿")
             .assertIsOn()
         
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.Checkbox)[1]
+            .onNodeWithText("快速 - 池袋")
             .assertIsOff()
     }
 
@@ -125,7 +125,7 @@ class FilterItemSelectDialogTest {
 
         // 最初のチェックボックスをクリック
         composeTestRule
-            .onAllNodesWithRole(androidx.compose.ui.semantics.Role.Checkbox)[0]
+            .onNodeWithText("普通 - 新宿")
             .performClick()
 
         // Then

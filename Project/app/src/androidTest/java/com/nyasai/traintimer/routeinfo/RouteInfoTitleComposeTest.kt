@@ -33,7 +33,8 @@ class RouteInfoTitleComposeTest {
             TrainTimerTheme {
                 RouteInfoTitleCompose(
                     routeListItem = testItem,
-                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Weekday
+                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Weekday,
+                    {}
                 )
             }
         }
@@ -70,7 +71,8 @@ class RouteInfoTitleComposeTest {
             TrainTimerTheme {
                 RouteInfoTitleCompose(
                     routeListItem = testItem,
-                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Saturday
+                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Saturday,
+                    {}
                 )
             }
         }
@@ -95,7 +97,8 @@ class RouteInfoTitleComposeTest {
             TrainTimerTheme {
                 RouteInfoTitleCompose(
                     routeListItem = testItem,
-                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Holiday
+                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Holiday,
+                    {}
                 )
             }
         }
@@ -141,8 +144,9 @@ class RouteInfoTitleComposeTest {
         composeTestRule.setContent {
             TrainTimerTheme {
                 RouteInfoTitleCompose(
-                    routeListItem = null,
-                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Weekday
+                    routeListItem = RouteListItem(),
+                    currentDiagramType = YahooRouteInfoGetter.Companion.DiagramType.Weekday,
+                    {}
                 )
             }
         }
