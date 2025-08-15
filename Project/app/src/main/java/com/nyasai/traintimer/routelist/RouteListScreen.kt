@@ -47,6 +47,7 @@ import com.nyasai.traintimer.routesearch.ListItemSelectDialogWithViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialogWithViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
+import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.launch
 
 /**
@@ -64,6 +65,9 @@ fun RouteListScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
+    // WakeLockManagerの初期化
+    val wakeLockManager = remember { WakeLockManager(context) }
+    
     // DragAndDropManagerの初期化
     val dragAndDropManager = remember { DragAndDropManager(routeListViewModel) }
     
@@ -71,13 +75,13 @@ fun RouteListScreen(
     val dialogManager = remember { DialogManager() }
     
     // EditModeManagerの初期化
-    val editModeManager = remember { EditModeManager(routeListViewModel) }
+    val editModeManager = remember { EditModeManager(routeListViewModel, wakeLockManager) }
     
     // RouteSearchManagerの初期化
-    val routeSearchManager = remember { RouteSearchManager(routeListViewModel) }
+    val routeSearchManager = remember { RouteSearchManager(routeListViewModel, wakeLockManager) }
     
     // RouteRegistrationManagerの初期化
-    val routeRegistrationManager = remember { RouteRegistrationManager(routeListViewModel) }
+    val routeRegistrationManager = remember { RouteRegistrationManager(routeListViewModel, wakeLockManager) }
     
     // ViewModelの状態を観察
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())

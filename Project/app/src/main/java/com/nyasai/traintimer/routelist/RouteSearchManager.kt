@@ -3,6 +3,7 @@ package com.nyasai.traintimer.routelist
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
+import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,7 +13,8 @@ import kotlinx.coroutines.withContext
  * 路線検索関連機能を管理するクラス
  */
 class RouteSearchManager(
-    private val routeListViewModel: RouteListViewModel
+    private val routeListViewModel: RouteListViewModel,
+    private val wakeLockManager: WakeLockManager
 ) {
     
     /**
@@ -33,6 +35,9 @@ class RouteSearchManager(
         scope.launch {
             hideSearchDialog()
             loadingViewModel.showLoading()
+            
+            // WakeLockを取得してスリープを防止
+            wakeLockManager.acquireWakeLock()
             
             try {
                 val stationName = searchViewModel.stationNameState
@@ -56,6 +61,8 @@ class RouteSearchManager(
             } finally {
                 loadingViewModel.closeLoading()
                 searchViewModel.clearUIData()
+                // WakeLockを解放
+                wakeLockManager.releaseWakeLock()
             }
         }
     }
@@ -77,6 +84,9 @@ class RouteSearchManager(
             hideStationDialog()
             loadingViewModel.showLoading()
             
+            // WakeLockを取得してスリープを防止
+            wakeLockManager.acquireWakeLock()
+            
             try {
                 val selectedStation = listSelectViewModel.selectedItemState
                 setCurrentStationName(selectedStation)
@@ -94,6 +104,8 @@ class RouteSearchManager(
                 // エラーハンドリング
             } finally {
                 loadingViewModel.closeLoading()
+                // WakeLockを解放
+                wakeLockManager.releaseWakeLock()
             }
         }
     }

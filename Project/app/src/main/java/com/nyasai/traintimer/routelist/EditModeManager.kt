@@ -2,6 +2,7 @@ package com.nyasai.traintimer.routelist
 
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,7 +12,8 @@ import kotlinx.coroutines.withContext
  * 編集モード関連機能を管理するクラス
  */
 class EditModeManager(
-    private val routeListViewModel: RouteListViewModel
+    private val routeListViewModel: RouteListViewModel,
+    private val wakeLockManager: WakeLockManager? = null
 ) {
     
     /**
@@ -60,6 +62,10 @@ class EditModeManager(
     ) {
         scope.launch {
             loadingViewModel.showLoading("時刻情報更新中")
+            
+            // WakeLockを取得してスリープを防止
+            wakeLockManager?.acquireWakeLock()
+            
             try {
                 withContext(Dispatchers.IO) {
                     routeListViewModel.updateRouteInfo(
@@ -72,6 +78,8 @@ class EditModeManager(
                 // エラーハンドリング
             } finally {
                 loadingViewModel.closeLoading()
+                // WakeLockを解放
+                wakeLockManager?.releaseWakeLock()
             }
         }
     }

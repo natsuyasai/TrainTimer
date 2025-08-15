@@ -3,6 +3,7 @@ package com.nyasai.traintimer.routelist
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
+import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,7 +13,8 @@ import kotlinx.coroutines.withContext
  * 路線登録処理機能を管理するクラス
  */
 class RouteRegistrationManager(
-    private val routeListViewModel: RouteListViewModel
+    private val routeListViewModel: RouteListViewModel,
+    private val wakeLockManager: WakeLockManager
 ) {
     
     /**
@@ -29,6 +31,9 @@ class RouteRegistrationManager(
         scope.launch {
             hideDestinationDialog()
             loadingViewModel.showLoading("時刻情報取得中")
+            
+            // WakeLockを取得してスリープを防止
+            wakeLockManager.acquireWakeLock()
             
             try {
                 val selectedDestination = listSelectViewModel.selectedItemState
@@ -55,6 +60,8 @@ class RouteRegistrationManager(
                 // エラーハンドリング
             } finally {
                 loadingViewModel.closeLoading()
+                // WakeLockを解放
+                wakeLockManager.releaseWakeLock()
             }
         }
     }
