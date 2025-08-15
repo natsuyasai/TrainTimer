@@ -8,6 +8,7 @@ entity RouteListItem {
     駅名(stationName): String
     行先(destination): String
     ソート用情報(sortIndex): Long
+    表示色(displayColor): Int
 }
 
 ' 詳細情報
