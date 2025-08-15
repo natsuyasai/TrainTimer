@@ -73,7 +73,7 @@ fun ListItemSelectDialog(
                                         onItemSelect(item)
                                     },
                                     colors = RadioButtonDefaults.colors(
-                                        selectedColor = colorResource(id = R.color.actionBar),
+                                        selectedColor = colorResource(id = R.color.textColor),
                                         unselectedColor = colorResource(id = R.color.textColor)
                                     )
                                 )
@@ -98,7 +98,7 @@ fun ListItemSelectDialog(
                 ) {
                     Text(
                         text = "OK",
-                        color = colorResource(id = R.color.actionBar)
+                        color = colorResource(id = R.color.textColor)
                     )
                 }
             },
