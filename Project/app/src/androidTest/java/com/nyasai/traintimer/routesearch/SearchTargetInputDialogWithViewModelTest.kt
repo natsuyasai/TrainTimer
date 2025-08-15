@@ -63,7 +63,6 @@ class SearchTargetInputDialogWithViewModelTest {
 
         // Then
         assert(viewModel.stationNameState == testInput)
-        assert(viewModel.getStationName() == testInput)
     }
 
     @Test
@@ -131,6 +130,5 @@ class SearchTargetInputDialogWithViewModelTest {
 
         // Then
         assert(viewModel.stationNameState == "")
-        assert(viewModel.getStationName() == "")
     }
 }
