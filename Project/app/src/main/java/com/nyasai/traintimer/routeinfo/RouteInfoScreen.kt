@@ -194,7 +194,7 @@ fun RouteInfoScreen(
                     Text(
                         text = countdownText,
                         color = colorResource(id = R.color.textColor),
-                        fontSize = 40.sp,
+                        fontSize = 50.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End,
                         modifier = Modifier

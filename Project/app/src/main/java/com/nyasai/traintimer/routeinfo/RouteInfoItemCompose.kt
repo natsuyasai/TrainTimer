@@ -69,7 +69,7 @@ fun RouteInfoItemCompose(
             Text(
                 text = routeDetail.departureTime ?: "--:--",
                 color = getTimeTextColor(routeDetail),
-                fontSize = 14.sp,
+                fontSize = 18.sp,
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -80,7 +80,7 @@ fun RouteInfoItemCompose(
             Text(
                 text = routeDetail.trainType ?: "",
                 color = colorResource(id = R.color.textRed),
-                fontSize = 14.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Start,
                 maxLines = 1,
@@ -92,7 +92,7 @@ fun RouteInfoItemCompose(
             Text(
                 text = routeDetail.destination ?: "",
                 color = colorResource(id = R.color.textColor),
-                fontSize = 14.sp,
+                fontSize = 18.sp,
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
