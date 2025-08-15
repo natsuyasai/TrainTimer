@@ -1,6 +1,8 @@
 package com.nyasai.traintimer.commonparts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
@@ -41,7 +44,11 @@ fun CommonLoadingCompose(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(colorResource(id = R.color.shade)),
+                .background(colorResource(id = R.color.shade))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) { /* タッチイベントを吸収して背景操作を防ぐ */ },
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -93,7 +100,11 @@ private fun CommonLoadingComposePreview() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.shade)),
+            .background(colorResource(id = R.color.shade))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { /* タッチイベントを吸収して背景操作を防ぐ */ },
         contentAlignment = Alignment.Center
     ) {
         Column(
