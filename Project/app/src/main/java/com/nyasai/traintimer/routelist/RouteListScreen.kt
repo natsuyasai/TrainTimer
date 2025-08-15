@@ -46,9 +46,7 @@ import com.nyasai.traintimer.routesearch.ListItemSelectDialogWithViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialogWithViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * 路線一覧画面のComposeスクリーン
@@ -73,6 +71,12 @@ fun RouteListScreen(
     
     // EditModeManagerの初期化
     val editModeManager = remember { EditModeManager(routeListViewModel) }
+    
+    // RouteSearchManagerの初期化
+    val routeSearchManager = remember { RouteSearchManager(routeListViewModel) }
+    
+    // RouteRegistrationManagerの初期化
+    val routeRegistrationManager = remember { RouteRegistrationManager(routeListViewModel) }
     
     // ViewModelの状態を観察
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())
@@ -246,11 +250,10 @@ fun RouteListScreen(
     if (showSearchDialog) {
         // コールバックを事前に設定
         searchTargetInputViewModel.onClickPositiveButtonCallback = {
-            handleSearchDialogPositiveClick(
+            routeSearchManager.handleSearchDialogPositiveClick(
                 scope,
                 searchTargetInputViewModel,
                 commonLoadingViewModel,
-                routeListViewModel,
                 listItemSelectViewModel,
                 { name -> currentStationName = name },
                 { options -> stationOptions = options },
@@ -274,11 +277,10 @@ fun RouteListScreen(
     if (showStationSelectDialog) {
         // コールバックを事前に設定
         listItemSelectViewModel.onClickPositiveButtonCallback = {
-            handleStationSelectPositiveClick(
+            routeSearchManager.handleStationSelectPositiveClick(
                 scope,
                 listItemSelectViewModel,
                 commonLoadingViewModel,
-                routeListViewModel,
                 stationOptions,
                 { station -> currentStationName = station },
                 { options -> destinationOptions = options },
@@ -301,11 +303,10 @@ fun RouteListScreen(
     if (showDestinationSelectDialog) {
         // コールバックを事前に設定
         listItemSelectViewModel.onClickPositiveButtonCallback = {
-            handleDestinationSelectPositiveClick(
+            routeRegistrationManager.handleDestinationSelectPositiveClick(
                 scope,
                 listItemSelectViewModel,
                 commonLoadingViewModel,
-                routeListViewModel,
                 destinationOptions,
                 currentStationName
             ) { showDestinationSelectDialog = false }
@@ -369,180 +370,6 @@ fun RouteListScreen(
     }
 }
 
-/**
- * 検索ダイアログの肯定ボタンクリック処理
- */
-private fun handleSearchDialogPositiveClick(
-    scope: kotlinx.coroutines.CoroutineScope,
-    searchViewModel: SearchTargetInputViewModel,
-    loadingViewModel: CommonLoadingViewModel,
-    routeListViewModel: RouteListViewModel,
-    listSelectViewModel: ListItemSelectViewModel,
-    setCurrentStationName: (String) -> Unit,
-    setStationOptions: (Map<String, String>) -> Unit,
-    setDestinationOptions: (Map<String, String>) -> Unit,
-    hideSearchDialog: () -> Unit,
-    showStationDialog: () -> Unit,
-    showDestinationDialog: () -> Unit
-) {
-    scope.launch {
-        hideSearchDialog()
-        loadingViewModel.showLoading()
-        
-        try {
-            val stationName = searchViewModel.stationNameState
-            setCurrentStationName(stationName)
-            
-            val (stationListMap, destinationListMap) = withContext(Dispatchers.IO) {
-                fetchStationAndDestinationData(routeListViewModel, stationName)
-            }
-            
-            handleSearchResults(
-                stationListMap,
-                destinationListMap,
-                listSelectViewModel,
-                setStationOptions,
-                setDestinationOptions,
-                showStationDialog,
-                showDestinationDialog
-            )
-        } catch (e: Exception) {
-            // エラーハンドリング
-        } finally {
-            loadingViewModel.closeLoading()
-            searchViewModel.clearUIData()
-        }
-    }
-}
-
-/**
- * 駅と目的地データの取得
- */
-private fun fetchStationAndDestinationData(
-    routeListViewModel: RouteListViewModel,
-    stationName: String
-): Pair<Map<String, String>?, Map<String, String>> {
-    val stationList = routeListViewModel.getStationList(stationName)
-    val destinationList = if (stationList?.isEmpty() != false) {
-        routeListViewModel.getDestinationFromStationName(stationName)
-    } else {
-        emptyMap()
-    }
-    return Pair(stationList, destinationList)
-}
-
-/**
- * 検索結果の処理
- */
-private fun handleSearchResults(
-    stationListMap: Map<String, String>?,
-    destinationListMap: Map<String, String>,
-    listSelectViewModel: ListItemSelectViewModel,
-    setStationOptions: (Map<String, String>) -> Unit,
-    setDestinationOptions: (Map<String, String>) -> Unit,
-    showStationDialog: () -> Unit,
-    showDestinationDialog: () -> Unit
-) {
-    if (stationListMap?.isNotEmpty() == true) {
-        setStationOptions(stationListMap)
-        listSelectViewModel.updateItems(stationListMap.keys.toList())
-        showStationDialog()
-    } else {
-        setDestinationOptions(destinationListMap)
-        listSelectViewModel.updateItems(destinationListMap.keys.toList())
-        showDestinationDialog()
-    }
-}
-
-/**
- * 駅選択ダイアログの肯定ボタンクリック処理
- */
-private fun handleStationSelectPositiveClick(
-    scope: kotlinx.coroutines.CoroutineScope,
-    listSelectViewModel: ListItemSelectViewModel,
-    loadingViewModel: CommonLoadingViewModel,
-    routeListViewModel: RouteListViewModel,
-    stationOptions: Map<String, String>,
-    setCurrentStationName: (String) -> Unit,
-    setDestinationOptions: (Map<String, String>) -> Unit,
-    hideStationDialog: () -> Unit,
-    showDestinationDialog: () -> Unit
-) {
-    scope.launch {
-        hideStationDialog()
-        loadingViewModel.showLoading()
-        
-        try {
-            val selectedStation = listSelectViewModel.selectedItemState
-            setCurrentStationName(selectedStation)
-            
-            val destinationListMap = withContext(Dispatchers.IO) {
-                routeListViewModel.getDestinationFromUrl(
-                    stationOptions.getValue(selectedStation)
-                )
-            }
-            
-            setDestinationOptions(destinationListMap)
-            listSelectViewModel.updateItems(destinationListMap.keys.toList())
-            showDestinationDialog()
-        } catch (e: Exception) {
-            // エラーハンドリング
-        } finally {
-            loadingViewModel.closeLoading()
-        }
-    }
-}
-
-/**
- * 目的地選択ダイアログの肯定ボタンクリック処理
- */
-private fun handleDestinationSelectPositiveClick(
-    scope: kotlinx.coroutines.CoroutineScope,
-    listSelectViewModel: ListItemSelectViewModel,
-    loadingViewModel: CommonLoadingViewModel,
-    routeListViewModel: RouteListViewModel,
-    destinationOptions: Map<String, String>,
-    currentStationName: String,
-    hideDestinationDialog: () -> Unit
-) {
-    scope.launch {
-        hideDestinationDialog()
-        loadingViewModel.showLoading("時刻情報取得中")
-        
-        try {
-            val selectedDestination = listSelectViewModel.selectedItemState
-            val url = destinationOptions.getValue(selectedDestination)
-            
-            val (routeInfo, parentDataId) = withContext(Dispatchers.IO) {
-                val routeInfo = routeListViewModel.getTimeTableInfo(
-                    url,
-                    { loadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                    { loadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
-                )
-                
-                val newRouteListItem = RouteListItem().apply {
-                    val splitDestinationKey = routeListViewModel.splitDestinationKey(selectedDestination)
-                    routeName = splitDestinationKey.first
-                    destination = splitDestinationKey.second
-                    stationName = currentStationName
-                }
-                
-                val parentDataId = routeListViewModel.registerRouteListItem(routeInfo, newRouteListItem)
-                Pair(routeInfo, parentDataId)
-            }
-            
-            loadingViewModel.changeText("時刻情報登録中")
-            
-            withContext(Dispatchers.IO) {
-                routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
-            }
-        } catch (e: Exception) {
-            // エラーハンドリング
-        } finally {
-            loadingViewModel.closeLoading()
-        }
-    }
-}
 
 
 
