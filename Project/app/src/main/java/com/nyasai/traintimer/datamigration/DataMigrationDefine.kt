@@ -4,7 +4,7 @@ class DataMigrationDefine {
 
     companion object {
         // データバージョン
-        private const val DATA_VERSION = 2
+        private const val DATA_VERSION = 3
         const val DATA_VERSION_INFO = "DataVersion,${DATA_VERSION}"
 
         // 路線一覧情報開始位置
