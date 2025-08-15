@@ -3,6 +3,7 @@ package com.nyasai.traintimer.routelist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -168,7 +169,7 @@ fun RouteListScreen(
                     .background(colorResource(id = R.color.colorNormalBackground))
                     .pointerInput(Unit) {
                         if (isEditMode) {
-                            detectDragGestures(
+                            detectDragGesturesAfterLongPress(
                                 onDragStart = { offset ->
                                     dragAndDropManager.handleDragStart(
                                         offset,
