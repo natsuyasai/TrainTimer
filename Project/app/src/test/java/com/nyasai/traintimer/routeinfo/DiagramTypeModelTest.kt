@@ -24,10 +24,6 @@ internal class DiagramTypeModelTest {
         _httpClientMock = mockk(relaxed = true)
     }
 
-    @AfterEach
-    fun tearDown() {
-    }
-
     @Test
     fun `次のダイア種別の取得 現在：平日`() {
         val target = DiagramTypeModel(Calendar.getInstance(), _httpClientMock)

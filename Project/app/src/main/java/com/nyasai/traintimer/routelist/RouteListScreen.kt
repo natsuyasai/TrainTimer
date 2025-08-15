@@ -3,9 +3,10 @@ package com.nyasai.traintimer.routelist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.lazy.LazyListItemInfo
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -13,12 +14,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -30,9 +42,11 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.commonparts.CommonLoadingCompose
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
-import com.nyasai.traintimer.routesearch.*
+import com.nyasai.traintimer.routesearch.ListItemSelectDialogWithViewModel
+import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
+import com.nyasai.traintimer.routesearch.SearchTargetInputDialogWithViewModel
+import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -44,9 +58,9 @@ import kotlinx.coroutines.withContext
 fun RouteListScreen(
     onRouteItemClick: (Long) -> Unit,
     onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier,
     routeListViewModel: RouteListViewModel = viewModel(),
-    commonLoadingViewModel: CommonLoadingViewModel = viewModel(),
-    modifier: Modifier = Modifier
+    commonLoadingViewModel: CommonLoadingViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -70,7 +84,7 @@ fun RouteListScreen(
     
     // ドラッグ&ドロップ状態（AndroidX公式デモに基づくアプローチ）
     var isDragging by remember { mutableStateOf(false) }
-    var draggedDistance by remember { mutableStateOf(0f) }
+    var draggedDistance by remember { mutableFloatStateOf(0f) }
     var initialDraggedIndex by remember { mutableStateOf<Int?>(null) }
     var currentDragOverIndex by remember { mutableStateOf<Int?>(null) }
     val listState = rememberLazyListState()
@@ -304,9 +318,8 @@ fun RouteListScreen(
                 commonLoadingViewModel,
                 routeListViewModel,
                 destinationOptions,
-                currentStationName,
-                { showDestinationSelectDialog = false }
-            )
+                currentStationName
+            ) { showDestinationSelectDialog = false }
         }
         listItemSelectViewModel.onClickNegativeButtonCallback = {
             showDestinationSelectDialog = false
@@ -417,7 +430,7 @@ private fun handleSearchDialogPositiveClick(
 /**
  * 駅と目的地データの取得
  */
-private suspend fun fetchStationAndDestinationData(
+private fun fetchStationAndDestinationData(
     routeListViewModel: RouteListViewModel,
     stationName: String
 ): Pair<Map<String, String>?, Map<String, String>> {
@@ -425,7 +438,7 @@ private suspend fun fetchStationAndDestinationData(
     val destinationList = if (stationList?.isEmpty() != false) {
         routeListViewModel.getDestinationFromStationName(stationName)
     } else {
-        emptyMap<String, String>()
+        emptyMap()
     }
     return Pair(stationList, destinationList)
 }

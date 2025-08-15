@@ -1,9 +1,14 @@
 package com.nyasai.traintimer.routeinfo
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,9 +32,9 @@ import java.time.format.DateTimeParseException
 @Composable
 fun RouteInfoItemCompose(
     routeDetail: RouteDetail,
+    modifier: Modifier = Modifier,
     isSelected: Boolean = false,
-    onItemClick: ((RouteDetail) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onItemClick: ((RouteDetail) -> Unit)? = null
 ) {
     val isPastTime = isPastTime(routeDetail)
     
@@ -124,7 +129,7 @@ private enum class TimeStatus {
 private fun getTimeStatus(routeDetail: RouteDetail): TimeStatus {
     return try {
         val departureTime = routeDetail.departureTime
-        if (departureTime.isNullOrEmpty()) {
+        if (departureTime.isEmpty()) {
             TimeStatus.INVALID
         } else {
             val now = LocalTime.now()

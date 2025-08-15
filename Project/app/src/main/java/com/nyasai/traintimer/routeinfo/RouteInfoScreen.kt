@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -14,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.FilterInfo
-import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.database.RouteDatabase
+import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -96,7 +96,7 @@ fun RouteInfoScreen(
     }
     
     // フィルター更新用のトリガー
-    var filterUpdateTrigger by remember { mutableStateOf(0) }
+    var filterUpdateTrigger by remember { mutableIntStateOf(0) }
     
     // 表示リストの更新ロジック（データが変更されたときに実行）
     LaunchedEffect(currentDiagramType, routeItems, filterInfo, filterUpdateTrigger) {
@@ -129,27 +129,15 @@ fun RouteInfoScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { 
-                            scope.launch {
-                                try {
-                                    // 現在のフィルタ情報を取得してダイアログに設定
-                                    val currentFilterItems = filterInfo
-                                    if (currentFilterItems.isNotEmpty()) {
-                                        filterItemSelectViewModel.updateFilterItems(currentFilterItems)
-                                    } else {
-                                        // フィルタ情報が空の場合は同期取得
-                                        val syncFilterItems = routeInfoViewModel.getFilterInfoItemWithParentIdSync()
-                                        filterItemSelectViewModel.updateFilterItems(syncFilterItems)
-                                    }
-                                    showFilterDialog = true
-                                } catch (e: Exception) {
-                                    // エラーハンドリング
-                                    showFilterDialog = true // ダイアログは表示する
-                                }
-                            }
+                        IconButton(onClick = {
+                            handleFilterButtonClick(scope,
+                                filterInfo,
+                                filterItemSelectViewModel,
+                                routeInfoViewModel,
+                                {showFilterDialog = true})
                         }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_filter_alt_24px),
+                                Icons.Default.FilterAlt,
                                 contentDescription = "フィルタ"
                             )
                         }
@@ -171,9 +159,8 @@ fun RouteInfoScreen(
                         currentDiagramType = currentDiagramType,
                         onTitleClick = {
                             handleTitleClick(
-                                routeInfoViewModel,
-                                { filterUpdateTrigger++ }
-                            )
+                                routeInfoViewModel
+                            ) { filterUpdateTrigger++ }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -246,13 +233,13 @@ fun RouteInfoScreen(
                                 fontSize = 12.sp
                             )
                             Text(
-                                text = "現在のダイヤ: ${currentDiagramType}",
+                                text = "現在のダイヤ: $currentDiagramType",
                                 color = colorResource(id = R.color.textGray),
                                 textAlign = TextAlign.Center,
                                 fontSize = 12.sp
                             )
                             Text(
-                                text = "親データID: ${parentDataId}",
+                                text = "親データID: $parentDataId",
                                 color = colorResource(id = R.color.textGray),
                                 textAlign = TextAlign.Center,
                                 fontSize = 12.sp
@@ -314,7 +301,7 @@ private fun findNextTrainIndex(routeDetails: List<RouteDetail>): Int {
     return routeDetails.indexOfFirst { routeDetail ->
         try {
             val departureTime = routeDetail.departureTime
-            if (!departureTime.isNullOrEmpty()) {
+            if (departureTime.isNotEmpty()) {
                 val trainTime = LocalTime.parse(departureTime)
                 trainTime.isAfter(now)
             } else {
@@ -334,12 +321,12 @@ private fun formatCountdownTime(diffSeconds: Long): String {
         diffSeconds < 0 -> "--:--"
         diffSeconds < 60 -> {
             val seconds = diffSeconds % 60
-            "00:${String.format("%02d", seconds)}"
+            "00:${String.format(Locale.JAPAN,"%02d", seconds)}"
         }
         else -> {
             val minutes = diffSeconds / 60
             val seconds = diffSeconds % 60
-            "${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+            "${String.format(Locale.JAPAN,"%02d", minutes)}:${String.format(Locale.JAPAN,"%02d", seconds)}"
         }
     }
 }
@@ -349,9 +336,9 @@ private fun formatCountdownTime(diffSeconds: Long): String {
  */
 private fun buildNextTimeInfo(countItem: RouteDetail): String {
     return buildString {
-        append("${countItem.departureTime ?: "--:--"}\n")
-        append("${countItem.trainType ?: "--"}\n")
-        append("${countItem.destination ?: "--"}")
+        append("${countItem.departureTime.ifEmpty { "--:--" }}\n")
+        append("${countItem.trainType.ifEmpty { "--"}}\n")
+        append(countItem.destination.ifEmpty { "--" })
     }
 }
 

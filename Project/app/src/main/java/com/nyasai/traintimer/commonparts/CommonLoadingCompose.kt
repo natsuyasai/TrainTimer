@@ -1,20 +1,27 @@
 package com.nyasai.traintimer.commonparts
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.MutableLiveData
 import com.nyasai.traintimer.R
 
 /**
@@ -54,7 +61,7 @@ fun CommonLoadingCompose(
                 )
 
                 // 進捗表示
-                if (maxCount.compareTo(0) > 0) {
+                if (maxCount > 0) {
                     Text(
                         text = "$currentCount/$maxCount",
                         color = colorResource(id = R.color.textColor),
@@ -77,20 +84,6 @@ fun CommonLoadingCompose(
             }
         }
     }
-}
-
-/**
- * ViewModelと統合されたローディングコンポーネント
- */
-@Composable
-fun CommonLoadingWithViewModel(
-    viewModel: CommonLoadingViewModel,
-    modifier: Modifier = Modifier
-) {
-    CommonLoadingCompose(
-        viewModel = viewModel,
-        modifier = modifier
-    )
 }
 
 @Preview(showBackground = true)

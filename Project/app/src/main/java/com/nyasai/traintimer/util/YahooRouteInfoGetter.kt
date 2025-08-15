@@ -87,14 +87,14 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 駅一覧箇所を取得
         val searchResultDiv = document.getElementById("main") ?: return stationList
         val stationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem quad")
-        if (stationListRootElement.size < 1) {
+        if (stationListRootElement.isEmpty()) {
             return stationList
         }
         // 駅名と遷移先URLをmapにつめる
         val stationInfoElements = stationListRootElement[0].select("li > a")
         for (element in stationInfoElements) {
             stationList[element.text()] =
-                YahooRouteSearchBaseUrl + element.attr("href").toString()
+                YahooRouteSearchBaseUrl + element.attr("href")
         }
         return stationList
     }
@@ -123,7 +123,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 行先一覧箇所を取得
         val searchResultDiv = document.getElementById("mdSearchLine") ?: return destinationList
         val destinationListRootElement = searchResultDiv.getElementsByClass("elmSearchItem")
-        if (destinationListRootElement.size < 1) {
+        if (destinationListRootElement.isEmpty()) {
             return destinationList
         }
         val destinationElementsRoot = destinationListRootElement[0].select("li > dl")
@@ -132,12 +132,12 @@ class YahooRouteInfoGetter : CoroutineScope {
         for (element in destinationElementsRoot) {
             val routeNameElements = element.select("dl > dt")
             val linkElements = element.select("li > a")
-            if (routeNameElements.size > 0 && linkElements.size > 0) {
+            if (routeNameElements.isNotEmpty() && linkElements.isNotEmpty()) {
                 for (linkElement in linkElements) {
                     // 路線名，行先をキーとする
                     val key = routeNameElements[0].text() + KeyDelimiterSir + linkElement.text()
                     destinationList[key] =
-                        YahooRouteSearchBaseUrl + linkElement.attr("href").toString()
+                        YahooRouteSearchBaseUrl + linkElement.attr("href")
                 }
             }
         }
@@ -238,35 +238,6 @@ class YahooRouteInfoGetter : CoroutineScope {
     }
 
     /**
-     * 時刻情報リスト取得
-     * @param tableUrl 時刻表ページURL
-     * @param notifyMaxCountCallback 最大カウント値通知コールバック関数
-     * @param notifyCountCallback カウント通知コールバック関数
-     * @return 時刻情報情報
-     */
-    private fun getTimeInfoList(
-        tableUrl: String,
-        notifyMaxCountCallback: ((Int) -> Unit),
-        notifyCountCallback: (() -> Unit)
-    ): List<TimeInfo> {
-        // 詳細ページへのURLを取得し，全ページ分解析実行
-        val detailUrls = getTimeDetailsUrlList(tableUrl)
-        notifyMaxCountCallback(detailUrls.count())
-        val timeInfoList = mutableListOf<TimeInfo>()
-        for (detailUrl in detailUrls) {
-            // 解析して結果を保持
-            val info: TimeInfo = getTimeInfo(detailUrl) ?: return mutableListOf()
-            timeInfoList.add(info)
-            notifyCountCallback()
-        }
-        if (timeInfoList.count() != detailUrls.count()) {
-            // 件数が一致しないため失敗
-            return mutableListOf()
-        }
-        return timeInfoList
-    }
-
-    /**
      * 時刻表URLリスト取得
      * @param timeTableUrl 時刻表ページURL
      * @return 時刻表URL(平日,土曜,日曜・祝日)
@@ -278,14 +249,14 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 曜日切り替え箇所から，3種の時刻表URL取得
         val timeTableRootElement = document.getElementById("mdStaLineDia") ?: return timeTableUrls
         val dateSwitchElements = timeTableRootElement.getElementsByClass("navDayOfWeek")
-        if (dateSwitchElements.size < 1) {
+        if (dateSwitchElements.isEmpty()) {
             return timeTableUrls
         }
         // 平日は引数でもらうURLのため，そのまま保持
         timeTableUrls.add(timeTableUrl)
         val dateInfoElements = dateSwitchElements[0].select("li > a")
         for (element in dateInfoElements) {
-            timeTableUrls.add(YahooRouteSearchBaseUrl + element.attr("href").toString())
+            timeTableUrls.add(YahooRouteSearchBaseUrl + element.attr("href"))
         }
 
         return timeTableUrls
@@ -304,14 +275,14 @@ class YahooRouteInfoGetter : CoroutineScope {
         // 時刻情報部分取得
         val timeTableRootElement = document.getElementById("mdStaLineDia") ?: return urlList
         val timeTableRootElements = timeTableRootElement.getElementsByClass("tblDiaDetail")
-        if (timeTableRootElements.size < 1) {
+        if (timeTableRootElements.isEmpty()) {
             return urlList
         }
         // 時刻表の1セル部分内のaタグから詳細ページへのリンクを取得
         val timeTableCells = timeTableRootElements[0].getElementsByClass("timeNumb")
         for (cell in timeTableCells) {
             for (element in cell.select("a")) {
-                urlList.add(YahooRouteSearchBaseUrl + element.attr("href").toString())
+                urlList.add(YahooRouteSearchBaseUrl + element.attr("href"))
             }
         }
         return urlList
@@ -344,7 +315,7 @@ class YahooRouteInfoGetter : CoroutineScope {
         val headerElements = rootElement.select(".labelMedium > .title")
         val detailElements = rootElement.getElementsByClass("txtTrainInfo")
         
-        return if (headerElements.size >= 1 && detailElements.size >= 1) {
+        return if (headerElements.isNotEmpty() && detailElements.isNotEmpty()) {
             Pair(headerElements, detailElements)
         } else null
     }

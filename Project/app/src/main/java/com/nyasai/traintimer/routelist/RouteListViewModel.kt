@@ -213,7 +213,7 @@ class RouteListViewModel(
     /**
      * アイテムに対応する目的地リストマップを取得
      */
-    private suspend fun getDestinationListForItem(item: RouteListItem): Map<String, String>? {
+    private fun getDestinationListForItem(item: RouteListItem): Map<String, String>? {
         val stationListMap = _yahooRouteInfoGetter.getStationList(item.stationName)
         
         return if (stationListMap?.isNotEmpty() == true && stationListMap.containsKey(item.stationName)) {

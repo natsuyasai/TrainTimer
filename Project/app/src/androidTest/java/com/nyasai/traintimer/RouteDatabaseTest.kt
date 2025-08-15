@@ -1,21 +1,5 @@
 @file:Suppress(
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection"
+    "SpellCheckingInspection"
 )
 
 package com.nyasai.traintimer
@@ -32,23 +16,7 @@ import org.junit.runner.RunWith
 import java.io.IOException
 
 @Suppress(
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection",
-    "SpellCheckingInspection", "SpellCheckingInspection"
+    "SpellCheckingInspection"
 )
 @RunWith(AndroidJUnit4::class)
 class RouteDatabaseTest {

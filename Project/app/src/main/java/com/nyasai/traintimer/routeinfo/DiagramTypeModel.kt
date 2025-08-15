@@ -12,14 +12,9 @@ open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
     private val _publicHolidayJudgeAPIUrl: String =
         "http://s-proj.com/utils/checkHoliday.php?kind=ph"
 
-    private val _calendar: Calendar
+    private val _calendar: Calendar = calendar
 
-    private val _httpClient: IHttpClient
-
-    init {
-        _calendar = calendar
-        _httpClient = httpClient
-    }
+    private val _httpClient: IHttpClient = httpClient
 
     /**
      * 次のダイア種別を取得
@@ -62,9 +57,6 @@ open class DiagramTypeModel(calendar: Calendar, httpClient: IHttpClient) {
      */
     protected open fun isHoliday(): Boolean {
         val response = _httpClient.httpGet(_publicHolidayJudgeAPIUrl)
-        if (response.isSuccessful && String(response.data) == "holiday") {
-            return true
-        }
-        return false
+        return response.isSuccessful && String(response.data) == "holiday"
     }
 }

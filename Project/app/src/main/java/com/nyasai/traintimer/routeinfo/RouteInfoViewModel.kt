@@ -246,7 +246,7 @@ class RouteInfoViewModel(
     /**
      * フィルタ情報更新
      */
-    suspend fun updateFilterInfoListItem(data: List<FilterInfo>) {
+    fun updateFilterInfoListItem(data: List<FilterInfo>) {
         database.updateFilterInfoListItem(data)
     }
 }

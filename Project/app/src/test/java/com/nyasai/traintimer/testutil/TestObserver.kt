@@ -16,7 +16,7 @@ class TestObserver<T>(count: Int = 1) : Observer<T> {
     }
 
     fun get(): T {
-        if (values.size == 0) {
+        if (values.isEmpty()) {
             throw IllegalStateException("onChanged is not called.")
         }
         return values[values.size - 1]
