@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * フィルター機能を管理するクラス
- * Martin Fowler の Extract Class リファクタリングパターンに基づく
  */
 class FilterManager {
     

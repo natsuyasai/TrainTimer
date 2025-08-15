@@ -7,7 +7,6 @@ import java.util.*
 
 /**
  * カウントダウンタイマー関連機能を管理するクラス
- * Martin Fowler の Extract Class リファクタリングパターンに基づく
  */
 class CountdownManager {
     

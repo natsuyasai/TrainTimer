@@ -6,7 +6,6 @@ import com.nyasai.traintimer.database.RouteDetail
 
 /**
  * 路線表示リスト管理機能を管理するクラス
- * Martin Fowler の Extract Class リファクタリングパターンに基づく
  */
 class RouteDisplayManager(
     private val countdownManager: CountdownManager

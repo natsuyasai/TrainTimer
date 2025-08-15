@@ -4,7 +4,6 @@ import com.nyasai.traintimer.database.RouteDetail
 
 /**
  * ユーザーインタラクション管理機能を管理するクラス
- * Martin Fowler の Extract Class リファクタリングパターンに基づく
  */
 class InteractionManager {
     
