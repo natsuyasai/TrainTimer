@@ -148,62 +148,43 @@ fun RouteListScreen(
                         if (isEditMode) {
                             detectDragGestures(
                                 onDragStart = { offset ->
-                                    listState.layoutInfo.visibleItemsInfo
-                                        .firstOrNull { item ->
-                                            offset.y.toInt() in item.offset..(item.offset + item.size)
-                                        }?.also { itemInfo ->
-                                            isDragging = true
-                                            initialDraggedIndex = itemInfo.index
-                                            currentDragOverIndex = itemInfo.index
-                                            draggedDistance = 0f
-                                        }
+                                    handleDragStart(
+                                        offset,
+                                        listState
+                                    ) { itemInfo ->
+                                        isDragging = true
+                                        initialDraggedIndex = itemInfo.index
+                                        currentDragOverIndex = itemInfo.index
+                                        draggedDistance = 0f
+                                    }
                                 },
                                 onDragEnd = {
-                                    // 並び替え処理の実行
-                                    initialDraggedIndex?.let { fromIndex ->
-                                        currentDragOverIndex?.let { toIndex ->
-                                            if (fromIndex != toIndex) {
-                                                // ローカルリストの並び替え
-                                                val mutableList = localRouteList.toMutableList()
-                                                val draggedItem = mutableList.removeAt(fromIndex)
-                                                mutableList.add(toIndex, draggedItem)
-                                                localRouteList = mutableList
-                                                
-                                                // ViewModelに変更を通知
-                                                routeListViewModel.updateSortIndex(fromIndex, toIndex)
-                                            }
-                                        }
+                                    handleDragEnd(
+                                        initialDraggedIndex,
+                                        currentDragOverIndex,
+                                        localRouteList,
+                                        routeListViewModel
+                                    ) { newList ->
+                                        localRouteList = newList
                                     }
                                     
-                                    // 状態リセット
-                                    draggedDistance = 0f
-                                    currentDragOverIndex = null
-                                    initialDraggedIndex = null
-                                    isDragging = false
+                                    handleResetDragState {
+                                        draggedDistance = 0f
+                                        currentDragOverIndex = null
+                                        initialDraggedIndex = null
+                                        isDragging = false
+                                    }
                                 },
                                 onDrag = { _, dragAmount ->
-                                    draggedDistance += dragAmount.y
-                                    
-                                    // ドラッグ中のホバー対象を計算
-                                    initialDraggedIndex?.let { draggedIndex ->
-                                        val draggedItem = listState.layoutInfo.visibleItemsInfo
-                                            .firstOrNull { it.index == draggedIndex }
-                                        
-                                        draggedItem?.let { item ->
-                                            val draggedItemCenter = item.offset + item.size / 2 + draggedDistance
-                                            
-                                            val targetItem = listState.layoutInfo.visibleItemsInfo
-                                                .minByOrNull { targetItem ->
-                                                    kotlin.math.abs(
-                                                        (targetItem.offset + targetItem.size / 2) - draggedItemCenter
-                                                    )
-                                                }
-                                            
-                                            targetItem?.let { target ->
-                                                if (target.index != currentDragOverIndex) {
-                                                    currentDragOverIndex = target.index
-                                                }
-                                            }
+                                    handleDrag(
+                                        dragAmount,
+                                        initialDraggedIndex,
+                                        listState,
+                                        draggedDistance
+                                    ) { newDistance, newDragOverIndex ->
+                                        draggedDistance = newDistance
+                                        if (newDragOverIndex != currentDragOverIndex) {
+                                            currentDragOverIndex = newDragOverIndex
                                         }
                                     }
                                 }
@@ -638,5 +619,112 @@ private fun handleEditModeToggle(
     routeListViewModel: RouteListViewModel
 ) {
     routeListViewModel.switchEditMode()
+}
+
+/**
+ * ドラッグ開始処理
+ */
+private fun handleDragStart(
+    offset: androidx.compose.ui.geometry.Offset,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onItemFound: (androidx.compose.foundation.lazy.LazyListItemInfo) -> Unit
+) {
+    listState.layoutInfo.visibleItemsInfo
+        .firstOrNull { item ->
+            offset.y.toInt() in item.offset..(item.offset + item.size)
+        }?.also { itemInfo ->
+            onItemFound(itemInfo)
+        }
+}
+
+/**
+ * ドラッグ終了処理
+ */
+private fun handleDragEnd(
+    initialDraggedIndex: Int?,
+    currentDragOverIndex: Int?,
+    localRouteList: List<RouteListItem>,
+    routeListViewModel: RouteListViewModel,
+    updateLocalRouteList: (List<RouteListItem>) -> Unit
+) {
+    initialDraggedIndex?.let { fromIndex ->
+        currentDragOverIndex?.let { toIndex ->
+            if (fromIndex != toIndex) {
+                performSortUpdate(fromIndex, toIndex, localRouteList, routeListViewModel, updateLocalRouteList)
+            }
+        }
+    }
+}
+
+/**
+ * ドラッグ中の処理
+ */
+private fun handleDrag(
+    dragAmount: androidx.compose.ui.geometry.Offset,
+    initialDraggedIndex: Int?,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    currentDraggedDistance: Float,
+    onDragUpdate: (Float, Int?) -> Unit
+) {
+    val newDistance = currentDraggedDistance + dragAmount.y
+    
+    initialDraggedIndex?.let { draggedIndex ->
+        val newDragOverIndex = calculateDragOverIndex(draggedIndex, newDistance, listState)
+        onDragUpdate(newDistance, newDragOverIndex)
+    } ?: run {
+        onDragUpdate(newDistance, null)
+    }
+}
+
+/**
+ * ドラッグ状態リセット処理
+ */
+private fun handleResetDragState(resetAction: () -> Unit) {
+    resetAction()
+}
+
+/**
+ * 並び替え実行処理
+ */
+private fun performSortUpdate(
+    fromIndex: Int,
+    toIndex: Int,
+    localRouteList: List<RouteListItem>,
+    routeListViewModel: RouteListViewModel,
+    updateLocalRouteList: (List<RouteListItem>) -> Unit
+) {
+    // ローカルリストの並び替え
+    val mutableList = localRouteList.toMutableList()
+    val draggedItem = mutableList.removeAt(fromIndex)
+    mutableList.add(toIndex, draggedItem)
+    updateLocalRouteList(mutableList)
+    
+    // ViewModelに変更を通知
+    routeListViewModel.updateSortIndex(fromIndex, toIndex)
+}
+
+/**
+ * ドラッグ中のホバー対象インデックス計算
+ */
+private fun calculateDragOverIndex(
+    draggedIndex: Int,
+    draggedDistance: Float,
+    listState: androidx.compose.foundation.lazy.LazyListState
+): Int? {
+    val draggedItem = listState.layoutInfo.visibleItemsInfo
+        .firstOrNull { it.index == draggedIndex }
+    
+    return draggedItem?.let { item ->
+        val draggedItemCenter = item.offset + item.size / 2 + draggedDistance
+        
+        val targetItem = listState.layoutInfo.visibleItemsInfo
+            .minByOrNull { targetItem ->
+                kotlin.math.abs(
+                    (targetItem.offset + targetItem.size / 2) - draggedItemCenter
+                )
+            }
+        
+        targetItem?.index
+    }
 }
 

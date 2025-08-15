@@ -133,8 +133,8 @@ fun RouteInfoScreen(
                             handleFilterButtonClick(scope,
                                 filterInfo,
                                 filterItemSelectViewModel,
-                                routeInfoViewModel,
-                                {showFilterDialog = true})
+                                routeInfoViewModel
+                            ) { showFilterDialog = true }
                         }) {
                             Icon(
                                 Icons.Default.FilterAlt,
