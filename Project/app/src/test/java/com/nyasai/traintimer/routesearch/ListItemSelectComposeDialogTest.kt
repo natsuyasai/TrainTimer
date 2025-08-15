@@ -26,7 +26,6 @@ class ListItemSelectComposeDialogTest {
 
         // Then
         assertEquals(testItems, viewModel.itemsState)
-        assertArrayEquals(testItems.toTypedArray(), viewModel.getItems())
     }
 
     @Test
@@ -44,7 +43,6 @@ class ListItemSelectComposeDialogTest {
 
         // Then
         assertEquals(selectedItem, viewModel.selectedItemState)
-        assertEquals(selectedItem, viewModel.selectItem)
         assertEquals(selectedItem, callbackItem)
     }
 
@@ -59,7 +57,6 @@ class ListItemSelectComposeDialogTest {
 
         // Then
         assertTrue(viewModel.itemsState.isEmpty())
-        assertTrue(viewModel.getItems().isEmpty())
         assertEquals("", viewModel.selectedItemState)
     }
 

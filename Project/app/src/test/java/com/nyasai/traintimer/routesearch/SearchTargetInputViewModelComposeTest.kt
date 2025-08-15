@@ -26,7 +26,6 @@ class SearchTargetInputViewModelComposeTest {
 
         // Then
         assertEquals(testStationName, viewModel.stationNameState)
-        assertEquals(testStationName, viewModel.getStationName())
     }
 
     @Test
@@ -39,7 +38,6 @@ class SearchTargetInputViewModelComposeTest {
 
         // Then
         assertEquals("", viewModel.stationNameState)
-        assertEquals("", viewModel.getStationName())
     }
 
     @Test

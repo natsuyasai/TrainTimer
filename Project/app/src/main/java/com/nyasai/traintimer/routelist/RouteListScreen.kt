@@ -402,7 +402,7 @@ private fun handleSearchDialogPositiveClick(
         loadingViewModel.showLoading()
         
         try {
-            val stationName = searchViewModel.getStationName()
+            val stationName = searchViewModel.stationNameState
             setCurrentStationName(stationName)
             
             val (stationListMap, destinationListMap) = withContext(Dispatchers.IO) {
