@@ -90,7 +90,7 @@ open class DataExport {
      * 路線リストアイテムのフォーマット
      */
     private fun formatRouteListItem(item: RouteListItem): String {
-        return "${item.dataId}${DELIMITER}${item.routeName}${DELIMITER}${item.stationName}${DELIMITER}${item.destination}${DELIMITER}${item.sortIndex}"
+        return "${item.dataId}${DELIMITER}${item.routeName}${DELIMITER}${item.stationName}${DELIMITER}${item.destination}${DELIMITER}${item.sortIndex}${DELIMITER}${item.displayColor ?: -1}"
     }
 
     /**

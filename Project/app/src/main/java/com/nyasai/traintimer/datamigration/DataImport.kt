@@ -163,7 +163,8 @@ open class DataImport(private val _routeDatabaseDao: RouteDatabaseDao) {
                 splitData[1],
                 splitData[2],
                 splitData[3],
-                splitData[4].toLong()
+                splitData[4].toLong(),
+                if (splitData[5].toInt() == -1) null else splitData[5].toInt()
             )
         } else null
     }
