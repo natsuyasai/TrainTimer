@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,12 +83,16 @@ fun RouteListScreen(
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())
     val isEditMode by routeListViewModel.isEditMode.observeAsState(false)
     
+    // 色更新用のリコンポジション強制フラグ
+    var colorUpdateTrigger by remember { mutableIntStateOf(0) }
+    
     // ダイアログの状態
     var showSearchDialog by remember { mutableStateOf(false) }
     var showStationSelectDialog by remember { mutableStateOf(false) }
     var showDestinationSelectDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var showColorSelectDialog by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf<RouteListItem?>(null) }
     
     // ダイアログ用のデータ
@@ -205,7 +210,10 @@ fun RouteListScreen(
                     },
                 state = listState
             ) {
-                itemsIndexed(localRouteList) { index, item ->
+                itemsIndexed(
+                    items = localRouteList,
+                    key = { _, item -> "${item.dataId}_${item.displayColor}_$colorUpdateTrigger" }
+                ) { index, item ->
                     val isBeingDragged = isDragging && initialDraggedIndex == index
                     
                     val itemModifier = Modifier
@@ -332,6 +340,7 @@ fun RouteListScreen(
                 commonLoadingViewModel,
                 selectedItem!!,
                 { showDeleteConfirmDialog = true },
+                { showColorSelectDialog = true },
                 { showEditDialog = false }
             )
         }
@@ -366,6 +375,23 @@ fun RouteListScreen(
             targetDataId = selectedItem!!.dataId,
             onDismiss = { showDeleteConfirmDialog = false },
             viewModel = routeListItemDeleteConfirmViewModel
+        )
+    }
+    
+    // 色選択ダイアログ
+    if (showColorSelectDialog && selectedItem != null) {
+        ColorSelectDialog(
+            isVisible = showColorSelectDialog,
+            currentColor = selectedItem!!.displayColor,
+            onColorSelected = { newColor ->
+                // selectedItemのdisplayColorを即座に更新
+                selectedItem = selectedItem!!.apply { displayColor = newColor }
+                editModeManager.handleColorUpdate(selectedItem!!, newColor)
+                // リコンポジションを強制するためのトリガー更新
+                colorUpdateTrigger++
+                showColorSelectDialog = false
+            },
+            onDismiss = { showColorSelectDialog = false }
         )
     }
 }

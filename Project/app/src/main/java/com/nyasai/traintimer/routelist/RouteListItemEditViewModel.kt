@@ -13,7 +13,8 @@ class RouteListItemEditViewModel : ViewModel() {
     enum class EditType {
         None,
         Update,
-        Delete
+        Delete,
+        SetColor
     }
 
     // 編集対象のデータID

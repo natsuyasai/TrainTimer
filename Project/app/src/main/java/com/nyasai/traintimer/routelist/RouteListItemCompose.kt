@@ -1,12 +1,14 @@
 package com.nyasai.traintimer.routelist
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,39 +32,60 @@ fun RouteListItemCompose(
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = R.color.colorNormalBackground)
         ),
-        border = BorderStroke(width = 1.dp, color = Color.Black),
+        border = BorderStroke(width = 1.dp, color = colorResource(id = R.color.textColor)),
         shape = RoundedCornerShape(8.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+                .height(IntrinsicSize.Min)
         ) {
-            // 路線名
-            Text(
-                text = routeListItem.routeName ?: "",
-                color = colorResource(id = R.color.textColor),
-                fontSize = 18.sp,
-                modifier = Modifier.fillMaxWidth()
+            // 左端の色バー
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(
+                        if (routeListItem.displayColor != null) {
+                            Color(routeListItem.displayColor!!)
+                        } else {
+                            Color.Gray.copy(alpha = 0.2f) // デバッグ用：薄いグレー
+                        }
+                    )
             )
             
-            // 駅名（メイン表示）
-            Text(
-                text = routeListItem.stationName ?: "",
-                color = colorResource(id = R.color.textColor),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            // 方面
-            Text(
-                text = routeListItem.destination ?: "",
-                color = colorResource(id = R.color.textColor),
-                fontSize = 18.sp,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // メインコンテンツ
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // 路線名
+                Text(
+                    text = routeListItem.routeName ?: "",
+                    color = colorResource(id = R.color.textColor),
+                    fontSize = 18.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // 駅名（メイン表示）
+                Text(
+                    text = routeListItem.stationName ?: "",
+                    color = colorResource(id = R.color.textColor),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // 方面
+                Text(
+                    text = routeListItem.destination ?: "",
+                    color = colorResource(id = R.color.textColor),
+                    fontSize = 18.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }
@@ -74,6 +97,7 @@ private fun RouteListItemComposePreview() {
         routeName = "JR山手線"
         stationName = "新宿駅"
         destination = "池袋・上野方面"
+        displayColor = Color.Blue.toArgb()
     }
     
     RouteListItemCompose(

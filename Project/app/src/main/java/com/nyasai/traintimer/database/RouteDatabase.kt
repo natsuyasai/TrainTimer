@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RouteDetail::class,
         FilterInfo::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class RouteDatabase : RoomDatabase() {
@@ -101,6 +101,12 @@ abstract class RouteDatabase : RoomDatabase() {
                 override fun migrate(database: SupportSQLiteDatabase) {
                 }
             }
+            val migration6to7 = object : Migration(6, 7) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    // route_list_item_tableにdisplay_colorカラムを追加
+                    database.execSQL("ALTER TABLE route_list_item_table ADD COLUMN display_color INTEGER")
+                }
+            }
             synchronized(this) {
                 var instance = INSTANCE
                 if (instance == null) {
@@ -115,6 +121,7 @@ abstract class RouteDatabase : RoomDatabase() {
                         .addMigrations(migration3to4)
                         .addMigrations(migration4to5)
                         .addMigrations(migration5to6)
+                        .addMigrations(migration6to7)
                         .build()
                     INSTANCE = instance
                 }

@@ -36,6 +36,7 @@ fun RouteListItemEditDialog(
     if (isVisible) {
         val editOptions = listOf(
             "更新" to RouteListItemEditViewModel.EditType.Update,
+            "色設定" to RouteListItemEditViewModel.EditType.SetColor,
             "削除" to RouteListItemEditViewModel.EditType.Delete
         )
 

@@ -30,11 +30,15 @@ class EditModeManager(
         loadingViewModel: CommonLoadingViewModel,
         selectedItem: RouteListItem,
         showDeleteDialog: () -> Unit,
+        showColorDialog: () -> Unit,
         hideEditDialog: () -> Unit
     ) {
         when (editType) {
             RouteListItemEditViewModel.EditType.Update -> {
                 handleRouteUpdate(scope, loadingViewModel, selectedItem)
+            }
+            RouteListItemEditViewModel.EditType.SetColor -> {
+                showColorDialog()
             }
             RouteListItemEditViewModel.EditType.Delete -> {
                 showDeleteDialog()
@@ -70,5 +74,16 @@ class EditModeManager(
                 loadingViewModel.closeLoading()
             }
         }
+    }
+    
+    /**
+     * 路線の色更新処理
+     */
+    fun handleColorUpdate(
+        selectedItem: RouteListItem,
+        newColor: Int?
+    ) {
+        selectedItem.displayColor = newColor
+        routeListViewModel.updateRouteListItemColor(selectedItem.dataId, newColor)
     }
 }

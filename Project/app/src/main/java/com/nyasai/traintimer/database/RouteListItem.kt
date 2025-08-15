@@ -29,12 +29,16 @@ data class RouteListItem @Ignore constructor(
 
     // ソート用インデックス
     @ColumnInfo(name = "sort_index")
-    var sortIndex: Long = 0L
+    var sortIndex: Long = 0L,
+
+    // 表示色（ARGBカラー値）
+    @ColumnInfo(name = "display_color")
+    var displayColor: Int? = null
 
 ) {
-    constructor() : this(0, "", "", "", 0L)
+    constructor() : this(0, "", "", "", 0L, null)
     companion object {
-        const val DataSize = 5
+        const val DataSize = 6
     }
 
 }

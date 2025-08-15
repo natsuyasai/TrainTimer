@@ -78,6 +78,12 @@ interface RouteDatabaseDao {
     @Query("SELECT MAX(sort_index) FROM route_list_item_table")
     fun getMaxSortIndex(): Long
 
+    /**
+     * 路線アイテムの色更新
+     */
+    @Query("UPDATE route_list_item_table SET display_color = :color WHERE dataId = :dataId")
+    fun updateRouteListItemColor(dataId: Long, color: Int?)
+
     // endregion 路線リストアイテム操作
 
     // region 路線情報詳細操作

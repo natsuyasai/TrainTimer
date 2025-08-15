@@ -302,6 +302,19 @@ class RouteListViewModel(
     }
 
     /**
+     * 路線アイテムの色を更新
+     */
+    fun updateRouteListItemColor(dataId: Long, color: Int?) {
+        // 即座にメモリ内のアイテムを更新
+        routeList.value?.find { it.dataId == dataId }?.displayColor = color
+        
+        // データベースも更新
+        launch(coroutineContext) {
+            database.updateRouteListItemColor(dataId, color)
+        }
+    }
+
+    /**
      * 登録する路線情報詳細とフィルタ情報を生成
      */
     private fun createRegisterRouteInfoDetailItemsAndFilterInfo(
