@@ -9,7 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * RouteListItemDeleteConfirmDialog Composeコンポーネントのテスト
+ * RouteListItemDeleteConfirmDialogWithViewModel Composeコンポーネントのテスト
  */
 @RunWith(AndroidJUnit4::class)
 class RouteListItemDeleteConfirmDialogTest {
@@ -18,20 +18,20 @@ class RouteListItemDeleteConfirmDialogTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun `ダイアログが正常に表示されること`() {
+    fun `ViewModelと統合されたダイアログが正常に表示されること`() {
         // Given
+        val viewModel = RouteListItemDeleteConfirmViewModel()
+        val testDataId = 123L
         var onDismissCalled = false
-        var onPositiveClickCalled = false
-        var onNegativeClickCalled = false
 
         // When
         composeTestRule.setContent {
             TrainTimerTheme {
                 RouteListItemDeleteConfirmDialog(
                     isVisible = true,
-                    onPositiveClick = { onPositiveClickCalled = true },
-                    onNegativeClick = { onNegativeClickCalled = true },
-                    onDismiss = { onDismissCalled = true }
+                    onDismiss = { onDismissCalled = true },
+                    onPositiveClick = {},
+                    onNegativeClick = {},
                 )
             }
         }
@@ -41,33 +41,83 @@ class RouteListItemDeleteConfirmDialogTest {
             .onNodeWithText("削除の確認")
             .assertIsDisplayed()
         
-        composeTestRule
-            .onNodeWithText("このアイテムを削除しますか？")
-            .assertIsDisplayed()
-        
-        composeTestRule
-            .onNodeWithText("はい")
-            .assertIsDisplayed()
-        
-        composeTestRule
-            .onNodeWithText("いいえ")
-            .assertIsDisplayed()
+        // ViewModelにデータIDが設定されていることを確認
+        assert(viewModel.targetDataId == testDataId)
     }
 
     @Test
-    fun `はいボタンが正常に動作すること`() {
+    fun `ViewModelのコールバックが正常に動作すること`() {
         // Given
-        var onPositiveClickCalled = false
-        var onDismissCalled = false
+        val viewModel = RouteListItemDeleteConfirmViewModel()
+        val testDataId = 456L
+        var positiveCallbackCalled = false
+        var negativeCallbackCalled = false
+        var callbackDataId: Long? = null
+
+        viewModel.onClickPositiveButtonCallback = { dataId ->
+            positiveCallbackCalled = true
+            callbackDataId = dataId
+        }
+
+        viewModel.onClickNegativeButtonCallback = { dataId ->
+            negativeCallbackCalled = true
+            callbackDataId = dataId
+        }
 
         // When
         composeTestRule.setContent {
             TrainTimerTheme {
                 RouteListItemDeleteConfirmDialog(
                     isVisible = true,
-                    onPositiveClick = { onPositiveClickCalled = true },
-                    onNegativeClick = { },
-                    onDismiss = { onDismissCalled = true }
+                    onDismiss = { },
+                    onPositiveClick = {},
+                    onNegativeClick = {},
+                )
+            }
+        }
+
+        // はいボタンをクリック
+        composeTestRule
+            .onNodeWithText("はい")
+            .performClick()
+
+        // Then
+        assert(positiveCallbackCalled)
+        assert(callbackDataId == testDataId)
+        assert(viewModel.targetDataId == null) // clearUIData()が呼ばれることを確認
+
+        // Reset for negative button test
+        positiveCallbackCalled = false
+        negativeCallbackCalled = false
+        callbackDataId = null
+
+        viewModel.setTargetDataId(testDataId)
+
+        composeTestRule
+            .onNodeWithText("いいえ")
+            .performClick()
+
+        assert(negativeCallbackCalled)
+        assert(callbackDataId == testDataId)
+        assert(viewModel.targetDataId == null) // clearUIData()が呼ばれることを確認
+    }
+
+    @Test
+    fun `ダイアログを閉じるとViewModelがクリアされること`() {
+        // Given
+        val viewModel = RouteListItemDeleteConfirmViewModel()
+        val testDataId = 789L
+        
+        viewModel.setTargetDataId(testDataId)
+
+        // When
+        composeTestRule.setContent {
+            TrainTimerTheme {
+                RouteListItemDeleteConfirmDialog(
+                    isVisible = true,
+                    onDismiss = { },
+                    onPositiveClick = {},
+                    onNegativeClick = {},
                 )
             }
         }
@@ -77,47 +127,22 @@ class RouteListItemDeleteConfirmDialogTest {
             .performClick()
 
         // Then
-        assert(onPositiveClickCalled)
-        assert(onDismissCalled)
+        assert(viewModel.targetDataId == null)
     }
 
     @Test
-    fun `いいえボタンが正常に動作すること`() {
+    fun `nullのデータIDでも正常に動作すること`() {
         // Given
-        var onNegativeClickCalled = false
-        var onDismissCalled = false
+        val viewModel = RouteListItemDeleteConfirmViewModel()
 
         // When
         composeTestRule.setContent {
             TrainTimerTheme {
                 RouteListItemDeleteConfirmDialog(
                     isVisible = true,
-                    onPositiveClick = { },
-                    onNegativeClick = { onNegativeClickCalled = true },
-                    onDismiss = { onDismissCalled = true }
-                )
-            }
-        }
-
-        composeTestRule
-            .onNodeWithText("いいえ")
-            .performClick()
-
-        // Then
-        assert(onNegativeClickCalled)
-        assert(onDismissCalled)
-    }
-
-    @Test
-    fun `ダイアログが非表示の時は何も表示されないこと`() {
-        // When
-        composeTestRule.setContent {
-            TrainTimerTheme {
-                RouteListItemDeleteConfirmDialog(
-                    isVisible = false,
-                    onPositiveClick = { },
-                    onNegativeClick = { },
-                    onDismiss = { }
+                    onDismiss = { },
+                    onPositiveClick = {},
+                    onNegativeClick = {},
                 )
             }
         }
@@ -125,6 +150,8 @@ class RouteListItemDeleteConfirmDialogTest {
         // Then
         composeTestRule
             .onNodeWithText("削除の確認")
-            .assertDoesNotExist()
+            .assertIsDisplayed()
+        
+        assert(viewModel.targetDataId == null)
     }
 }

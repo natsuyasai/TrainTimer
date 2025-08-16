@@ -7,11 +7,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 
 /**
- * 路線リストアイテム削除確認ダイアログ (Jetpack Compose版)
+ * 路線リストアイテム削除確認ダイアログ
  */
 @Composable
 fun RouteListItemDeleteConfirmDialog(
@@ -57,35 +56,6 @@ fun RouteListItemDeleteConfirmDialog(
             }
         )
     }
-}
-
-/**
- * ViewModelと統合されたRouteListItemDeleteConfirmDialog
- */
-@Composable
-fun RouteListItemDeleteConfirmDialogWithViewModel(
-    isVisible: Boolean,
-    targetDataId: Long?,
-    onDismiss: () -> Unit,
-    viewModel: RouteListItemDeleteConfirmViewModel = viewModel()
-) {
-    // データIDを設定
-    if (targetDataId != null) {
-        viewModel.setTargetDataId(targetDataId)
-    }
-
-    RouteListItemDeleteConfirmDialog(
-        isVisible = isVisible,
-        onPositiveClick = {
-            viewModel.onPositiveButtonClick()
-            viewModel.clearUIData()
-        },
-        onNegativeClick = {
-            viewModel.onNegativeButtonClick()
-            viewModel.clearUIData()
-        },
-        onDismiss = onDismiss
-    )
 }
 
 @Preview(showBackground = true)

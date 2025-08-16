@@ -126,7 +126,6 @@ fun RouteListScreen(
     val searchTargetInputViewModel: SearchTargetInputViewModel = viewModel()
     val listItemSelectViewModel: ListItemSelectViewModel = viewModel()
     val routeListItemEditViewModel: RouteListItemEditViewModel = viewModel()
-    val routeListItemDeleteConfirmViewModel: RouteListItemDeleteConfirmViewModel = viewModel()
     
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -362,24 +361,20 @@ fun RouteListScreen(
     }
     
     if (showDeleteConfirmDialog && selectedItem != null) {
-        // コールバックを事前に設定
-        routeListItemDeleteConfirmViewModel.onClickPositiveButtonCallback = { dataId ->
-            dialogManager.handleDeleteConfirmPositiveClick(
-                dataId,
-                routeListViewModel,
-                { showDeleteConfirmDialog = false },
-                { selectedItem = null }
-            )
-        }
-        routeListItemDeleteConfirmViewModel.onClickNegativeButtonCallback = {
-            showDeleteConfirmDialog = false
-        }
-        
-        RouteListItemDeleteConfirmDialogWithViewModel(
+        RouteListItemDeleteConfirmDialog(
             isVisible = showDeleteConfirmDialog,
-            targetDataId = selectedItem!!.dataId,
-            onDismiss = { showDeleteConfirmDialog = false },
-            viewModel = routeListItemDeleteConfirmViewModel
+            onPositiveClick = {
+                dialogManager.handleDeleteConfirmPositiveClick(
+                    selectedItem!!.dataId,
+                    routeListViewModel,
+                    { showDeleteConfirmDialog = false },
+                    { selectedItem = null }
+                )
+            },
+            onNegativeClick = {
+                showDeleteConfirmDialog = false
+            },
+            onDismiss = { showDeleteConfirmDialog = false }
         )
     }
     
