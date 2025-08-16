@@ -2,7 +2,6 @@ package com.nyasai.traintimer.routelist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,12 +43,21 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.commonparts.CommonLoadingCompose
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.routelist.logic.DialogManager
+import com.nyasai.traintimer.routelist.logic.DragAndDropManager
+import com.nyasai.traintimer.routelist.logic.EditModeManager
+import com.nyasai.traintimer.routelist.logic.RouteRegistrationManager
+import com.nyasai.traintimer.routelist.logic.RouteSearchManager
+import com.nyasai.traintimer.routelist.parts.ColorSelectDialog
+import com.nyasai.traintimer.routelist.parts.RouteListItemCompose
+import com.nyasai.traintimer.routelist.parts.RouteListItemDeleteConfirmDialog
+import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialogWithViewModel
+import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectDialogWithViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialogWithViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
 import com.nyasai.traintimer.util.WakeLockManager
-import kotlinx.coroutines.launch
 
 /**
  * 路線一覧画面のComposeスクリーン
@@ -82,7 +90,12 @@ fun RouteListScreen(
     val routeSearchManager = remember { RouteSearchManager(routeListViewModel, wakeLockManager) }
     
     // RouteRegistrationManagerの初期化
-    val routeRegistrationManager = remember { RouteRegistrationManager(routeListViewModel, wakeLockManager) }
+    val routeRegistrationManager = remember {
+        RouteRegistrationManager(
+            routeListViewModel,
+            wakeLockManager
+        )
+    }
     
     // ViewModelの状態を観察
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())
@@ -245,7 +258,7 @@ fun RouteListScreen(
                                 { showEditDialog = true }
                             )
                         }
-                    
+
                     RouteListItemCompose(
                         routeListItem = item,
                         modifier = itemModifier
@@ -351,7 +364,7 @@ fun RouteListScreen(
         routeListItemEditViewModel.onClickNegativeButtonCallback = { _, _ ->
             showEditDialog = false
         }
-        
+
         RouteListItemEditDialogWithViewModel(
             isVisible = showEditDialog,
             targetDataId = selectedItem!!.dataId,

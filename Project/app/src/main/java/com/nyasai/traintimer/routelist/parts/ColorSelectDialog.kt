@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.parts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -13,18 +13,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.nyasai.traintimer.R
 
 /**
  * 色選択ダイアログ
@@ -135,12 +135,12 @@ private fun ColorSelectDialogContent(
                     fontSize = 16.sp
                 )
             }
-            
-            Divider(
+
+            HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = Color.Gray
+                thickness = DividerDefaults.Thickness, color = Color.Gray
             )
-            
+
             // カラーパレット
             LazyVerticalGrid(
                 columns = GridCells.Fixed(6),
@@ -230,4 +230,35 @@ private fun ColorItem(
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ColorSelectDialogPreview() {
+    ColorSelectDialog(
+        isVisible = true,
+        currentColor = Color.Blue.toArgb(),
+        onColorSelected = { },
+        onDismiss = { }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ColorSelectDialogContentPreview() {
+    ColorSelectDialogContent(
+        currentColor = Color.Red.toArgb(),
+        onColorSelected = { },
+        onDismiss = { }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ColorSelectDialogNoSelectionPreview() {
+    ColorSelectDialogContent(
+        currentColor = null,
+        onColorSelected = { },
+        onDismiss = { }
+    )
 }

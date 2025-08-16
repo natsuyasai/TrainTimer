@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.parts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

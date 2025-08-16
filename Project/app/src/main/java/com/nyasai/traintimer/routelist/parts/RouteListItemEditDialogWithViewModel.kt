@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.parts
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

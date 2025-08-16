@@ -1,12 +1,13 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.logic
 
 import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.routelist.RouteListViewModel
 
 /**
  * ダイアログ管理機能を管理するクラス
  */
 class DialogManager {
-    
+
     /**
      * 路線アイテムクリック処理
      */
@@ -24,7 +25,7 @@ class DialogManager {
             showEditDialog()
         }
     }
-    
+
     /**
      * 削除確認ダイアログの肯定ボタンクリック処理
      */

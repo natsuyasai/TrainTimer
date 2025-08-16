@@ -1,6 +1,6 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.parts
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -19,7 +19,10 @@ class RouteListItemEditViewModelTest {
     @Test
     fun `初期状態ではUpdateが選択されていること`() {
         // Then
-        assertEquals(RouteListItemEditViewModel.EditType.Update, viewModel.selectedEditType)
+        Assertions.assertEquals(
+            RouteListItemEditViewModel.EditType.Update,
+            viewModel.selectedEditType
+        )
     }
 
     @Test
@@ -28,7 +31,10 @@ class RouteListItemEditViewModelTest {
         viewModel.updateEditType(RouteListItemEditViewModel.EditType.Delete)
 
         // Then
-        assertEquals(RouteListItemEditViewModel.EditType.Delete, viewModel.selectedEditType)
+        Assertions.assertEquals(
+            RouteListItemEditViewModel.EditType.Delete,
+            viewModel.selectedEditType
+        )
     }
 
     @Test
@@ -40,7 +46,7 @@ class RouteListItemEditViewModelTest {
         viewModel.setTargetDataId(testDataId)
 
         // Then
-        assertEquals(testDataId, viewModel.targetDataId)
+        Assertions.assertEquals(testDataId, viewModel.targetDataId)
     }
 
     @Test
@@ -61,8 +67,8 @@ class RouteListItemEditViewModelTest {
         viewModel.onPositiveButtonClick()
 
         // Then
-        assertEquals(RouteListItemEditViewModel.EditType.Delete, callbackEditType)
-        assertEquals(testDataId, callbackDataId)
+        Assertions.assertEquals(RouteListItemEditViewModel.EditType.Delete, callbackEditType)
+        Assertions.assertEquals(testDataId, callbackDataId)
     }
 
     @Test
@@ -83,8 +89,8 @@ class RouteListItemEditViewModelTest {
         viewModel.onNegativeButtonClick()
 
         // Then
-        assertEquals(RouteListItemEditViewModel.EditType.Update, callbackEditType)
-        assertEquals(testDataId, callbackDataId)
+        Assertions.assertEquals(RouteListItemEditViewModel.EditType.Update, callbackEditType)
+        Assertions.assertEquals(testDataId, callbackDataId)
     }
 
     @Test
@@ -97,14 +103,17 @@ class RouteListItemEditViewModelTest {
         viewModel.clearUIData()
 
         // Then
-        assertEquals(RouteListItemEditViewModel.EditType.Update, viewModel.selectedEditType)
-        assertNull(viewModel.targetDataId)
+        Assertions.assertEquals(
+            RouteListItemEditViewModel.EditType.Update,
+            viewModel.selectedEditType
+        )
+        Assertions.assertNull(viewModel.targetDataId)
     }
 
     @Test
     fun `コールバックが設定されていない場合でもエラーが発生しないこと`() {
         // When & Then (例外が発生しないことを確認)
-        assertDoesNotThrow {
+        Assertions.assertDoesNotThrow {
             viewModel.onPositiveButtonClick()
             viewModel.onNegativeButtonClick()
         }

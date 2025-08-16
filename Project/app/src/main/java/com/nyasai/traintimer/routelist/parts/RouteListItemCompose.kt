@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.parts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

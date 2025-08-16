@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.parts
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme

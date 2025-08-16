@@ -1,6 +1,7 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.logic
 
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.routelist.RouteListViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
 import com.nyasai.traintimer.util.WakeLockManager

@@ -1,9 +1,11 @@
-package com.nyasai.traintimer.routelist
+package com.nyasai.traintimer.routelist.logic
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import com.nyasai.traintimer.database.RouteListItem
+import com.nyasai.traintimer.routelist.RouteListViewModel
+import kotlin.math.abs
 
 /**
  * ドラッグ&ドロップ機能を管理するクラス
@@ -108,7 +110,7 @@ class DragAndDropManager(
             
             val targetItem = listState.layoutInfo.visibleItemsInfo
                 .minByOrNull { targetItem ->
-                    kotlin.math.abs(
+                    abs(
                         (targetItem.offset + targetItem.size / 2) - draggedItemCenter
                     )
                 }
