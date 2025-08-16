@@ -5,35 +5,35 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * RouteListItemEditViewModelのテスト
+ * RouteListItemEditStateHolderのテスト
  */
-class RouteListItemEditViewModelTest {
+class RouteListItemEditStateTest {
 
-    private lateinit var viewModel: RouteListItemEditViewModel
+    private lateinit var stateHolder: RouteListItemEditStateHolder
 
     @BeforeEach
     fun setUp() {
-        viewModel = RouteListItemEditViewModel()
+        stateHolder = RouteListItemEditStateHolder()
     }
 
     @Test
     fun `初期状態ではUpdateが選択されていること`() {
         // Then
         Assertions.assertEquals(
-            RouteListItemEditViewModel.EditType.Update,
-            viewModel.selectedEditType
+            EditType.Update,
+            stateHolder.state.selectedEditType
         )
     }
 
     @Test
     fun `編集種別の更新が正常に動作すること`() {
         // When
-        viewModel.updateEditType(RouteListItemEditViewModel.EditType.Delete)
+        stateHolder.actions.updateEditType(EditType.Delete)
 
         // Then
         Assertions.assertEquals(
-            RouteListItemEditViewModel.EditType.Delete,
-            viewModel.selectedEditType
+            EditType.Delete,
+            stateHolder.state.selectedEditType
         )
     }
 
@@ -43,79 +43,59 @@ class RouteListItemEditViewModelTest {
         val testDataId = 123L
 
         // When
-        viewModel.setTargetDataId(testDataId)
+        stateHolder.actions.setTargetDataId(testDataId)
 
         // Then
-        Assertions.assertEquals(testDataId, viewModel.targetDataId)
+        Assertions.assertEquals(testDataId, stateHolder.state.targetDataId)
     }
 
     @Test
-    fun `Positiveボタンコールバックが正常に動作すること`() {
-        // Given
-        var callbackEditType: RouteListItemEditViewModel.EditType? = null
-        var callbackDataId: Long? = null
-        val testDataId = 456L
-
-        viewModel.onClickPositiveButtonCallback = { editType, dataId ->
-            callbackEditType = editType
-            callbackDataId = dataId
-        }
-        viewModel.updateEditType(RouteListItemEditViewModel.EditType.Delete)
-        viewModel.setTargetDataId(testDataId)
-
-        // When
-        viewModel.onPositiveButtonClick()
-
-        // Then
-        Assertions.assertEquals(RouteListItemEditViewModel.EditType.Delete, callbackEditType)
-        Assertions.assertEquals(testDataId, callbackDataId)
+    fun `複数の編集種別変更が正常に動作すること`() {
+        // Given & When & Then
+        stateHolder.actions.updateEditType(EditType.Delete)
+        Assertions.assertEquals(EditType.Delete, stateHolder.state.selectedEditType)
+        
+        stateHolder.actions.updateEditType(EditType.SetColor)
+        Assertions.assertEquals(EditType.SetColor, stateHolder.state.selectedEditType)
+        
+        stateHolder.actions.updateEditType(EditType.Update)
+        Assertions.assertEquals(EditType.Update, stateHolder.state.selectedEditType)
     }
 
     @Test
-    fun `Negativeボタンコールバックが正常に動作すること`() {
+    fun `状態の独立性が保たれること`() {
         // Given
-        var callbackEditType: RouteListItemEditViewModel.EditType? = null
-        var callbackDataId: Long? = null
-        val testDataId = 789L
-
-        viewModel.onClickNegativeButtonCallback = { editType, dataId ->
-            callbackEditType = editType
-            callbackDataId = dataId
-        }
-        viewModel.updateEditType(RouteListItemEditViewModel.EditType.Update)
-        viewModel.setTargetDataId(testDataId)
-
+        val testDataId = 999L
+        
         // When
-        viewModel.onNegativeButtonClick()
-
+        stateHolder.actions.updateEditType(EditType.SetColor)
+        stateHolder.actions.setTargetDataId(testDataId)
+        
         // Then
-        Assertions.assertEquals(RouteListItemEditViewModel.EditType.Update, callbackEditType)
-        Assertions.assertEquals(testDataId, callbackDataId)
+        Assertions.assertEquals(EditType.SetColor, stateHolder.state.selectedEditType)
+        Assertions.assertEquals(testDataId, stateHolder.state.targetDataId)
     }
 
     @Test
     fun `データクリア時に初期状態に戻ること`() {
         // Given
-        viewModel.updateEditType(RouteListItemEditViewModel.EditType.Delete)
-        viewModel.setTargetDataId(999L)
+        stateHolder.actions.updateEditType(EditType.Delete)
+        stateHolder.actions.setTargetDataId(999L)
 
         // When
-        viewModel.clearUIData()
+        stateHolder.actions.clearUIData()
 
         // Then
         Assertions.assertEquals(
-            RouteListItemEditViewModel.EditType.Update,
-            viewModel.selectedEditType
+            EditType.Update,
+            stateHolder.state.selectedEditType
         )
-        Assertions.assertNull(viewModel.targetDataId)
+        Assertions.assertNull(stateHolder.state.targetDataId)
     }
 
     @Test
-    fun `コールバックが設定されていない場合でもエラーが発生しないこと`() {
-        // When & Then (例外が発生しないことを確認)
-        Assertions.assertDoesNotThrow {
-            viewModel.onPositiveButtonClick()
-            viewModel.onNegativeButtonClick()
-        }
+    fun `初期状態でtargetDataIdがnullであること`() {
+        // Then
+        Assertions.assertNull(stateHolder.state.targetDataId)
     }
 }

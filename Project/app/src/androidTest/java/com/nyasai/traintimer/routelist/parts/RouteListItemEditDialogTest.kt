@@ -20,7 +20,7 @@ class RouteListItemEditDialogTest {
     @Test
     fun `ダイアログが正常に表示されること`() {
         // Given
-        var selectedEditType = RouteListItemEditViewModel.EditType.Update
+        var selectedEditType = EditType.Update
         var onDismissCalled = false
         var onPositiveClickCalled = false
         var onNegativeClickCalled = false
@@ -64,7 +64,7 @@ class RouteListItemEditDialogTest {
     @Test
     fun `ラジオボタンの選択が正常に動作すること`() {
         // Given
-        var selectedEditType = RouteListItemEditViewModel.EditType.Update
+        var selectedEditType = EditType.Update
 
         // When
         composeTestRule.setContent {
@@ -86,7 +86,7 @@ class RouteListItemEditDialogTest {
             .performClick()
 
         // Then
-        assert(selectedEditType == RouteListItemEditViewModel.EditType.Delete)
+        assert(selectedEditType == EditType.Delete)
     }
 
     @Test
@@ -100,7 +100,7 @@ class RouteListItemEditDialogTest {
             TrainTimerTheme {
                 RouteListItemEditDialog(
                     isVisible = true,
-                    selectedEditType = RouteListItemEditViewModel.EditType.Update,
+                    selectedEditType = EditType.Update,
                     onEditTypeChange = { },
                     onPositiveClick = { onPositiveClickCalled = true },
                     onNegativeClick = { },
@@ -129,7 +129,7 @@ class RouteListItemEditDialogTest {
             TrainTimerTheme {
                 RouteListItemEditDialog(
                     isVisible = true,
-                    selectedEditType = RouteListItemEditViewModel.EditType.Update,
+                    selectedEditType = EditType.Update,
                     onEditTypeChange = { },
                     onPositiveClick = { },
                     onNegativeClick = { onNegativeClickCalled = true },
@@ -154,7 +154,7 @@ class RouteListItemEditDialogTest {
             TrainTimerTheme {
                 RouteListItemEditDialog(
                     isVisible = false,
-                    selectedEditType = RouteListItemEditViewModel.EditType.Update,
+                    selectedEditType = EditType.Update,
                     onEditTypeChange = { },
                     onPositiveClick = { },
                     onNegativeClick = { },
@@ -176,7 +176,7 @@ class RouteListItemEditDialogTest {
             TrainTimerTheme {
                 RouteListItemEditDialog(
                     isVisible = true,
-                    selectedEditType = RouteListItemEditViewModel.EditType.Update,
+                    selectedEditType = EditType.Update,
                     onEditTypeChange = { },
                     onPositiveClick = { },
                     onNegativeClick = { },
