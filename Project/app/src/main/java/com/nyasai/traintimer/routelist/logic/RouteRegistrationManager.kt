@@ -3,7 +3,6 @@ package com.nyasai.traintimer.routelist.logic
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.RouteListViewModel
-import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,13 +16,13 @@ class RouteRegistrationManager(
     private val routeListViewModel: RouteListViewModel,
     private val wakeLockManager: WakeLockManager
 ) {
-    
+
     /**
      * 目的地選択ダイアログの肯定ボタンクリック処理
      */
     fun handleDestinationSelectPositiveClick(
         scope: CoroutineScope,
-        listSelectViewModel: ListItemSelectViewModel,
+        selectedDestination: String,
         loadingViewModel: CommonLoadingViewModel,
         destinationOptions: Map<String, String>,
         currentStationName: String,
@@ -37,7 +36,6 @@ class RouteRegistrationManager(
             wakeLockManager.acquireWakeLock()
             
             try {
-                val selectedDestination = listSelectViewModel.selectedItemState
                 val url = destinationOptions.getValue(selectedDestination)
                 
                 val (routeInfo, parentDataId) = withContext(Dispatchers.IO) {

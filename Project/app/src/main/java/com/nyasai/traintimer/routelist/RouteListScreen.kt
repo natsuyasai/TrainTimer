@@ -53,8 +53,7 @@ import com.nyasai.traintimer.routelist.parts.RouteListItemCompose
 import com.nyasai.traintimer.routelist.parts.RouteListItemDeleteConfirmDialog
 import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialogWithViewModel
 import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
-import com.nyasai.traintimer.routesearch.ListItemSelectDialogWithViewModel
-import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
+import com.nyasai.traintimer.routesearch.ListItemSelectDialog
 import com.nyasai.traintimer.routesearch.SearchTargetInputDialog
 import com.nyasai.traintimer.util.WakeLockManager
 
@@ -117,6 +116,8 @@ fun RouteListScreen(
     var destinationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var currentStationName by remember { mutableStateOf("") }
     var searchStationName by remember { mutableStateOf("") }
+    var selectedStationItem by remember { mutableStateOf("") }
+    var selectedDestinationItem by remember { mutableStateOf("") }
     
     // ドラッグ&ドロップ状態（AndroidX公式デモに基づくアプローチ）
     var isDragging by remember { mutableStateOf(false) }
@@ -136,7 +137,6 @@ fun RouteListScreen(
     }
     
     // ViewModelインスタンス
-    val listItemSelectViewModel: ListItemSelectViewModel = viewModel()
     val routeListItemEditViewModel: RouteListItemEditViewModel = viewModel()
     
     Box(modifier = modifier.fillMaxSize()) {
@@ -281,7 +281,6 @@ fun RouteListScreen(
                     scope,
                     searchStationName,
                     commonLoadingViewModel,
-                    listItemSelectViewModel,
                     { name -> currentStationName = name },
                     { options -> stationOptions = options },
                     { options -> destinationOptions = options },
@@ -299,51 +298,57 @@ fun RouteListScreen(
     }
     
     if (showStationSelectDialog) {
-        // コールバックを事前に設定
-        listItemSelectViewModel.onClickPositiveButtonCallback = {
-            routeSearchManager.handleStationSelectPositiveClick(
-                scope,
-                listItemSelectViewModel,
-                commonLoadingViewModel,
-                stationOptions,
-                { station -> currentStationName = station },
-                { options -> destinationOptions = options },
-                { showStationSelectDialog = false },
-                { showDestinationSelectDialog = true }
-            )
-        }
-        listItemSelectViewModel.onClickNegativeButtonCallback = {
-            showStationSelectDialog = false
-        }
+        val stationItems = stationOptions.keys.toList()
+        val currentSelected = selectedStationItem.takeIf { it in stationItems } ?: stationItems.firstOrNull() ?: ""
         
-        ListItemSelectDialogWithViewModel(
+        ListItemSelectDialog(
             isVisible = showStationSelectDialog,
-            onDismiss = { showStationSelectDialog = false },
             title = "駅を選択してください",
-            viewModel = listItemSelectViewModel
+            items = stationItems,
+            selectedItem = currentSelected,
+            onItemSelect = { selectedStationItem = it },
+            onPositiveClick = {
+                routeSearchManager.handleStationSelectPositiveClick(
+                    scope,
+                    selectedStationItem,
+                    commonLoadingViewModel,
+                    stationOptions,
+                    { station -> currentStationName = station },
+                    { options -> destinationOptions = options },
+                    { showStationSelectDialog = false },
+                    { showDestinationSelectDialog = true }
+                )
+            },
+            onNegativeClick = {
+                showStationSelectDialog = false
+            },
+            onDismiss = { showStationSelectDialog = false }
         )
     }
     
     if (showDestinationSelectDialog) {
-        // コールバックを事前に設定
-        listItemSelectViewModel.onClickPositiveButtonCallback = {
-            routeRegistrationManager.handleDestinationSelectPositiveClick(
-                scope,
-                listItemSelectViewModel,
-                commonLoadingViewModel,
-                destinationOptions,
-                currentStationName
-            ) { showDestinationSelectDialog = false }
-        }
-        listItemSelectViewModel.onClickNegativeButtonCallback = {
-            showDestinationSelectDialog = false
-        }
+        val destinationItems = destinationOptions.keys.toList()
+        val currentSelected = selectedDestinationItem.takeIf { it in destinationItems } ?: destinationItems.firstOrNull() ?: ""
         
-        ListItemSelectDialogWithViewModel(
+        ListItemSelectDialog(
             isVisible = showDestinationSelectDialog,
-            onDismiss = { showDestinationSelectDialog = false },
             title = "行先を選択してください",
-            viewModel = listItemSelectViewModel
+            items = destinationItems,
+            selectedItem = currentSelected,
+            onItemSelect = { selectedDestinationItem = it },
+            onPositiveClick = {
+                routeRegistrationManager.handleDestinationSelectPositiveClick(
+                    scope,
+                    selectedDestinationItem,
+                    commonLoadingViewModel,
+                    destinationOptions,
+                    currentStationName
+                ) { showDestinationSelectDialog = false }
+            },
+            onNegativeClick = {
+                showDestinationSelectDialog = false
+            },
+            onDismiss = { showDestinationSelectDialog = false }
         )
     }
     

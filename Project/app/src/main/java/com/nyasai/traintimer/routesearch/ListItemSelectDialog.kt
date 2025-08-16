@@ -27,7 +27,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 
 /**
@@ -130,32 +129,6 @@ fun ListItemSelectDialog(
             }
         )
     }
-}
-
-/**
- * ViewModelと統合されたListItemSelectDialog
- */
-@Composable
-fun ListItemSelectDialogWithViewModel(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    viewModel: ListItemSelectViewModel = viewModel(),
-    title: String = "選択してください"
-) {
-    ListItemSelectDialog(
-        isVisible = isVisible,
-        title = title,
-        items = viewModel.itemsState,
-        selectedItem = viewModel.selectedItemState,
-        onItemSelect = viewModel::updateSelectedItem,
-        onPositiveClick = {
-            viewModel.onClickPositiveButtonCallback?.invoke()
-        },
-        onNegativeClick = {
-            viewModel.onClickNegativeButtonCallback?.invoke()
-        },
-        onDismiss = onDismiss
-    )
 }
 
 @Preview(showBackground = true)

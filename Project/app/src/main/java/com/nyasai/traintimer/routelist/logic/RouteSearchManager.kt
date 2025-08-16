@@ -2,7 +2,6 @@ package com.nyasai.traintimer.routelist.logic
 
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.routelist.RouteListViewModel
-import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,13 +17,12 @@ class RouteSearchManager(
 ) {
 
     /**
-     * 検索ダイアログの肯定ボタンクリック処理（純粋Composable版）
+     * 検索ダイアログの肯定ボタンクリック処理
      */
     fun handleSearchDialogPositiveClick(
         scope: CoroutineScope,
         stationName: String,
         loadingViewModel: CommonLoadingViewModel,
-        listSelectViewModel: ListItemSelectViewModel,
         setCurrentStationName: (String) -> Unit,
         setStationOptions: (Map<String, String>) -> Unit,
         setDestinationOptions: (Map<String, String>) -> Unit,
@@ -49,7 +47,6 @@ class RouteSearchManager(
                 handleSearchResults(
                     stationListMap,
                     destinationListMap,
-                    listSelectViewModel,
                     setStationOptions,
                     setDestinationOptions,
                     showStationDialog,
@@ -64,13 +61,13 @@ class RouteSearchManager(
             }
         }
     }
-    
+
     /**
      * 駅選択ダイアログの肯定ボタンクリック処理
      */
     fun handleStationSelectPositiveClick(
         scope: CoroutineScope,
-        listSelectViewModel: ListItemSelectViewModel,
+        selectedStation: String,
         loadingViewModel: CommonLoadingViewModel,
         stationOptions: Map<String, String>,
         setCurrentStationName: (String) -> Unit,
@@ -86,7 +83,6 @@ class RouteSearchManager(
             wakeLockManager.acquireWakeLock()
             
             try {
-                val selectedStation = listSelectViewModel.selectedItemState
                 setCurrentStationName(selectedStation)
                 
                 val destinationListMap = withContext(Dispatchers.IO) {
@@ -96,7 +92,6 @@ class RouteSearchManager(
                 }
                 
                 setDestinationOptions(destinationListMap)
-                listSelectViewModel.updateItems(destinationListMap.keys.toList())
                 showDestinationDialog()
             } catch (e: Exception) {
                 // エラーハンドリング
@@ -107,7 +102,7 @@ class RouteSearchManager(
             }
         }
     }
-    
+
     /**
      * 駅と目的地データの取得
      */
@@ -122,14 +117,13 @@ class RouteSearchManager(
         }
         return Pair(stationList, destinationList)
     }
-    
+
     /**
      * 検索結果の処理
      */
     private fun handleSearchResults(
         stationListMap: Map<String, String>?,
         destinationListMap: Map<String, String>,
-        listSelectViewModel: ListItemSelectViewModel,
         setStationOptions: (Map<String, String>) -> Unit,
         setDestinationOptions: (Map<String, String>) -> Unit,
         showStationDialog: () -> Unit,
@@ -137,11 +131,9 @@ class RouteSearchManager(
     ) {
         if (stationListMap?.isNotEmpty() == true) {
             setStationOptions(stationListMap)
-            listSelectViewModel.updateItems(stationListMap.keys.toList())
             showStationDialog()
         } else {
             setDestinationOptions(destinationListMap)
-            listSelectViewModel.updateItems(destinationListMap.keys.toList())
             showDestinationDialog()
         }
     }
