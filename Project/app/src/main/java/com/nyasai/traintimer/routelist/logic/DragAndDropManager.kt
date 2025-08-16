@@ -4,14 +4,14 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import com.nyasai.traintimer.database.RouteListItem
-import com.nyasai.traintimer.routelist.RouteListViewModel
+import com.nyasai.traintimer.routelist.RouteListScreenState
 import kotlin.math.abs
 
 /**
  * ドラッグ&ドロップ機能を管理するクラス
  */
 class DragAndDropManager(
-    private val routeListViewModel: RouteListViewModel
+    private val screenState: RouteListScreenState
 ) {
     
     /**
@@ -90,8 +90,8 @@ class DragAndDropManager(
         mutableList.add(toIndex, draggedItem)
         updateLocalRouteList(mutableList)
         
-        // ViewModelに変更を通知
-        routeListViewModel.updateSortIndex(fromIndex, toIndex)
+        // State Holderに変更を通知
+        screenState.updateSortIndex(fromIndex, toIndex)
     }
     
     /**

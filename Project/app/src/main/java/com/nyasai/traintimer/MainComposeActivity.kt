@@ -8,19 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.routeinfo.RouteInfoScreenRefactored
 import com.nyasai.traintimer.routelist.RouteListScreenRefactored
-import com.nyasai.traintimer.routelist.RouteListViewModel
-import com.nyasai.traintimer.routelist.RouteListViewModelFactory
 import com.nyasai.traintimer.setting.PreferenceScreen
 import com.nyasai.traintimer.ui.theme.TrainTimerTheme
 
@@ -75,25 +70,13 @@ fun TrainTimerNavigation(
     ) {
         // 路線一覧画面
         composable("route_list") {
-            val routeListViewModel = remember {
-                val application = (context as ComponentActivity).application
-                ViewModelProvider(
-                    context,
-                    RouteListViewModelFactory(
-                        RouteDatabase.getInstance(application).routeDatabaseDao,
-                        application
-                    )
-                )[RouteListViewModel::class.java]
-            }
-            
             RouteListScreenRefactored(
                 onRouteItemClick = { dataId ->
                     navController.navigate("route_info/$dataId")
                 },
                 onSettingsClick = {
                     navController.navigate("settings")
-                },
-                routeListViewModel = routeListViewModel
+                }
             )
         }
         

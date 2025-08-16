@@ -73,7 +73,7 @@ fun RouteListDialogs(
         selectedItem = screenState.dialogState.selectedItem,
         onDialogDismiss = screenState.dialogActions::hideDeleteConfirmDialog,
         dialogManager = managers.dialogManager,
-        routeListViewModel = managers.routeListViewModel,
+        screenState = screenState,
         onSelectedItemClear = screenState.dialogActions::clearSelectedItem
     )
     

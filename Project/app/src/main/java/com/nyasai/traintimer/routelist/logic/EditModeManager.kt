@@ -4,7 +4,7 @@ import com.nyasai.traintimer.commonparts.LoadingState
 import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
-import com.nyasai.traintimer.routelist.RouteListViewModel
+import com.nyasai.traintimer.routelist.RouteListScreenState
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
  * 編集モード関連機能を管理するクラス
  */
 class EditModeManager(
-    private val routeListViewModel: RouteListViewModel,
+    private val screenState: RouteListScreenState,
     private val wakeLockManager: WakeLockManager? = null
 ) {
     
@@ -23,7 +23,7 @@ class EditModeManager(
      * 編集モード切り替え処理
      */
     fun handleEditModeToggle() {
-        routeListViewModel.switchEditMode()
+        screenState.switchEditMode()
     }
     
     /**
@@ -71,7 +71,7 @@ class EditModeManager(
             
             try {
                 withContext(Dispatchers.IO) {
-                    routeListViewModel.updateRouteInfo(
+                    screenState.updateRouteInfo(
                         selectedItem,
                         { loadingState.actions.incrementMaxCount(it) },
                         { loadingState.actions.incrementCurrentCount(1) }
@@ -95,6 +95,6 @@ class EditModeManager(
         newColor: Int?
     ) {
         selectedItem.displayColor = newColor
-        routeListViewModel.updateRouteListItemColor(selectedItem.dataId, newColor)
+        screenState.updateRouteListItemColor(selectedItem.dataId, newColor)
     }
 }

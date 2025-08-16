@@ -2,7 +2,7 @@ package com.nyasai.traintimer.routelist.logic
 
 import com.nyasai.traintimer.commonparts.LoadingState
 import com.nyasai.traintimer.commonparts.loadingState
-import com.nyasai.traintimer.routelist.RouteListViewModel
+import com.nyasai.traintimer.routelist.RouteListScreenState
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
  * 路線検索関連機能を管理するクラス
  */
 class RouteSearchManager(
-    private val routeListViewModel: RouteListViewModel,
+    private val screenState: RouteListScreenState,
     private val wakeLockManager: WakeLockManager
 ) {
 
@@ -87,7 +87,7 @@ class RouteSearchManager(
                 setCurrentStationName(selectedStation)
                 
                 val destinationListMap = withContext(Dispatchers.IO) {
-                    routeListViewModel.getDestinationFromUrl(
+                    screenState.getDestinationFromUrl(
                         stationOptions.getValue(selectedStation)
                     )
                 }
@@ -110,9 +110,9 @@ class RouteSearchManager(
     private fun fetchStationAndDestinationData(
         stationName: String
     ): Pair<Map<String, String>?, Map<String, String>> {
-        val stationList = routeListViewModel.getStationList(stationName)
+        val stationList = screenState.getStationList(stationName)
         val destinationList = if (stationList?.isEmpty() != false) {
-            routeListViewModel.getDestinationFromStationName(stationName)
+            screenState.getDestinationFromStationName(stationName)
         } else {
             emptyMap()
         }

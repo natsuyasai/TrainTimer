@@ -1,7 +1,7 @@
 package com.nyasai.traintimer.routelist.logic
 
 import com.nyasai.traintimer.database.RouteListItem
-import com.nyasai.traintimer.routelist.RouteListViewModel
+import com.nyasai.traintimer.routelist.RouteListScreenState
 
 /**
  * ダイアログ管理機能を管理するクラス
@@ -31,12 +31,12 @@ class DialogManager {
      */
     fun handleDeleteConfirmPositiveClick(
         dataId: Long?,
-        routeListViewModel: RouteListViewModel,
+        screenState: RouteListScreenState,
         hideDeleteDialog: () -> Unit,
         clearSelectedItem: () -> Unit
     ) {
         dataId?.let { id ->
-            routeListViewModel.deleteListItem(id)
+            screenState.deleteListItem(id)
         }
         hideDeleteDialog()
         clearSelectedItem()

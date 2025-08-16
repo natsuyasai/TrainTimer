@@ -43,7 +43,7 @@ fun RouteListLazyColumn(
                             screenState.dragDropState.currentDragOverIndex,
                             screenState.localRouteList
                         ) { newList ->
-                            screenState.localRouteList = newList
+                            screenState.updateLocalRouteList(newList)
                         }
                         
                         managers.dragAndDropManager.resetDragState {

@@ -2,7 +2,7 @@ package com.nyasai.traintimer.routelist.dialogs
 
 import androidx.compose.runtime.Composable
 import com.nyasai.traintimer.database.RouteListItem
-import com.nyasai.traintimer.routelist.RouteListViewModel
+import com.nyasai.traintimer.routelist.RouteListScreenState
 import com.nyasai.traintimer.routelist.logic.DialogManager
 import com.nyasai.traintimer.routelist.parts.RouteListItemDeleteConfirmDialog
 
@@ -15,7 +15,7 @@ fun DeleteConfirmDialogHandler(
     selectedItem: RouteListItem?,
     onDialogDismiss: () -> Unit,
     dialogManager: DialogManager,
-    routeListViewModel: RouteListViewModel,
+    screenState: RouteListScreenState,
     onSelectedItemClear: () -> Unit
 ) {
     if (showDeleteConfirmDialog && selectedItem != null) {
@@ -24,7 +24,7 @@ fun DeleteConfirmDialogHandler(
             onPositiveClick = {
                 dialogManager.handleDeleteConfirmPositiveClick(
                     selectedItem.dataId,
-                    routeListViewModel,
+                    screenState,
                     onDialogDismiss,
                     onSelectedItemClear
                 )

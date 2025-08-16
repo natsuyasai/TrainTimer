@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import android.app.Application
 import com.nyasai.traintimer.commonparts.LoadingState
 import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
@@ -19,6 +19,7 @@ import com.nyasai.traintimer.routelist.logic.DragAndDropManager
 import com.nyasai.traintimer.routelist.logic.EditModeManager
 import com.nyasai.traintimer.routelist.logic.RouteRegistrationManager
 import com.nyasai.traintimer.routelist.logic.RouteSearchManager
+import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.routelist.components.RouteListContent
 import com.nyasai.traintimer.routelist.components.RouteListDialogs
 import com.nyasai.traintimer.util.WakeLockManager
@@ -33,37 +34,42 @@ fun RouteListScreenRefactored(
     onRouteItemClick: (Long) -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
-    routeListViewModel: RouteListViewModel = viewModel(),
     loadingState: LoadingState = loadingState()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
-    // State Hoisting: 状態を分離
-    val screenState = rememberRouteListScreenState()
+    // Database DAO取得
+    val database = RouteDatabase.getInstance(context).routeDatabaseDao
+    
+    // State Hoisting: 完全にViewModelから分離した状態管理
+    val screenState = rememberRouteListScreenState(
+        database = database,
+        application = context.applicationContext as Application
+    )
     
     // マネージャーの初期化（remember内で安全に）
     val managers = remember {
         RouteListManagers(
             wakeLockManager = WakeLockManager(context),
             dialogManager = DialogManager(),
-            routeListViewModel = routeListViewModel
+            screenState = screenState
         )
     }
     
-    // ViewModelの状態観察
-    val routeList by routeListViewModel.routeList.observeAsState(emptyList())
-    val isEditMode by routeListViewModel.isEditMode.observeAsState(false)
+    // State Holderの状態観察
+    val routeList by screenState.routeList.observeAsState(emptyList())
+    val isEditMode by screenState.isEditMode.observeAsState(false)
     
     // ローカル状態の同期
     LaunchedEffect(routeList) {
-        if (!screenState.dragDropState.isDragging) {
-            screenState.localRouteList = routeList
+        if (!screenState.isDragging) {
+            screenState.updateLocalRouteList(routeList)
         }
     }
     
     RouteListContent(
-        routeList = screenState.localRouteList,
+        routeList = screenState.localRouteList.toList(),
         isEditMode = isEditMode,
         screenState = screenState,
         managers = managers,
@@ -82,17 +88,17 @@ fun RouteListScreenRefactored(
 }
 
 /**
- * マネージャークラスの集約
+ * マネージャークラスの集約（State Holder版）
  */
 @Stable
 data class RouteListManagers(
     val wakeLockManager: WakeLockManager,
     val dialogManager: DialogManager,
-    val routeListViewModel: RouteListViewModel
+    val screenState: RouteListScreenState
 ) {
-    val dragAndDropManager = DragAndDropManager(routeListViewModel)
-    val editModeManager = EditModeManager(routeListViewModel, wakeLockManager)
-    val routeSearchManager = RouteSearchManager(routeListViewModel, wakeLockManager)
-    val routeRegistrationManager = RouteRegistrationManager(routeListViewModel, wakeLockManager)
+    val dragAndDropManager = DragAndDropManager(screenState)
+    val editModeManager = EditModeManager(screenState, wakeLockManager)
+    val routeSearchManager = RouteSearchManager(screenState, wakeLockManager)
+    val routeRegistrationManager = RouteRegistrationManager(screenState, wakeLockManager)
 }
 

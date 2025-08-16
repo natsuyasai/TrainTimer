@@ -1,12 +1,14 @@
 package com.nyasai.traintimer.routelist
 
+import android.app.Application
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.LiveData
+import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteListItem
-
-/**
- * RouteListScreenの状態管理クラス
- * State Hoistingパターンに基づいて状態を分離
- */
+import com.nyasai.traintimer.routelist.state.*
+import com.nyasai.traintimer.util.YahooRouteInfoGetter
+import kotlinx.coroutines.*
 
 /**
  * ダイアログの表示状態
@@ -90,9 +92,36 @@ interface DragDropActions {
 
 /**
  * RouteListScreen用の状態ホルダー
+ * 分割されたマネージャーを組み合わせた設計
  */
 @Stable
-class RouteListScreenState {
+class RouteListScreenState(
+    private val database: RouteDatabaseDao,
+    private val application: Application
+) {
+    // Job管理
+    private val _job = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + _job)
+    
+    // 分割されたマネージャー
+    private val routeListDataManager = RouteListDataManager(database, coroutineScope)
+    private val routeSearchManager = RouteSearchManager()
+    private val routeSortManager = RouteSortManager(database, coroutineScope)
+    private val routeUpdateManager = RouteUpdateManager(routeSearchManager, routeListDataManager)
+    private val uiStateManager = RouteListUIStateManager()
+    
+    // 各マネージャーへのアクセス委譲（プロパティ）
+    val routeList: LiveData<List<RouteListItem>> = routeListDataManager.routeList
+    val isEditMode: LiveData<Boolean> = routeListDataManager.isEditMode
+    
+    // UI状態管理への委譲（プロパティ）
+    val isDragging: Boolean get() = uiStateManager.isDragging
+    val showSearchDialog: Boolean get() = uiStateManager.showSearchDialog
+    val showStationSelectDialog: Boolean get() = uiStateManager.showStationSelectDialog
+    val isLoading: Boolean get() = uiStateManager.isLoading
+    val localRouteList: SnapshotStateList<RouteListItem> = uiStateManager.localRouteList
+    
+    // 旧UIコンポーネント用のプロパティ（アダプタ）
     var dialogState by mutableStateOf(DialogState())
         private set
     
@@ -105,24 +134,26 @@ class RouteListScreenState {
     var colorUpdateTrigger by mutableStateOf(0)
         private set
     
-    var localRouteList by mutableStateOf<List<RouteListItem>>(emptyList())
-    
-    // ダイアログアクション
+    // 旧UIコンポーネント用のアクション（アダプタ）
     val dialogActions = object : DialogActions {
         override fun showSearchDialog() {
             dialogState = dialogState.copy(showSearchDialog = true)
+            uiStateManager.showSearchDialog()
         }
         
         override fun hideSearchDialog() {
             dialogState = dialogState.copy(showSearchDialog = false)
+            uiStateManager.hideSearchDialog()
         }
         
         override fun showStationSelectDialog() {
             dialogState = dialogState.copy(showStationSelectDialog = true)
+            uiStateManager.showStationSelectDialog()
         }
         
         override fun hideStationSelectDialog() {
             dialogState = dialogState.copy(showStationSelectDialog = false)
+            uiStateManager.hideStationSelectDialog()
         }
         
         override fun showDestinationSelectDialog() {
@@ -162,7 +193,6 @@ class RouteListScreenState {
         }
     }
     
-    // 検索アクション
     val searchActions = object : SearchActions {
         override fun updateStationOptions(options: Map<String, String>) {
             searchState = searchState.copy(stationOptions = options)
@@ -193,9 +223,9 @@ class RouteListScreenState {
         }
     }
     
-    // ドラッグ&ドロップアクション
     val dragDropActions = object : DragDropActions {
         override fun startDrag(index: Int) {
+            uiStateManager.startDragging()
             dragDropState = dragDropState.copy(
                 isDragging = true,
                 initialDraggedIndex = index,
@@ -213,12 +243,194 @@ class RouteListScreenState {
         
         override fun endDrag() {
             // ドラッグ終了時の処理は呼び出し元で実行
+            uiStateManager.stopDragging()
+            dragDropState = dragDropState.copy(isDragging = false)
         }
         
         override fun resetDragState() {
             dragDropState = DragDropState()
+            uiStateManager.stopDragging()
         }
     }
+    
+    // メソッドの委譲
+    
+    /**
+     * クリーンアップ処理
+     */
+    fun onCleared() {
+        routeSearchManager.dispose()
+        _job.cancel()
+    }
+    
+    /**
+     * リストアイテム削除
+     */
+    fun deleteListItem(dataId: Long) {
+        routeListDataManager.deleteListItem(dataId)
+    }
+    
+    /**
+     * 駅リスト取得
+     */
+    fun getStationList(stationName: String) = routeSearchManager.getStationList(stationName)
+    
+    /**
+     * 行先取得(駅名)
+     */
+    fun getDestinationFromStationName(stationName: String) =
+        routeSearchManager.getDestinationFromStationName(stationName)
+    
+    /**
+     * 行先取得(URL)
+     */
+    fun getDestinationFromUrl(stationUrl: String) =
+        routeSearchManager.getDestinationFromUrl(stationUrl)
+    
+    /**
+     * 行先キー分割
+     */
+    fun splitDestinationKey(keyString: String) =
+        routeSearchManager.splitDestinationKey(keyString)
+    
+    /**
+     * 時刻表情報取得
+     */
+    suspend fun getTimeTableInfo(
+        timeTableUrl: String,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ) = routeSearchManager.getTimeTableInfo(
+        timeTableUrl,
+        notifyMaxCountCallback,
+        notifyCountCallback
+    )
+    
+    /**
+     * 路線リストアイテム登録
+     */
+    fun registerRouteListItem(
+        routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
+        searchRouteListItem: RouteListItem
+    ): Long {
+        return routeListDataManager.registerRouteListItem(routeInfo, searchRouteListItem)
+    }
+    
+    /**
+     * 時刻表情報登録
+     */
+    fun registerRouteInfoDetailItems(
+        routeInfo: List<List<YahooRouteInfoGetter.TimeInfo>>,
+        parentDataId: Long
+    ) {
+        routeListDataManager.registerRouteInfoDetailItems(routeInfo, parentDataId)
+    }
+    
+    /**
+     * 路線情報更新
+     */
+    suspend fun updateRouteInfo(
+        item: RouteListItem,
+        notifyMaxCountCallback: ((Int) -> Unit),
+        notifyCountCallback: (() -> Unit)
+    ): Boolean {
+        return routeUpdateManager.updateRouteInfo(item, notifyMaxCountCallback, notifyCountCallback)
+    }
+    
+    /**
+     * ソート情報更新
+     */
+    fun updateSortIndex(from: Int, to: Int) {
+        routeSortManager.updateSortIndex(routeList, from, to)
+    }
+    
+    /**
+     * 編集モード切り替え
+     */
+    fun switchEditMode() {
+        routeListDataManager.switchEditMode()
+    }
+    
+    /**
+     * 路線アイテムの色を更新
+     */
+    fun updateRouteListItemColor(dataId: Long, color: Int?) {
+        routeListDataManager.updateRouteListItemColor(dataId, color)
+    }
+    
+    // UI状態管理メソッド
+    
+    /**
+     * ドラッグ開始
+     */
+    fun startDragging() {
+        uiStateManager.startDragging()
+    }
+    
+    /**
+     * ドラッグ終了
+     */
+    fun stopDragging() {
+        uiStateManager.stopDragging()
+    }
+    
+    /**
+     * 検索ダイアログを表示
+     */
+    fun showSearchDialog() {
+        uiStateManager.showSearchDialog()
+    }
+    
+    /**
+     * 検索ダイアログを非表示
+     */
+    fun hideSearchDialog() {
+        uiStateManager.hideSearchDialog()
+    }
+    
+    /**
+     * ステーションセレクトダイアログを表示
+     */
+    fun showStationSelectDialog() {
+        uiStateManager.showStationSelectDialog()
+    }
+    
+    /**
+     * ステーションセレクトダイアログを非表示
+     */
+    fun hideStationSelectDialog() {
+        uiStateManager.hideStationSelectDialog()
+    }
+    
+    /**
+     * ローディング開始
+     */
+    fun startLoading() {
+        uiStateManager.startLoading()
+    }
+    
+    /**
+     * ローディング終了
+     */
+    fun stopLoading() {
+        uiStateManager.stopLoading()
+    }
+    
+    /**
+     * ローカルルートリストを更新
+     */
+    fun updateLocalRouteList(items: List<RouteListItem>) {
+        uiStateManager.updateLocalRouteList(items)
+    }
+    
+    /**
+     * ローカルルートリストをクリア
+     */
+    fun clearLocalRouteList() {
+        uiStateManager.clearLocalRouteList()
+    }
+    
+    // 旧UIコンポーネント用のアダプタメソッド
     
     /**
      * 色更新トリガーをインクリメント
@@ -238,13 +450,14 @@ class RouteListScreenState {
      * ローカルリスト内の特定アイテムを更新（色変更等で即座に反映）
      */
     fun updateLocalRouteListItem(updatedItem: RouteListItem) {
-        localRouteList = localRouteList.map { item ->
+        val updatedList = localRouteList.map { item ->
             if (item.dataId == updatedItem.dataId) {
                 updatedItem
             } else {
                 item
             }
         }
+        updateLocalRouteList(updatedList)
     }
 }
 
@@ -252,6 +465,11 @@ class RouteListScreenState {
  * RouteListScreenStateを作成するComposable関数
  */
 @Composable
-fun rememberRouteListScreenState(): RouteListScreenState {
-    return remember { RouteListScreenState() }
+fun rememberRouteListScreenState(
+    database: RouteDatabaseDao,
+    application: Application
+): RouteListScreenState {
+    return remember { 
+        RouteListScreenState(database, application) 
+    }
 }
