@@ -32,7 +32,7 @@ fun RouteInfoScreenRefactored(
     // Database DAOの取得
     val database = RouteDatabase.getInstance(context).routeDatabaseDao
     
-    // State Hoisting: 完全にViewModelから分離した状態管理
+    // State Hoisting: 分割されたマネージャーによる状態管理
     val screenState = rememberRouteInfoScreenState(
         database = database,
         application = context.applicationContext as Application,
