@@ -1,7 +1,7 @@
 package com.nyasai.traintimer.routeinfo.logic
 
 import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
+import com.nyasai.traintimer.routeinfo.RouteInfoScreenState
 
 /**
  * ユーザーインタラクション管理機能を管理するクラス
@@ -9,25 +9,25 @@ import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
 class InteractionManager {
     
     /**
-     * タイトルクリック処理
+     * タイトルクリック処理（State Holder版）
      */
-    fun handleTitleClick(
-        routeInfoViewModel: RouteInfoViewModel,
+    fun handleTitleClickWithState(
+        screenState: RouteInfoScreenState,
         triggerUpdate: () -> Unit
     ) {
         // ダイヤ種別を切り替え
-        routeInfoViewModel.setNextDiagramType()
+        screenState.setNextDiagramType()
         // フィルター更新トリガーを増加させて表示を更新
         triggerUpdate()
     }
     
     /**
-     * アイテムクリック処理
+     * アイテムクリック処理（State Holder版）
      */
-    fun handleItemClick(
-        routeInfoViewModel: RouteInfoViewModel,
+    fun handleItemClickWithState(
+        screenState: RouteInfoScreenState,
         selectedRouteDetail: RouteDetail
     ) {
-        routeInfoViewModel.setCurrentCountItem(selectedRouteDetail)
+        screenState.setCurrentCountItem(selectedRouteDetail)
     }
 }

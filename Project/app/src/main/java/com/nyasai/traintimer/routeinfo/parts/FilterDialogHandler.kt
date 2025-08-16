@@ -3,7 +3,7 @@ package com.nyasai.traintimer.routeinfo.parts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import com.nyasai.traintimer.database.FilterInfo
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
+import com.nyasai.traintimer.routeinfo.RouteInfoScreenState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,7 +17,7 @@ fun FilterDialogHandler(
     localFilterItems: List<FilterInfo>,
     onFilterItemsChange: (List<FilterInfo>) -> Unit,
     onDialogDismiss: () -> Unit,
-    routeInfoViewModel: RouteInfoViewModel,
+    screenState: RouteInfoScreenState,
     onFilterUpdate: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -44,7 +44,7 @@ fun FilterDialogHandler(
                 // フィルタ情報を更新
                 scope.launch {
                     withContext(Dispatchers.IO) {
-                        routeInfoViewModel.updateFilterInfoListItem(localFilterItems)
+                        screenState.updateFilterInfoListItem(localFilterItems)
                     }
                     onFilterUpdate()
                     onDialogDismiss()

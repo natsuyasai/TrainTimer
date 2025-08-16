@@ -13,7 +13,6 @@ import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.routeinfo.RouteInfoManagers
 import com.nyasai.traintimer.routeinfo.RouteInfoScreenState
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 
 /**
@@ -27,7 +26,6 @@ fun RouteInfoContent(
     currentCountItem: RouteDetail?,
     screenState: RouteInfoScreenState,
     managers: RouteInfoManagers,
-    routeInfoViewModel: RouteInfoViewModel,
     filterInfo: List<com.nyasai.traintimer.database.FilterInfo>,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -50,7 +48,6 @@ fun RouteInfoContent(
                 currentCountItem = currentCountItem,
                 screenState = screenState,
                 managers = managers,
-                routeInfoViewModel = routeInfoViewModel,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)

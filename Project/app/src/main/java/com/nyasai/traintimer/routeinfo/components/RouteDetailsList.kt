@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.routeinfo.RouteInfoManagers
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
+import com.nyasai.traintimer.routeinfo.RouteInfoScreenState
 import com.nyasai.traintimer.routeinfo.parts.RouteInfoItemCompose
 
 /**
@@ -18,7 +18,7 @@ fun RouteDetailsList(
     displayRouteDetails: List<RouteDetail>,
     currentCountItem: RouteDetail?,
     managers: RouteInfoManagers,
-    routeInfoViewModel: RouteInfoViewModel,
+    screenState: RouteInfoScreenState,
     listState: androidx.compose.foundation.lazy.LazyListState,
     modifier: Modifier = Modifier
 ) {
@@ -38,8 +38,8 @@ fun RouteDetailsList(
                     routeDetail = routeDetail,
                     isSelected = routeDetail.dataId == currentCountItem?.dataId,
                     onItemClick = { selectedRouteDetail ->
-                        managers.interactionManager.handleItemClick(
-                            routeInfoViewModel,
+                        managers.interactionManager.handleItemClickWithState(
+                            screenState,
                             selectedRouteDetail
                         )
                     },

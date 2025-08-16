@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.routeinfo.RouteInfoManagers
 import com.nyasai.traintimer.routeinfo.RouteInfoScreenState
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
 import com.nyasai.traintimer.routeinfo.parts.RouteInfoTitleCompose
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 
@@ -24,7 +23,6 @@ fun RouteInfoMainContent(
     currentCountItem: RouteDetail?,
     screenState: RouteInfoScreenState,
     managers: RouteInfoManagers,
-    routeInfoViewModel: RouteInfoViewModel,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -36,7 +34,7 @@ fun RouteInfoMainContent(
                 routeListItem = route,
                 currentDiagramType = currentDiagramType,
                 onTitleClick = {
-                    managers.interactionManager.handleTitleClick(routeInfoViewModel) { 
+                    managers.interactionManager.handleTitleClickWithState(screenState) { 
                         screenState.incrementFilterUpdateTrigger() 
                     }
                 },
@@ -59,7 +57,7 @@ fun RouteInfoMainContent(
             displayRouteDetails = screenState.displayRouteDetails,
             currentCountItem = currentCountItem,
             managers = managers,
-            routeInfoViewModel = routeInfoViewModel,
+            screenState = screenState,
             listState = listState,
             modifier = Modifier
                 .fillMaxWidth()

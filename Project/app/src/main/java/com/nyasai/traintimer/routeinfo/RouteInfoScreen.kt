@@ -5,8 +5,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import android.app.Application
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.routeinfo.components.RouteInfoContent
@@ -18,7 +18,7 @@ import com.nyasai.traintimer.util.YahooRouteInfoGetter
 
 /**
  * リファクタリングされた路線詳細情報画面のComposeスクリーン
- * State Hoistingパターンと適切な副作用管理を適用
+ * 完全なState Hoistingパターンを適用し、ViewModelを削除
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,42 +29,47 @@ fun RouteInfoScreenRefactored(
 ) {
     val context = LocalContext.current
     
-    // State Hoisting: 状態を分離
-    val screenState = rememberRouteInfoScreenState()
+    // Database DAOの取得
+    val database = RouteDatabase.getInstance(context).routeDatabaseDao
+    
+    // State Hoisting: 完全にViewModelから分離した状態管理
+    val screenState = rememberRouteInfoScreenState(
+        database = database,
+        application = context.applicationContext as Application,
+        parentId = parentDataId
+    )
     
     // マネージャーの初期化
     val managers = remember {
         RouteInfoManagers()
     }
     
-    // ViewModelの作成と初期化
-    val database = RouteDatabase.getInstance(context).routeDatabaseDao
-    val factory = RouteInfoViewModelFactory(
-        database, 
-        context.applicationContext as android.app.Application, 
-        parentDataId
-    )
-    val routeInfoViewModel: RouteInfoViewModel = viewModel(factory = factory)
-    
-    // ViewModelの状態観察
-    val routeInfo by routeInfoViewModel.routeInfo.observeAsState()
-    val currentDiagramType by routeInfoViewModel.currentDiagramType.observeAsState(
+    // State Holderの状態観察
+    val routeInfo by screenState.routeInfo.observeAsState()
+    val currentDiagramType by screenState.currentDiagramType.observeAsState(
         YahooRouteInfoGetter.Companion.DiagramType.Weekday
     )
-    val currentCountItem by routeInfoViewModel.currentCountItem.observeAsState()
-    val routeItems by routeInfoViewModel.routeItems.observeAsState(emptyList())
-    val filterInfo by routeInfoViewModel.filterInfo.observeAsState(emptyList())
+    val currentCountItem by screenState.currentCountItem.observeAsState()
+    val routeItems by screenState.routeItems.observeAsState(emptyList())
+    val filterInfo by screenState.filterInfo.observeAsState(emptyList())
     
     // 初期化処理
     LaunchedEffect(parentDataId) {
-        routeInfoViewModel.initializeAsync()
+        screenState.initializeAsync()
+    }
+    
+    // State Holderのクリーンアップ
+    DisposableEffect(screenState) {
+        onDispose {
+            screenState.onCleared()
+        }
     }
     
     // 改善されたカウントダウン効果
     CountdownEffect(
         currentCountItem = currentCountItem,
         onCountdownUpdate = screenState.countdownActions::updateCountdown,
-        getDiffTimeSeconds = { routeInfoViewModel.getNextDiffTime() },
+        getDiffTimeSeconds = { screenState.getNextDiffTime() },
         formatCountdownTime = { managers.countdownManager.formatCountdownTime(it) },
         buildNextTimeInfo = { managers.countdownManager.buildNextTimeInfo(it) }
     )
@@ -74,9 +79,9 @@ fun RouteInfoScreenRefactored(
     
     // 表示リストの更新ロジック
     LaunchedEffect(currentDiagramType, routeItems, filterInfo, screenState.filterUpdateTrigger) {
-        managers.routeDisplayManager.updateDisplayRouteDetails(
+        managers.routeDisplayManager.updateDisplayRouteDetailsWithState(
             routeItems,
-            routeInfoViewModel,
+            screenState,
             screenState.displayRouteDetails,
             updateListState
         )
@@ -85,10 +90,10 @@ fun RouteInfoScreenRefactored(
     // 強制的な初期データロード
     LaunchedEffect(parentDataId, routeItems) {
         if (routeItems.isNotEmpty()) {
-            routeInfoViewModel.clearDisplayCache()
+            screenState.clearDisplayCache()
             screenState.clearDisplayRouteDetails()
             screenState.updateDisplayRouteDetails(
-                routeInfoViewModel.getDisplayRouteDetailItems(false)
+                screenState.getDisplayRouteDetailItems(false)
             )
         }
     }
@@ -99,7 +104,6 @@ fun RouteInfoScreenRefactored(
         currentCountItem = currentCountItem,
         screenState = screenState,
         managers = managers,
-        routeInfoViewModel = routeInfoViewModel,
         filterInfo = filterInfo,
         onBackClick = onBackClick,
         modifier = modifier
@@ -111,7 +115,7 @@ fun RouteInfoScreenRefactored(
         localFilterItems = screenState.filterDialogState.localFilterItems,
         onFilterItemsChange = screenState.filterDialogActions::updateLocalFilterItems,
         onDialogDismiss = screenState.filterDialogActions::hideFilterDialog,
-        routeInfoViewModel = routeInfoViewModel,
+        screenState = screenState,
         onFilterUpdate = screenState::incrementFilterUpdateTrigger
     )
 }

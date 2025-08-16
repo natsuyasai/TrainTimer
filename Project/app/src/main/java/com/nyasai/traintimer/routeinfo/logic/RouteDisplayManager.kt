@@ -3,7 +3,7 @@ package com.nyasai.traintimer.routeinfo.logic
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
+import com.nyasai.traintimer.routeinfo.RouteInfoScreenState
 import com.nyasai.traintimer.routeinfo.logic.CountdownManager
 
 /**
@@ -14,32 +14,32 @@ class RouteDisplayManager(
 ) {
     
     /**
-     * 表示用路線詳細の更新処理
+     * 表示用路線詳細の更新処理（State Holder版）
      */
-    suspend fun updateDisplayRouteDetails(
+    suspend fun updateDisplayRouteDetailsWithState(
         routeItems: List<RouteDetail>,
-        viewModel: RouteInfoViewModel,
+        screenState: RouteInfoScreenState,
         displayRouteDetails: SnapshotStateList<RouteDetail>,
         listState: LazyListState
     ) {
         if (routeItems.isNotEmpty()) {
-            refreshDisplayRouteDetails(viewModel, displayRouteDetails)
+            refreshDisplayRouteDetailsWithState(screenState, displayRouteDetails)
             performAutoScroll(displayRouteDetails, listState)
         }
     }
     
     /**
-     * 表示リストの更新
+     * 表示リストの更新（State Holder版）
      */
-    fun refreshDisplayRouteDetails(
-        viewModel: RouteInfoViewModel,
+    fun refreshDisplayRouteDetailsWithState(
+        screenState: RouteInfoScreenState,
         displayRouteDetails: SnapshotStateList<RouteDetail>
     ) {
-        viewModel.clearDisplayCache()
-        val newDisplayItems = viewModel.getDisplayRouteDetailItems(false)
+        screenState.clearDisplayCache()
+        val newDisplayItems = screenState.getDisplayRouteDetailItems(false)
         displayRouteDetails.clear()
         displayRouteDetails.addAll(newDisplayItems)
-        viewModel.updateCurrentCountItem(false)
+        screenState.updateCurrentCountItem(false)
     }
     
     /**
