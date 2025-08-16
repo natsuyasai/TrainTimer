@@ -18,26 +18,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 
 /**
- * 路線一覧アイテム編集ダイアログ (Jetpack Compose版)
+ * State Hoisting対応の路線一覧アイテム編集ダイアログ
  */
 @Composable
 fun RouteListItemEditDialog(
     isVisible: Boolean,
-    selectedEditType: RouteListItemEditViewModel.EditType,
-    onEditTypeChange: (RouteListItemEditViewModel.EditType) -> Unit,
+    selectedEditType: EditType,
+    onEditTypeChange: (EditType) -> Unit,
     onPositiveClick: () -> Unit,
     onNegativeClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     if (isVisible) {
         val editOptions = listOf(
-            "更新" to RouteListItemEditViewModel.EditType.Update,
-            "色設定" to RouteListItemEditViewModel.EditType.SetColor,
-            "削除" to RouteListItemEditViewModel.EditType.Delete
+            "更新" to EditType.Update,
+            "色設定" to EditType.SetColor,
+            "削除" to EditType.Delete
         )
 
         AlertDialog(
@@ -103,43 +102,12 @@ fun RouteListItemEditDialog(
     }
 }
 
-/**
- * ViewModelと統合されたRouteListItemEditDialog
- */
-@Composable
-fun RouteListItemEditDialogWithViewModel(
-    isVisible: Boolean,
-    targetDataId: Long?,
-    onDismiss: () -> Unit,
-    viewModel: RouteListItemEditViewModel = viewModel()
-) {
-    // データIDを設定
-    if (targetDataId != null) {
-        viewModel.setTargetDataId(targetDataId)
-    }
-
-    RouteListItemEditDialog(
-        isVisible = isVisible,
-        selectedEditType = viewModel.selectedEditType,
-        onEditTypeChange = viewModel::updateEditType,
-        onPositiveClick = {
-            viewModel.onPositiveButtonClick()
-            viewModel.clearUIData()
-        },
-        onNegativeClick = {
-            viewModel.onNegativeButtonClick()
-            viewModel.clearUIData()
-        },
-        onDismiss = onDismiss
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun RouteListItemEditDialogPreview() {
     RouteListItemEditDialog(
         isVisible = true,
-        selectedEditType = RouteListItemEditViewModel.EditType.Update,
+        selectedEditType = EditType.Update,
         onEditTypeChange = {},
         onPositiveClick = {},
         onNegativeClick = {},

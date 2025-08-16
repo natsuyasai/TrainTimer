@@ -2,13 +2,11 @@ package com.nyasai.traintimer.routelist.dialogs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.commonparts.LoadingState
-import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.logic.EditModeManager
-import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialogWithViewModel
-import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
+import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialog
+import com.nyasai.traintimer.routelist.parts.rememberRouteListItemEditState
 
 /**
  * 編集ダイアログの表示と処理を管理するComposable関数
@@ -24,32 +22,32 @@ fun EditDialogHandler(
     onShowColorSelectDialog: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val editState = rememberRouteListItemEditState()
     
     if (showEditDialog && selectedItem != null) {
-        // ViewModelインスタンス
-        val routeListItemEditViewModel: RouteListItemEditViewModel = viewModel()
-        
-        // コールバックを事前に設定
-        routeListItemEditViewModel.onClickPositiveButtonCallback = { editType, dataId ->
-            editModeManager.handleEditDialogPositiveClick(
-                editType,
-                scope,
-                loadingState,
-                selectedItem,
-                onShowDeleteConfirmDialog,
-                onShowColorSelectDialog,
-                onDialogDismiss
-            )
-        }
-        routeListItemEditViewModel.onClickNegativeButtonCallback = { _, _ ->
-            onDialogDismiss()
-        }
+        // データIDを設定
+        editState.actions.setTargetDataId(selectedItem.dataId)
 
-        RouteListItemEditDialogWithViewModel(
+        RouteListItemEditDialog(
             isVisible = showEditDialog,
-            targetDataId = selectedItem.dataId,
-            onDismiss = onDialogDismiss,
-            viewModel = routeListItemEditViewModel
+            selectedEditType = editState.state.selectedEditType,
+            onEditTypeChange = editState.actions::updateEditType,
+            onPositiveClick = {
+                editModeManager.handleEditDialogPositiveClick(
+                    editState.state.selectedEditType,
+                    scope,
+                    loadingState,
+                    selectedItem,
+                    onShowDeleteConfirmDialog,
+                    onShowColorSelectDialog,
+                    onDialogDismiss
+                )
+                editState.actions.clearUIData()
+            },
+            onNegativeClick = {
+                editState.actions.clearUIData()
+            },
+            onDismiss = onDialogDismiss
         )
     }
 }

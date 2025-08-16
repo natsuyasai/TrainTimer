@@ -3,7 +3,7 @@ package com.nyasai.traintimer.routelist.logic
 import com.nyasai.traintimer.commonparts.LoadingState
 import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
-import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
+import com.nyasai.traintimer.routelist.parts.EditType
 import com.nyasai.traintimer.routelist.RouteListScreenState
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +30,7 @@ class EditModeManager(
      * 編集ダイアログの肯定ボタンクリック処理
      */
     fun handleEditDialogPositiveClick(
-        editType: RouteListItemEditViewModel.EditType,
+        editType: EditType,
         scope: CoroutineScope,
         loadingState: LoadingState,
         selectedItem: RouteListItem,
@@ -39,16 +39,16 @@ class EditModeManager(
         hideEditDialog: () -> Unit
     ) {
         when (editType) {
-            RouteListItemEditViewModel.EditType.Update -> {
+            EditType.Update -> {
                 handleRouteUpdate(scope, loadingState, selectedItem)
             }
-            RouteListItemEditViewModel.EditType.SetColor -> {
+            EditType.SetColor -> {
                 showColorDialog()
             }
-            RouteListItemEditViewModel.EditType.Delete -> {
+            EditType.Delete -> {
                 showDeleteDialog()
             }
-            RouteListItemEditViewModel.EditType.None -> {
+            EditType.None -> {
                 // 何もしない
             }
         }
