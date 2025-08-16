@@ -10,6 +10,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import android.os.Looper
 
 /**
  * CommonLoadingCompose UIテスト
@@ -25,7 +26,11 @@ class CommonLoadingComposeTest {
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
-        viewModel = CommonLoadingViewModel()
+        
+        // メインスレッドでViewModelを初期化
+        composeTestRule.runOnUiThread {
+            viewModel = CommonLoadingViewModel()
+        }
     }
 
     @Test
@@ -45,7 +50,9 @@ class CommonLoadingComposeTest {
     @Test
     fun `ローディングが表示されること`() {
         // Given
-        viewModel.showLoading("読み込み中")
+        composeTestRule.runOnUiThread {
+            viewModel.showLoading("読み込み中")
+        }
 
         // When
         composeTestRule.setContent {
@@ -63,9 +70,11 @@ class CommonLoadingComposeTest {
     @Test
     fun `進捗表示が正しく動作すること`() {
         // Given
-        viewModel.showLoading("データ処理中")
-        viewModel.incrementMaxCountFromBackgroundTask(10)
-        viewModel.incrementCurrentCountFromBackgroundTask(5)
+        composeTestRule.runOnUiThread {
+            viewModel.showLoading("データ処理中")
+            viewModel.incrementMaxCountFromBackgroundTask(10)
+            viewModel.incrementCurrentCountFromBackgroundTask(5)
+        }
 
         // When
         composeTestRule.setContent {
@@ -87,7 +96,9 @@ class CommonLoadingComposeTest {
     @Test
     fun `maxCountが0の時は進捗が表示されないこと`() {
         // Given
-        viewModel.showLoading("読み込み中")
+        composeTestRule.runOnUiThread {
+            viewModel.showLoading("読み込み中")
+        }
 
         // When
         composeTestRule.setContent {
