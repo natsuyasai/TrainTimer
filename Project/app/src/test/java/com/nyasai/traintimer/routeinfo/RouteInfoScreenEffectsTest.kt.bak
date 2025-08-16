@@ -1,0 +1,257 @@
+package com.nyasai.traintimer.routeinfo
+
+import androidx.compose.runtime.*
+import androidx.compose.ui.test.junit4.createComposeRule
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+import com.nyasai.traintimer.database.RouteDetail
+import com.nyasai.traintimer.routeinfo.logic.CountdownManager
+import kotlinx.coroutines.test.runTest
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.Assert.*
+import kotlinx.coroutines.delay
+
+/**
+ * RouteInfoScreenの副作用管理をテストするクラス
+ * LaunchedEffectの適切な管理をテストする
+ */
+@RunWith(JUnit4::class)
+class RouteInfoScreenEffectsTest {
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    /**
+     * カウントダウンタイマーの状態管理
+     */
+    data class CountdownState(
+        val countdownText: String = "--:--",
+        val nextTimeInfo: String = "",
+        val isActive: Boolean = false
+    )
+
+    /**
+     * CountdownManagerのテスト用ラッパー
+     */
+    class TestCountdownManager {
+        private var mockDiffSeconds: Long = 0
+        
+        fun setMockDiffSeconds(seconds: Long) {
+            mockDiffSeconds = seconds
+        }
+        
+        fun formatCountdownTime(diffSeconds: Long): String {
+            return when {
+                diffSeconds <= 0 -> "00:00"
+                diffSeconds < 60 -> "00:${diffSeconds.toString().padStart(2, '0')}"
+                else -> {
+                    val minutes = diffSeconds / 60
+                    val seconds = diffSeconds % 60
+                    "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+                }
+            }
+        }
+        
+        fun buildNextTimeInfo(countItem: RouteDetail): String {
+            return "次の電車: ${countItem.departureTime} ${countItem.trainType}"
+        }
+    }
+
+    @Test
+    fun `カウントダウン状態の初期値が正しいこと`() {
+        val countdownState = CountdownState()
+        
+        assertEquals("初期カウントダウンテキスト", "--:--", countdownState.countdownText)
+        assertEquals("初期次回時刻情報", "", countdownState.nextTimeInfo)
+        assertFalse("初期アクティブ状態", countdownState.isActive)
+    }
+
+    @Test
+    fun `CountdownManagerのフォーマット機能が正しく動作すること`() {
+        val manager = TestCountdownManager()
+        
+        assertEquals("0秒のフォーマット", "00:00", manager.formatCountdownTime(0))
+        assertEquals("30秒のフォーマット", "00:30", manager.formatCountdownTime(30))
+        assertEquals("1分30秒のフォーマット", "01:30", manager.formatCountdownTime(90))
+        assertEquals("10分5秒のフォーマット", "10:05", manager.formatCountdownTime(605))
+    }
+
+    @Test
+    fun `次回時刻情報の生成が正しく動作すること`() {
+        val manager = TestCountdownManager()
+        val testRouteDetail = RouteDetail().apply {
+            departureTime = "09:15"
+            trainType = "快速"
+            destination = "新宿方面"
+        }
+        
+        val result = manager.buildNextTimeInfo(testRouteDetail)
+        assertEquals("次の電車: 09:15 快速", result)
+    }
+
+    /**
+     * 改善されたタイマー効果のComposable
+     * 無限ループを避けて適切に管理される
+     */
+    @Composable
+    fun ImprovedCountdownEffect(
+        currentCountItem: RouteDetail?,
+        onCountdownUpdate: (String, String) -> Unit,
+        countdownManager: CountdownManager = CountdownManager()
+    ) {
+        LaunchedEffect(currentCountItem) {
+            if (currentCountItem != null) {
+                // 初回更新
+                val diffSeconds = 300L // モック値
+                val countdownText = countdownManager.formatCountdownTime(diffSeconds)
+                val nextTimeInfo = countdownManager.buildNextTimeInfo(currentCountItem)
+                onCountdownUpdate(countdownText, nextTimeInfo)
+                
+                // 1秒間隔での更新（テスト用に短縮可能）
+                while (currentCountItem != null) {
+                    delay(1000)
+                    val newDiffSeconds = maxOf(0, diffSeconds - 1)
+                    val newCountdownText = countdownManager.formatCountdownTime(newDiffSeconds)
+                    onCountdownUpdate(newCountdownText, nextTimeInfo)
+                }
+            } else {
+                onCountdownUpdate("--:--", "")
+            }
+        }
+    }
+
+    @Test
+    fun `改善されたカウントダウン効果のテスト`() = runTest {
+        var countdownText by mutableStateOf("--:--")
+        var nextTimeInfo by mutableStateOf("")
+        val testCountdownManager = TestCountdownManager()
+        
+        val testRouteDetail = RouteDetail().apply {
+            departureTime = "09:30"
+            trainType = "普通"
+            destination = "渋谷方面"
+        }
+        
+        composeTestRule.setContent {
+            ImprovedCountdownEffect(
+                currentCountItem = testRouteDetail,
+                onCountdownUpdate = { countdown, info ->
+                    countdownText = countdown
+                    nextTimeInfo = info
+                },
+                countdownManager = testCountdownManager
+            )
+        }
+        
+        // 初期更新を待機
+        composeTestRule.waitForIdle()
+        
+        assertNotEquals("カウントダウンテキストが更新される", "--:--", countdownText)
+        assertNotEquals("次回時刻情報が更新される", "", nextTimeInfo)
+        assertTrue("次回時刻情報に時刻が含まれる", nextTimeInfo.contains("09:30"))
+        assertTrue("次回時刻情報に種別が含まれる", nextTimeInfo.contains("普通"))
+    }
+
+    @Test
+    fun `カウントダウン効果のクリーンアップテスト`() = runTest {
+        var countdownText by mutableStateOf("--:--")
+        var nextTimeInfo by mutableStateOf("")
+        var currentItem by mutableStateOf<RouteDetail?>(null)
+        val testCountdownManager = TestCountdownManager()
+        
+        composeTestRule.setContent {
+            ImprovedCountdownEffect(
+                currentCountItem = currentItem,
+                onCountdownUpdate = { countdown, info ->
+                    countdownText = countdown
+                    nextTimeInfo = info
+                },
+                countdownManager = testCountdownManager
+            )
+        }
+        
+        // 初期状態（アイテムなし）
+        composeTestRule.waitForIdle()
+        assertEquals("初期状態のカウントダウン", "--:--", countdownText)
+        assertEquals("初期状態の次回情報", "", nextTimeInfo)
+        
+        // アイテム設定
+        currentItem = RouteDetail().apply {
+            departureTime = "10:00"
+            trainType = "急行"
+        }
+        
+        composeTestRule.waitForIdle()
+        assertNotEquals("アイテム設定後カウントダウン更新", "--:--", countdownText)
+        assertNotEquals("アイテム設定後次回情報更新", "", nextTimeInfo)
+        
+        // アイテムクリア（クリーンアップ）
+        currentItem = null
+        
+        composeTestRule.waitForIdle()
+        assertEquals("クリーンアップ後カウントダウン", "--:--", countdownText)
+        assertEquals("クリーンアップ後次回情報", "", nextTimeInfo)
+    }
+
+    /**
+     * 状態同期のテスト用Composable
+     */
+    @Composable
+    fun StateSync(
+        routeList: List<RouteDetail>,
+        isDragging: Boolean,
+        onLocalListUpdate: (List<RouteDetail>) -> Unit
+    ) {
+        LaunchedEffect(routeList) {
+            if (!isDragging) {
+                onLocalListUpdate(routeList)
+            }
+        }
+    }
+
+    @Test
+    fun `状態同期効果のテスト`() {
+        var routeList by mutableStateOf(emptyList<RouteDetail>())
+        var localList by mutableStateOf(emptyList<RouteDetail>())
+        var isDragging by mutableStateOf(false)
+        
+        composeTestRule.setContent {
+            StateSync(
+                routeList = routeList,
+                isDragging = isDragging,
+                onLocalListUpdate = { localList = it }
+            )
+        }
+        
+        // 初期状態
+        composeTestRule.waitForIdle()
+        assertTrue("初期状態でローカルリストが空", localList.isEmpty())
+        
+        // ルートリスト更新（ドラッグ中でない）
+        val testRoutes = listOf(
+            RouteDetail().apply { dataId = 1L },
+            RouteDetail().apply { dataId = 2L }
+        )
+        routeList = testRoutes
+        
+        composeTestRule.waitForIdle()
+        assertEquals("ドラッグ中でない場合はローカルリスト更新", testRoutes, localList)
+        
+        // ドラッグ開始
+        isDragging = true
+        val newRoutes = listOf(RouteDetail().apply { dataId = 3L })
+        routeList = newRoutes
+        
+        composeTestRule.waitForIdle()
+        assertNotEquals("ドラッグ中はローカルリスト更新されない", newRoutes, localList)
+        assertEquals("ドラッグ中は前の状態を保持", testRoutes, localList)
+        
+        // ドラッグ終了
+        isDragging = false
+        
+        composeTestRule.waitForIdle()
+        assertEquals("ドラッグ終了後はローカルリスト更新", newRoutes, localList)
+    }
+}

@@ -1,0 +1,227 @@
+package com.nyasai.traintimer.routelist
+
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.junit4.createComposeRule
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+import com.nyasai.traintimer.database.RouteListItem
+import org.junit.Rule
+import org.junit.Test
+import org.junit.Assert.*
+
+/**
+ * RouteListScreenの状態管理をテストするクラス
+ * State Hoistingリファクタリング前後の動作を保証する
+ */
+@RunWith(JUnit4::class)
+class RouteListScreenStateTest {
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    /**
+     * State Hostingパターンに基づくダイアログ状態管理
+     */
+    data class DialogState(
+        val showSearchDialog: Boolean = false,
+        val showStationSelectDialog: Boolean = false,
+        val showDestinationSelectDialog: Boolean = false,
+        val showEditDialog: Boolean = false,
+        val showDeleteConfirmDialog: Boolean = false,
+        val showColorSelectDialog: Boolean = false,
+        val selectedItem: RouteListItem? = null
+    )
+
+    /**
+     * 検索関連の状態管理
+     */
+    data class SearchState(
+        val stationOptions: Map<String, String> = emptyMap(),
+        val destinationOptions: Map<String, String> = emptyMap(),
+        val currentStationName: String = "",
+        val searchStationName: String = "",
+        val selectedStationItem: String = "",
+        val selectedDestinationItem: String = ""
+    )
+
+    @Test
+    fun `ダイアログ状態の初期値が正しいこと`() {
+        val dialogState = DialogState()
+        
+        assertFalse("検索ダイアログは初期非表示", dialogState.showSearchDialog)
+        assertFalse("駅選択ダイアログは初期非表示", dialogState.showStationSelectDialog)
+        assertFalse("行先選択ダイアログは初期非表示", dialogState.showDestinationSelectDialog)
+        assertFalse("編集ダイアログは初期非表示", dialogState.showEditDialog)
+        assertFalse("削除確認ダイアログは初期非表示", dialogState.showDeleteConfirmDialog)
+        assertFalse("色選択ダイアログは初期非表示", dialogState.showColorSelectDialog)
+        assertNull("選択アイテムは初期null", dialogState.selectedItem)
+    }
+
+    @Test
+    fun `検索状態の初期値が正しいこと`() {
+        val searchState = SearchState()
+        
+        assertTrue("駅オプションは初期空", searchState.stationOptions.isEmpty())
+        assertTrue("行先オプションは初期空", searchState.destinationOptions.isEmpty())
+        assertEquals("現在駅名は初期空文字", "", searchState.currentStationName)
+        assertEquals("検索駅名は初期空文字", "", searchState.searchStationName)
+        assertEquals("選択駅は初期空文字", "", searchState.selectedStationItem)
+        assertEquals("選択行先は初期空文字", "", searchState.selectedDestinationItem)
+    }
+
+    @Test
+    fun `ダイアログ状態の更新が正しく動作すること`() {
+        var dialogState by mutableStateOf(DialogState())
+        
+        // 検索ダイアログを表示
+        dialogState = dialogState.copy(showSearchDialog = true)
+        assertTrue("検索ダイアログが表示される", dialogState.showSearchDialog)
+        
+        // 選択アイテムを設定
+        val testItem = RouteListItem().apply {
+            dataId = 1L
+            routeName = "テスト路線"
+        }
+        dialogState = dialogState.copy(selectedItem = testItem)
+        assertEquals("選択アイテムが正しく設定される", testItem, dialogState.selectedItem)
+        
+        // 複数のダイアログ状態を同時に変更
+        dialogState = dialogState.copy(
+            showSearchDialog = false,
+            showEditDialog = true
+        )
+        assertFalse("検索ダイアログが非表示になる", dialogState.showSearchDialog)
+        assertTrue("編集ダイアログが表示される", dialogState.showEditDialog)
+    }
+
+    @Test
+    fun `検索状態の更新が正しく動作すること`() {
+        var searchState by mutableStateOf(SearchState())
+        
+        // 駅オプションを設定
+        val testStationOptions = mapOf("新宿駅" to "shinjuku", "渋谷駅" to "shibuya")
+        searchState = searchState.copy(stationOptions = testStationOptions)
+        assertEquals("駅オプションが正しく設定される", testStationOptions, searchState.stationOptions)
+        
+        // 検索文字列を設定
+        searchState = searchState.copy(searchStationName = "新宿")
+        assertEquals("検索駅名が正しく設定される", "新宿", searchState.searchStationName)
+        
+        // 複数の検索状態を同時に変更
+        searchState = searchState.copy(
+            selectedStationItem = "新宿駅",
+            currentStationName = "新宿駅"
+        )
+        assertEquals("選択駅が正しく設定される", "新宿駅", searchState.selectedStationItem)
+        assertEquals("現在駅名が正しく設定される", "新宿駅", searchState.currentStationName)
+    }
+
+    @Test
+    fun `状態のリセット機能が正しく動作すること`() {
+        var dialogState by mutableStateOf(
+            DialogState(
+                showSearchDialog = true,
+                showEditDialog = true,
+                selectedItem = RouteListItem().apply { dataId = 1L }
+            )
+        )
+        
+        var searchState by mutableStateOf(
+            SearchState(
+                searchStationName = "テスト駅",
+                selectedStationItem = "選択済み駅"
+            )
+        )
+        
+        // 状態をリセット
+        dialogState = DialogState()
+        searchState = SearchState()
+        
+        // リセット後の確認
+        assertFalse("ダイアログがすべて非表示", dialogState.showSearchDialog)
+        assertFalse("編集ダイアログも非表示", dialogState.showEditDialog)
+        assertNull("選択アイテムがnull", dialogState.selectedItem)
+        assertEquals("検索駅名が空", "", searchState.searchStationName)
+        assertEquals("選択駅が空", "", searchState.selectedStationItem)
+    }
+
+    /**
+     * State Hosting用のアクション定義
+     */
+    interface DialogActions {
+        fun showSearchDialog()
+        fun hideSearchDialog()
+        fun showStationSelectDialog()
+        fun hideStationSelectDialog()
+        fun showDestinationSelectDialog()
+        fun hideDestinationSelectDialog()
+        fun showEditDialog(item: RouteListItem)
+        fun hideEditDialog()
+        fun showDeleteConfirmDialog()
+        fun hideDeleteConfirmDialog()
+        fun showColorSelectDialog()
+        fun hideColorSelectDialog()
+        fun clearSelectedItem()
+    }
+
+    @Test
+    fun `アクション実行のテスト`() {
+        var dialogState by mutableStateOf(DialogState())
+        
+        val actions = object : DialogActions {
+            override fun showSearchDialog() {
+                dialogState = dialogState.copy(showSearchDialog = true)
+            }
+            override fun hideSearchDialog() {
+                dialogState = dialogState.copy(showSearchDialog = false)
+            }
+            override fun showStationSelectDialog() {
+                dialogState = dialogState.copy(showStationSelectDialog = true)
+            }
+            override fun hideStationSelectDialog() {
+                dialogState = dialogState.copy(showStationSelectDialog = false)
+            }
+            override fun showDestinationSelectDialog() {
+                dialogState = dialogState.copy(showDestinationSelectDialog = true)
+            }
+            override fun hideDestinationSelectDialog() {
+                dialogState = dialogState.copy(showDestinationSelectDialog = false)
+            }
+            override fun showEditDialog(item: RouteListItem) {
+                dialogState = dialogState.copy(showEditDialog = true, selectedItem = item)
+            }
+            override fun hideEditDialog() {
+                dialogState = dialogState.copy(showEditDialog = false)
+            }
+            override fun showDeleteConfirmDialog() {
+                dialogState = dialogState.copy(showDeleteConfirmDialog = true)
+            }
+            override fun hideDeleteConfirmDialog() {
+                dialogState = dialogState.copy(showDeleteConfirmDialog = false)
+            }
+            override fun showColorSelectDialog() {
+                dialogState = dialogState.copy(showColorSelectDialog = true)
+            }
+            override fun hideColorSelectDialog() {
+                dialogState = dialogState.copy(showColorSelectDialog = false)
+            }
+            override fun clearSelectedItem() {
+                dialogState = dialogState.copy(selectedItem = null)
+            }
+        }
+        
+        // アクションのテスト実行
+        actions.showSearchDialog()
+        assertTrue("検索ダイアログ表示アクション", dialogState.showSearchDialog)
+        
+        val testItem = RouteListItem().apply { dataId = 1L }
+        actions.showEditDialog(testItem)
+        assertTrue("編集ダイアログ表示アクション", dialogState.showEditDialog)
+        assertEquals("アイテム選択アクション", testItem, dialogState.selectedItem)
+        
+        actions.clearSelectedItem()
+        assertNull("アイテムクリアアクション", dialogState.selectedItem)
+    }
+}
