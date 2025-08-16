@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material3.*
@@ -21,17 +22,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
+import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDetail
-import com.nyasai.traintimer.routeinfo.logic.FilterManager
 import com.nyasai.traintimer.routeinfo.logic.InteractionManager
 import com.nyasai.traintimer.routeinfo.logic.RouteDisplayManager
 import com.nyasai.traintimer.routeinfo.logic.CountdownManager
-import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectDialogWithViewModel
-import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectViewModel
+import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectDialog
 import com.nyasai.traintimer.routeinfo.parts.RouteInfoItemCompose
 import com.nyasai.traintimer.routeinfo.parts.RouteInfoTitleCompose
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 /**
  * 路線詳細情報画面のComposeスクリーン
@@ -49,7 +52,6 @@ fun RouteInfoScreen(
     // マネージャクラスの初期化
     val countdownManager = remember { CountdownManager() }
     val routeDisplayManager = remember { RouteDisplayManager(countdownManager) }
-    val filterManager = remember { FilterManager() }
     val interactionManager = remember { InteractionManager() }
     
     // ViewModelをFactoryを使って作成し、parentDataIdを渡す
@@ -65,8 +67,8 @@ fun RouteInfoScreen(
     // ダイアログの状態
     var showFilterDialog by remember { mutableStateOf(false) }
     
-    // フィルタ用のViewModel
-    val filterItemSelectViewModel: FilterItemSelectViewModel = viewModel()
+    // フィルタ用のローカル状態
+    var localFilterItems by remember { mutableStateOf<List<com.nyasai.traintimer.database.FilterInfo>>(emptyList()) }
     
     // タイマー状態
     var countdownText by remember { mutableStateOf("--:--") }
@@ -132,17 +134,14 @@ fun RouteInfoScreen(
                     title = { Text("路線詳細") },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "戻る")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "戻る")
                         }
                     },
                     actions = {
                         IconButton(onClick = {
-                            filterManager.handleFilterButtonClick(
-                                scope,
-                                filterInfo,
-                                filterItemSelectViewModel,
-                                routeInfoViewModel
-                            ) { showFilterDialog = true }
+                            // フィルタ情報を更新してダイアログを表示
+                            localFilterItems = filterInfo.toList()
+                            showFilterDialog = true
                         }) {
                             Icon(
                                 Icons.Default.FilterAlt,
@@ -282,23 +281,37 @@ fun RouteInfoScreen(
     
     // フィルタダイアログ
     if (showFilterDialog) {
-        FilterItemSelectDialogWithViewModel(
+        FilterItemSelectDialog(
             isVisible = showFilterDialog,
-            onDismiss = { showFilterDialog = false },
-            viewModel = filterItemSelectViewModel.apply {
-                onClickPositiveButtonCallback = {
-                    filterManager.handleFilterPositiveClick(
-                        scope,
-                        routeInfoViewModel,
-                        filterItemSelectViewModel,
-                        { filterUpdateTrigger++ },
-                        { showFilterDialog = false }
+            filterItems = localFilterItems,
+            onItemToggle = { index ->
+                if (index in 0 until localFilterItems.size) {
+                    val mutableList = localFilterItems.toMutableList()
+                    val item = mutableList[index]
+                    // 新しいFilterInfoオブジェクトを作成して状態を変更
+                    mutableList[index] = FilterInfo(
+                        item.dataId,
+                        item.parentDataId,
+                        item.trainTypeAndDestination,
+                        !item.isShow
                     )
+                    localFilterItems = mutableList
                 }
-                onClickNegativeButtonCallback = {
-                    filterManager.handleFilterNegativeClick { showFilterDialog = false }
+            },
+            onPositiveClick = {
+                // フィルタ情報を更新
+                scope.launch {
+                    withContext(Dispatchers.IO) {
+                        routeInfoViewModel.updateFilterInfoListItem(localFilterItems)
+                    }
+                    filterUpdateTrigger++
+                    showFilterDialog = false
                 }
-            }
+            },
+            onNegativeClick = {
+                showFilterDialog = false
+            },
+            onDismiss = { showFilterDialog = false }
         )
     }
 }

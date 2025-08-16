@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.FilterInfo
 
@@ -105,28 +104,6 @@ fun FilterItemSelectDialog(
     }
 }
 
-/**
- * ViewModelと統合されたFilterItemSelectDialog
- */
-@Composable
-fun FilterItemSelectDialogWithViewModel(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    viewModel: FilterItemSelectViewModel = viewModel()
-) {
-    FilterItemSelectDialog(
-        isVisible = isVisible,
-        filterItems = viewModel.filterItemsState,
-        onItemToggle = viewModel::toggleItemVisibility,
-        onPositiveClick = {
-            viewModel.onPositiveButtonClick()
-        },
-        onNegativeClick = {
-            viewModel.onNegativeButtonClick()
-        },
-        onDismiss = onDismiss
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
