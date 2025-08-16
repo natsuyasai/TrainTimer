@@ -92,11 +92,11 @@ class FilterItemSelectDialogTest {
 
         // Then - チェックボックスの状態を確認
         composeTestRule
-            .onNodeWithText("普通 - 新宿")
+            .onNodeWithTag("普通 - 新宿")
             .assertIsOn()
         
         composeTestRule
-            .onNodeWithText("快速 - 池袋")
+            .onNodeWithTag("快速 - 池袋")
             .assertIsOff()
     }
 

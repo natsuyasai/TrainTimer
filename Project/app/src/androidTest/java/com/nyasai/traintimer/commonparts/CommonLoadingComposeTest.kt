@@ -25,7 +25,7 @@ class CommonLoadingComposeTest {
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
-        viewModel = CommonLoadingViewModelFactory().create(CommonLoadingViewModel::class.java)
+        viewModel = CommonLoadingViewModel()
     }
 
     @Test

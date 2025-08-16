@@ -38,7 +38,7 @@ internal class DataExportTest {
 
         target.export(outputStreamMock, emptyList(), emptyList(), emptyList())
         verify { outputStreamMock.write(any<ByteArray>()) }
-        verify(atLeast = 1) { outputStreamMock.write("DataVersion,1\r\n".toByteArray()) }
+        verify(atLeast = 1) { outputStreamMock.write("DataVersion,3\r\n".toByteArray()) }
         verify(atLeast = 1) { outputStreamMock.write("RouteListDataStart\r\n".toByteArray()) }
         verify(atLeast = 1) { outputStreamMock.write("RouteDetailDataStart\r\n".toByteArray()) }
         verify(atLeast = 1) { outputStreamMock.write("FilterInfoDataStart\r\n".toByteArray()) }

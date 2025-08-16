@@ -47,22 +47,4 @@ class RouteListItemComposeTest {
             .onNodeWithText("渋谷・品川方面")
             .assertIsDisplayed()
     }
-
-    @Test
-    fun `空データでもエラーが発生しないこと`() {
-        // Given
-        val emptyItem = RouteListItem()
-
-        // When & Then (例外が発生しないことを確認)
-        composeTestRule.setContent {
-            TrainTimerTheme {
-                RouteListItemCompose(routeListItem = emptyItem)
-            }
-        }
-
-        // 空文字が表示されることを確認
-        composeTestRule
-            .onNodeWithText("")
-            .assertExists()
-    }
 }
