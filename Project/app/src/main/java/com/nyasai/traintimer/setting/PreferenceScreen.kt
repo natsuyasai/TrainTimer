@@ -64,8 +64,6 @@ fun PreferenceScreen(
     // ダイアログの状態
     var showAppInfoDialog by remember { mutableStateOf(false) }
     
-    // ViewModelインスタンス
-    val appInfoViewModel: AppInfoViewModel = viewModel()
     
     // データベースアクセス
     val database = RouteDatabase.getInstance(context).routeDatabaseDao
@@ -153,14 +151,12 @@ fun PreferenceScreen(
     
     // アプリ情報ダイアログ
     if (showAppInfoDialog) {
-        AppInfoDialogWithViewModel(
+        AppInfoDialog(
             isVisible = showAppInfoDialog,
+            appTitle = "時刻表",
+            twitterInfo = "Twitter:natsuyasai7",
             onDismiss = { showAppInfoDialog = false },
-            viewModel = appInfoViewModel.apply {
-                onCloseCallback = {
-                    showAppInfoDialog = false
-                }
-            }
+            onClose = { showAppInfoDialog = false }
         )
     }
 }

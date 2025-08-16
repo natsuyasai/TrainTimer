@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 /**
  * アプリケーション情報表示用ダイアログ (Jetpack Compose版)
@@ -67,25 +66,6 @@ fun AppInfoDialog(
     }
 }
 
-/**
- * ViewModelと統合されたAppInfoDialog
- */
-@Composable
-fun AppInfoDialogWithViewModel(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    viewModel: AppInfoViewModel = viewModel()
-) {
-    AppInfoDialog(
-        isVisible = isVisible,
-        appTitle = viewModel.appTitle,
-        twitterInfo = viewModel.twitterInfo,
-        onClose = {
-            viewModel.onCloseButtonClick()
-        },
-        onDismiss = onDismiss
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
