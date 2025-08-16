@@ -3,7 +3,6 @@ package com.nyasai.traintimer.routelist.logic
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.routelist.RouteListViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
-import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,13 +16,13 @@ class RouteSearchManager(
     private val routeListViewModel: RouteListViewModel,
     private val wakeLockManager: WakeLockManager
 ) {
-    
+
     /**
-     * 検索ダイアログの肯定ボタンクリック処理
+     * 検索ダイアログの肯定ボタンクリック処理（純粋Composable版）
      */
     fun handleSearchDialogPositiveClick(
         scope: CoroutineScope,
-        searchViewModel: SearchTargetInputViewModel,
+        stationName: String,
         loadingViewModel: CommonLoadingViewModel,
         listSelectViewModel: ListItemSelectViewModel,
         setCurrentStationName: (String) -> Unit,
@@ -41,7 +40,6 @@ class RouteSearchManager(
             wakeLockManager.acquireWakeLock()
             
             try {
-                val stationName = searchViewModel.stationNameState
                 setCurrentStationName(stationName)
                 
                 val (stationListMap, destinationListMap) = withContext(Dispatchers.IO) {
@@ -61,7 +59,6 @@ class RouteSearchManager(
                 // エラーハンドリング
             } finally {
                 loadingViewModel.closeLoading()
-                searchViewModel.clearUIData()
                 // WakeLockを解放
                 wakeLockManager.releaseWakeLock()
             }

@@ -55,8 +55,7 @@ import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialogWithViewMode
 import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectDialogWithViewModel
 import com.nyasai.traintimer.routesearch.ListItemSelectViewModel
-import com.nyasai.traintimer.routesearch.SearchTargetInputDialogWithViewModel
-import com.nyasai.traintimer.routesearch.SearchTargetInputViewModel
+import com.nyasai.traintimer.routesearch.SearchTargetInputDialog
 import com.nyasai.traintimer.util.WakeLockManager
 
 /**
@@ -117,6 +116,7 @@ fun RouteListScreen(
     var stationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var destinationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var currentStationName by remember { mutableStateOf("") }
+    var searchStationName by remember { mutableStateOf("") }
     
     // ドラッグ&ドロップ状態（AndroidX公式デモに基づくアプローチ）
     var isDragging by remember { mutableStateOf(false) }
@@ -136,7 +136,6 @@ fun RouteListScreen(
     }
     
     // ViewModelインスタンス
-    val searchTargetInputViewModel: SearchTargetInputViewModel = viewModel()
     val listItemSelectViewModel: ListItemSelectViewModel = viewModel()
     val routeListItemEditViewModel: RouteListItemEditViewModel = viewModel()
     
@@ -273,29 +272,29 @@ fun RouteListScreen(
     
     // ダイアログ群
     if (showSearchDialog) {
-        // コールバックを事前に設定
-        searchTargetInputViewModel.onClickPositiveButtonCallback = {
-            routeSearchManager.handleSearchDialogPositiveClick(
-                scope,
-                searchTargetInputViewModel,
-                commonLoadingViewModel,
-                listItemSelectViewModel,
-                { name -> currentStationName = name },
-                { options -> stationOptions = options },
-                { options -> destinationOptions = options },
-                { showSearchDialog = false },
-                { showStationSelectDialog = true },
-                { showDestinationSelectDialog = true }
-            )
-        }
-        searchTargetInputViewModel.onClickNegativeButtonCallback = {
-            showSearchDialog = false
-        }
-        
-        SearchTargetInputDialogWithViewModel(
+        SearchTargetInputDialog(
             isVisible = showSearchDialog,
-            onDismiss = { showSearchDialog = false },
-            viewModel = searchTargetInputViewModel
+            stationName = searchStationName,
+            onStationNameChange = { searchStationName = it },
+            onPositiveClick = {
+                routeSearchManager.handleSearchDialogPositiveClick(
+                    scope,
+                    searchStationName,
+                    commonLoadingViewModel,
+                    listItemSelectViewModel,
+                    { name -> currentStationName = name },
+                    { options -> stationOptions = options },
+                    { options -> destinationOptions = options },
+                    { showSearchDialog = false },
+                    { showStationSelectDialog = true },
+                    { showDestinationSelectDialog = true }
+                )
+            },
+            onNegativeClick = {
+                searchStationName = ""
+                showSearchDialog = false
+            },
+            onDismiss = { showSearchDialog = false }
         )
     }
     
