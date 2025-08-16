@@ -43,6 +43,7 @@ fun RouteDetailsList(
                             selectedRouteDetail
                         )
                     },
+                    allRouteDetails = displayRouteDetails,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

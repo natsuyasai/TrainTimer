@@ -9,9 +9,9 @@ import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.http.HttpClient
 import com.nyasai.traintimer.routeinfo.logic.DiagramTypeModel
+import com.nyasai.traintimer.routeinfo.logic.TimeComparisonUtils
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job
-import java.time.LocalTime
 import java.util.Calendar
 
 /**
@@ -197,36 +197,9 @@ class RouteInfoViewModel(
             updateCurrentCountItem()
         }
         // データが取得できなければ，ハイフン表示とするために-1を設定
-        return when {
-            currentCountItem.value != null -> {
-                try {
-                    val now = LocalTime.now()
-                    val trainTime = LocalTime.parse(currentCountItem.value?.departureTime)
-                    
-                    // 分単位で時刻を計算（深夜0時～3時59分は24時～27時59分として扱う）
-                    val nowMinutes = if (now.hour < 4) {
-                        (now.hour + 24) * 60 + now.minute
-                    } else {
-                        now.hour * 60 + now.minute
-                    }
-                    
-                    val trainMinutes = if (trainTime.hour < 4) {
-                        (trainTime.hour + 24) * 60 + trainTime.minute
-                    } else {
-                        trainTime.hour * 60 + trainTime.minute
-                    }
-                    
-                    // 秒も考慮した差分計算
-                    val diffMinutes = trainMinutes - nowMinutes
-                    val diffSeconds = diffMinutes * 60 - now.second + trainTime.second
-                    
-                    diffSeconds.toLong()
-                } catch (e: Exception) {
-                    -1L
-                }
-            }
-            else -> -1L
-        }
+        return currentCountItem.value?.let { countItem ->
+            TimeComparisonUtils.getTimeDifferenceInSeconds(countItem)
+        } ?: -1L
     }
 
     /**
@@ -248,35 +221,11 @@ class RouteInfoViewModel(
     /**
      * 直近の時刻のアイテムを取得する
      * 深夜0時～3時は24時～27時として扱う
+     * 現在時刻より先のアイテムが見つからない場合は一番先頭の要素を返す
      */
     private fun getNearTimeItem(useCache: Boolean = false): RouteDetail? {
-        val now = LocalTime.now()
-        
-        // 現在時刻を分単位で計算（深夜0時～3時59分は24時～27時59分として扱う）
-        val nowMinutes = if (now.hour < 4) {
-            (now.hour + 24) * 60 + now.minute
-        } else {
-            now.hour * 60 + now.minute
-        }
-        
-        for (item in getDisplayRouteDetailItems(useCache)) {
-            try {
-                val trainTime = LocalTime.parse(item.departureTime)
-                val trainMinutes = if (trainTime.hour < 4) {
-                    (trainTime.hour + 24) * 60 + trainTime.minute
-                } else {
-                    trainTime.hour * 60 + trainTime.minute
-                }
-                
-                if (trainMinutes > nowMinutes) {
-                    return item
-                }
-            } catch (e: Exception) {
-                // 時刻解析エラーの場合はスキップ
-                continue
-            }
-        }
-        return null
+        val displayItems = getDisplayRouteDetailItems(useCache)
+        return TimeComparisonUtils.findNextTrain(displayItems)
     }
 
     /**

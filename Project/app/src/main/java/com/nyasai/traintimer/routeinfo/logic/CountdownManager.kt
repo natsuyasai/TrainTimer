@@ -1,8 +1,6 @@
 package com.nyasai.traintimer.routeinfo.logic
 
 import com.nyasai.traintimer.database.RouteDetail
-import java.time.LocalTime
-import java.time.format.DateTimeParseException
 import java.util.Locale
 
 /**
@@ -44,34 +42,9 @@ class CountdownManager {
     /**
      * 現在時刻より先で最も近い電車のインデックスを取得
      * 深夜0時～3時は24時～27時として扱う
+     * 現在時刻より先のアイテムが見つからない場合は一番先頭の要素（インデックス0）を返す
      */
     fun findNextTrainIndex(routeDetails: List<RouteDetail>): Int {
-        val now = LocalTime.now()
-
-        // 現在時刻を分単位で計算（深夜0時～3時59分は24時～27時59分として扱う）
-        val nowMinutes = if (now.hour < 4) {
-            (now.hour + 24) * 60 + now.minute
-        } else {
-            now.hour * 60 + now.minute
-        }
-
-        return routeDetails.indexOfFirst { routeDetail ->
-            try {
-                val departureTime = routeDetail.departureTime
-                if (departureTime.isNotEmpty()) {
-                    val trainTime = LocalTime.parse(departureTime)
-                    val trainMinutes = if (trainTime.hour < 4) {
-                        (trainTime.hour + 24) * 60 + trainTime.minute
-                    } else {
-                        trainTime.hour * 60 + trainTime.minute
-                    }
-                    trainMinutes > nowMinutes
-                } else {
-                    false
-                }
-            } catch (e: DateTimeParseException) {
-                false
-            }
-        }
+        return TimeComparisonUtils.findNextTrainIndex(routeDetails)
     }
 }

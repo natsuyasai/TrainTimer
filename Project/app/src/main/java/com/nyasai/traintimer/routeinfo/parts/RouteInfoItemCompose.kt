@@ -23,8 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.database.RouteDetail
-import java.time.LocalTime
-import java.time.format.DateTimeParseException
+import com.nyasai.traintimer.routeinfo.logic.TimeComparisonUtils
 
 /**
  * 路線詳細情報のアイテムのComposeコンポーネント
@@ -34,9 +33,10 @@ fun RouteInfoItemCompose(
     routeDetail: RouteDetail,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
-    onItemClick: ((RouteDetail) -> Unit)? = null
+    onItemClick: ((RouteDetail) -> Unit)? = null,
+    allRouteDetails: List<RouteDetail> = emptyList()
 ) {
-    val isPastTime = isPastTime(routeDetail)
+    val isPastTime = isPastTime(routeDetail, isSelected, allRouteDetails)
     
     Card(
         modifier = modifier
@@ -68,7 +68,7 @@ fun RouteInfoItemCompose(
             // 時刻（20%）
             Text(
                 text = routeDetail.departureTime ?: "--:--",
-                color = getTimeTextColor(routeDetail),
+                color = getTimeTextColor(routeDetail, isSelected, allRouteDetails),
                 fontSize = 18.sp,
                 textAlign = TextAlign.Start,
                 maxLines = 1,
@@ -106,67 +106,37 @@ fun RouteInfoItemCompose(
  * 時刻の色を取得（現在時刻との比較による）
  */
 @Composable
-private fun getTimeTextColor(routeDetail: RouteDetail): Color {
-    val timeStatus = getTimeStatus(routeDetail)
-    return when (timeStatus) {
-        TimeStatus.PAST -> colorResource(id = R.color.textGray)
-        TimeStatus.FUTURE -> colorResource(id = R.color.textColor)
-        TimeStatus.CURRENT -> colorResource(id = R.color.textRed)
-        TimeStatus.INVALID -> colorResource(id = R.color.textColor)
+private fun getTimeTextColor(routeDetail: RouteDetail, isSelected: Boolean = false, allRouteDetails: List<RouteDetail> = emptyList()): Color {
+    val timeStatus = if (isSelected && allRouteDetails.isNotEmpty()) {
+        // 選択された電車の場合、フォールバック判定を含む状態を取得
+        val isNextDayFallback = TimeComparisonUtils.isNextDayFallback(allRouteDetails, routeDetail)
+        TimeComparisonUtils.getTimeStatusWithContext(routeDetail, isNextDayFallback)
+    } else {
+        TimeComparisonUtils.getTimeStatus(routeDetail)
     }
-}
-
-/**
- * 時刻の状態enum
- */
-private enum class TimeStatus {
-    PAST, FUTURE, CURRENT, INVALID
-}
-
-/**
- * 時刻の状態を取得
- * 深夜0時～3時は24時～27時として扱う
- */
-private fun getTimeStatus(routeDetail: RouteDetail): TimeStatus {
-    return try {
-        val departureTime = routeDetail.departureTime
-        if (departureTime.isEmpty()) {
-            TimeStatus.INVALID
-        } else {
-            val now = LocalTime.now()
-            val trainTime = LocalTime.parse(departureTime)
-            
-            // 分単位で時刻を計算（深夜0時～3時59分は24時～27時59分として扱う）
-            val nowMinutes = if (now.hour < 4) {
-                (now.hour + 24) * 60 + now.minute
-            } else {
-                now.hour * 60 + now.minute
-            }
-            
-            val trainMinutes = if (trainTime.hour < 4) {
-                (trainTime.hour + 24) * 60 + trainTime.minute
-            } else {
-                trainTime.hour * 60 + trainTime.minute
-            }
-            
-            when {
-                trainMinutes < nowMinutes -> TimeStatus.PAST
-                trainMinutes > nowMinutes -> TimeStatus.FUTURE
-                else -> TimeStatus.CURRENT
-            }
-        }
-    } catch (e: DateTimeParseException) {
-        TimeStatus.INVALID
-    } catch (e: Exception) {
-        TimeStatus.INVALID
+    
+    return when (timeStatus) {
+        TimeComparisonUtils.TimeStatus.PAST -> colorResource(id = R.color.textGray)
+        TimeComparisonUtils.TimeStatus.FUTURE -> colorResource(id = R.color.textColor)
+        TimeComparisonUtils.TimeStatus.CURRENT -> colorResource(id = R.color.textRed)
+        TimeComparisonUtils.TimeStatus.NEXT_DAY -> colorResource(id = R.color.textColor) // 翌日の始発として通常色
+        TimeComparisonUtils.TimeStatus.INVALID -> colorResource(id = R.color.textColor)
     }
 }
 
 /**
  * 過去の時刻かどうかを判定
+ * NEXT_DAY状態の場合は過去時刻として扱わない
  */
-private fun isPastTime(routeDetail: RouteDetail): Boolean {
-    return getTimeStatus(routeDetail) == TimeStatus.PAST
+private fun isPastTime(routeDetail: RouteDetail, isSelected: Boolean = false, allRouteDetails: List<RouteDetail> = emptyList()): Boolean {
+    val status = if (isSelected && allRouteDetails.isNotEmpty()) {
+        // 選択された電車の場合、フォールバック判定を含む状態を取得
+        val isNextDayFallback = TimeComparisonUtils.isNextDayFallback(allRouteDetails, routeDetail)
+        TimeComparisonUtils.getTimeStatusWithContext(routeDetail, isNextDayFallback)
+    } else {
+        TimeComparisonUtils.getTimeStatus(routeDetail)
+    }
+    return status == TimeComparisonUtils.TimeStatus.PAST
 }
 
 @Preview(showBackground = true)
