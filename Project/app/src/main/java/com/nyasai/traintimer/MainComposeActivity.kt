@@ -19,8 +19,8 @@ import androidx.navigation.compose.rememberNavController
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
 import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
 import com.nyasai.traintimer.database.RouteDatabase
-import com.nyasai.traintimer.routeinfo.RouteInfoScreen
-import com.nyasai.traintimer.routelist.RouteListScreen
+import com.nyasai.traintimer.routeinfo.RouteInfoScreenRefactored
+import com.nyasai.traintimer.routelist.RouteListScreenRefactored
 import com.nyasai.traintimer.routelist.RouteListViewModel
 import com.nyasai.traintimer.routelist.RouteListViewModelFactory
 import com.nyasai.traintimer.setting.PreferenceScreen
@@ -97,7 +97,7 @@ fun TrainTimerNavigation(
                 )[RouteListViewModel::class.java]
             }
             
-            RouteListScreen(
+            RouteListScreenRefactored(
                 onRouteItemClick = { dataId ->
                     navController.navigate("route_info/$dataId")
                 },
@@ -113,7 +113,7 @@ fun TrainTimerNavigation(
         composable("route_info/{parentDataId}") { backStackEntry ->
             val parentDataId = backStackEntry.arguments?.getString("parentDataId")?.toLongOrNull() ?: 0L
             
-            RouteInfoScreen(
+            RouteInfoScreenRefactored(
                 parentDataId = parentDataId,
                 onBackClick = {
                     navController.popBackStack()

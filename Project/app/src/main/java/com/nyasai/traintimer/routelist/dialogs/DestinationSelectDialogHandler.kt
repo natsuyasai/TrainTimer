@@ -32,10 +32,10 @@ fun DestinationSelectDialogHandler(
             items = destinationItems,
             selectedItem = currentSelected,
             onItemSelect = onDestinationItemChange,
-            onPositiveClick = {
+            onPositiveClick = { selectedDestination ->
                 routeRegistrationManager.handleDestinationSelectPositiveClick(
                     scope,
-                    selectedDestinationItem,
+                    selectedDestination,
                     commonLoadingViewModel,
                     destinationOptions,
                     currentStationName

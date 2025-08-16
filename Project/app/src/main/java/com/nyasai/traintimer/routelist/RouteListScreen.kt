@@ -22,14 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
@@ -58,11 +55,12 @@ import com.nyasai.traintimer.routelist.parts.RouteListItemCompose
 import com.nyasai.traintimer.util.WakeLockManager
 
 /**
- * 路線一覧画面のComposeスクリーン
+ * リファクタリングされた路線一覧画面のComposeスクリーン
+ * State Hoistingパターンを適用
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RouteListScreen(
+fun RouteListScreenRefactored(
     onRouteItemClick: (Long) -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -72,270 +70,337 @@ fun RouteListScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
-    // WakeLockManagerの初期化
-    val wakeLockManager = remember { WakeLockManager(context) }
+    // State Hoisting: 状態を分離
+    val screenState = rememberRouteListScreenState()
     
-    // DragAndDropManagerの初期化
-    val dragAndDropManager = remember { DragAndDropManager(routeListViewModel) }
-    
-    // DialogManagerの初期化
-    val dialogManager = remember { DialogManager() }
-    
-    // EditModeManagerの初期化
-    val editModeManager = remember { EditModeManager(routeListViewModel, wakeLockManager) }
-    
-    // RouteSearchManagerの初期化
-    val routeSearchManager = remember { RouteSearchManager(routeListViewModel, wakeLockManager) }
-    
-    // RouteRegistrationManagerの初期化
-    val routeRegistrationManager = remember {
-        RouteRegistrationManager(
-            routeListViewModel,
-            wakeLockManager
+    // マネージャーの初期化（remember内で安全に）
+    val managers = remember {
+        RouteListManagers(
+            wakeLockManager = WakeLockManager(context),
+            dialogManager = DialogManager(),
+            routeListViewModel = routeListViewModel
         )
     }
     
-    // ViewModelの状態を観察
+    // ViewModelの状態観察
     val routeList by routeListViewModel.routeList.observeAsState(emptyList())
     val isEditMode by routeListViewModel.isEditMode.observeAsState(false)
     
-    // 色更新用のリコンポジション強制フラグ
-    var colorUpdateTrigger by remember { mutableIntStateOf(0) }
-    
-    // ダイアログの状態
-    var showSearchDialog by remember { mutableStateOf(false) }
-    var showStationSelectDialog by remember { mutableStateOf(false) }
-    var showDestinationSelectDialog by remember { mutableStateOf(false) }
-    var showEditDialog by remember { mutableStateOf(false) }
-    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    var showColorSelectDialog by remember { mutableStateOf(false) }
-    var selectedItem by remember { mutableStateOf<RouteListItem?>(null) }
-    
-    // ダイアログ用のデータ
-    var stationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
-    var destinationOptions by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
-    var currentStationName by remember { mutableStateOf("") }
-    var searchStationName by remember { mutableStateOf("") }
-    var selectedStationItem by remember { mutableStateOf("") }
-    var selectedDestinationItem by remember { mutableStateOf("") }
-    
-    // ドラッグ&ドロップ状態（AndroidX公式デモに基づくアプローチ）
-    var isDragging by remember { mutableStateOf(false) }
-    var draggedDistance by remember { mutableFloatStateOf(0f) }
-    var initialDraggedIndex by remember { mutableStateOf<Int?>(null) }
-    var currentDragOverIndex by remember { mutableStateOf<Int?>(null) }
-    val listState = rememberLazyListState()
-    
-    // ローカル状態でリストを管理
-    var localRouteList by remember { mutableStateOf(routeList) }
-    
-    // routeListが変更されたときにローカル状態を同期
+    // ローカル状態の同期
     LaunchedEffect(routeList) {
-        if (!isDragging) {
-            localRouteList = routeList
+        if (!screenState.dragDropState.isDragging) {
+            screenState.localRouteList = routeList
         }
     }
     
+    RouteListContent(
+        routeList = screenState.localRouteList,
+        isEditMode = isEditMode,
+        screenState = screenState,
+        managers = managers,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onRouteItemClick = onRouteItemClick,
+        onSettingsClick = onSettingsClick,
+        modifier = modifier
+    )
+    
+    // ダイアログハンドラ群
+    RouteListDialogs(
+        screenState = screenState,
+        managers = managers,
+        commonLoadingViewModel = commonLoadingViewModel
+    )
+}
+
+/**
+ * マネージャークラスの集約
+ */
+@Stable
+data class RouteListManagers(
+    val wakeLockManager: WakeLockManager,
+    val dialogManager: DialogManager,
+    val routeListViewModel: RouteListViewModel
+) {
+    val dragAndDropManager = DragAndDropManager(routeListViewModel)
+    val editModeManager = EditModeManager(routeListViewModel, wakeLockManager)
+    val routeSearchManager = RouteSearchManager(routeListViewModel, wakeLockManager)
+    val routeRegistrationManager = RouteRegistrationManager(routeListViewModel, wakeLockManager)
+}
+
+/**
+ * メインコンテンツのComposable
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RouteListContent(
+    routeList: List<RouteListItem>,
+    isEditMode: Boolean,
+    screenState: RouteListScreenState,
+    managers: RouteListManagers,
+    commonLoadingViewModel: CommonLoadingViewModel,
+    onRouteItemClick: (Long) -> Unit,
+    onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val listState = rememberLazyListState()
     
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { 
-                        Text(
-                            if (isEditMode) "路線一覧 (編集モード)" else "路線一覧"
-                        ) 
-                    },
-                    actions = {
-                        // 路線追加ボタン
-                        IconButton(onClick = { showSearchDialog = true }) {
-                            Icon(Icons.Default.Add, contentDescription = "路線追加")
-                        }
-                        
-                        // 編集
-                        IconButton(onClick = { 
-                            editModeManager.handleEditModeToggle()
-                        }) {
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = "編集"
-                            )
-                        }
-                        
-                        // 設定ボタン
-                        IconButton(onClick = onSettingsClick) {
-                            Icon(Icons.Default.Settings, contentDescription = "設定")
-                        }
-                    }
+                RouteListTopBar(
+                    isEditMode = isEditMode,
+                    onAddClick = screenState.dialogActions::showSearchDialog,
+                    onEditClick = managers.editModeManager::handleEditModeToggle,
+                    onSettingsClick = onSettingsClick
                 )
             }
         ) { paddingValues ->
             
-            LazyColumn(
+            RouteListLazyColumn(
+                routeList = routeList,
+                isEditMode = isEditMode,
+                screenState = screenState,
+                managers = managers,
+                listState = listState,
+                onRouteItemClick = onRouteItemClick,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .background(colorResource(id = R.color.colorNormalBackground))
-                    .pointerInput(Unit) {
-                        if (isEditMode) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = { offset ->
-                                    dragAndDropManager.handleDragStart(
-                                        offset,
-                                        listState
-                                    ) { itemInfo ->
-                                        isDragging = true
-                                        initialDraggedIndex = itemInfo.index
-                                        currentDragOverIndex = itemInfo.index
-                                        draggedDistance = 0f
-                                    }
-                                },
-                                onDragEnd = {
-                                    dragAndDropManager.handleDragEnd(
-                                        initialDraggedIndex,
-                                        currentDragOverIndex,
-                                        localRouteList
-                                    ) { newList ->
-                                        localRouteList = newList
-                                    }
-                                    
-                                    dragAndDropManager.resetDragState {
-                                        draggedDistance = 0f
-                                        currentDragOverIndex = null
-                                        initialDraggedIndex = null
-                                        isDragging = false
-                                    }
-                                },
-                                onDrag = { _, dragAmount ->
-                                    dragAndDropManager.handleDrag(
-                                        dragAmount,
-                                        initialDraggedIndex,
-                                        listState,
-                                        draggedDistance
-                                    ) { newDistance, newDragOverIndex ->
-                                        draggedDistance = newDistance
-                                        if (newDragOverIndex != currentDragOverIndex) {
-                                            currentDragOverIndex = newDragOverIndex
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    },
-                state = listState
-            ) {
-                itemsIndexed(
-                    items = localRouteList,
-                    key = { _, item -> "${item.dataId}_${item.displayColor}_$colorUpdateTrigger" }
-                ) { index, item ->
-                    val isBeingDragged = isDragging && initialDraggedIndex == index
-                    
-                    val itemModifier = Modifier
-                        .fillMaxWidth()
-                        .then(
-                            if (isBeingDragged) {
-                                Modifier
-                                    .zIndex(1f)
-                                    .graphicsLayer {
-                                        translationY = draggedDistance
-                                        scaleX = 1.05f
-                                        scaleY = 1.05f
-                                    }
-                                    .shadow(8.dp)
-                            } else {
-                                Modifier
-                            }
-                        )
-                        .clickable(enabled = !isDragging) {
-                            dialogManager.handleRouteItemClick(
-                                isEditMode,
-                                item,
-                                onRouteItemClick,
-                                { selectedItem = item },
-                                { showEditDialog = true }
-                            )
-                        }
-
-                    RouteListItemCompose(
-                        routeListItem = item,
-                        modifier = itemModifier
-                    )
-                }
-            }
+            )
         }
         
         // 共通ローディング
         CommonLoadingCompose(viewModel = commonLoadingViewModel)
     }
-    
-    // ダイアログハンドラ群
-    SearchDialogHandler(
-        showSearchDialog = showSearchDialog,
-        searchStationName = searchStationName,
-        onStationNameChange = { searchStationName = it },
-        onDialogDismiss = { showSearchDialog = false },
-        routeSearchManager = routeSearchManager,
-        commonLoadingViewModel = commonLoadingViewModel,
-        onCurrentStationNameChange = { name -> currentStationName = name },
-        onStationOptionsChange = { options -> stationOptions = options },
-        onDestinationOptionsChange = { options -> destinationOptions = options },
-        onShowStationDialog = { showStationSelectDialog = true },
-        onShowDestinationDialog = { showDestinationSelectDialog = true }
-    )
-    
-    StationSelectDialogHandler(
-        showStationSelectDialog = showStationSelectDialog,
-        stationOptions = stationOptions,
-        selectedStationItem = selectedStationItem,
-        onStationItemChange = { selectedStationItem = it },
-        onDialogDismiss = { showStationSelectDialog = false },
-        routeSearchManager = routeSearchManager,
-        commonLoadingViewModel = commonLoadingViewModel,
-        onCurrentStationNameChange = { station -> currentStationName = station },
-        onDestinationOptionsChange = { options -> destinationOptions = options },
-        onShowDestinationDialog = { showDestinationSelectDialog = true }
-    )
-    
-    DestinationSelectDialogHandler(
-        showDestinationSelectDialog = showDestinationSelectDialog,
-        destinationOptions = destinationOptions,
-        selectedDestinationItem = selectedDestinationItem,
-        onDestinationItemChange = { selectedDestinationItem = it },
-        onDialogDismiss = { showDestinationSelectDialog = false },
-        routeRegistrationManager = routeRegistrationManager,
-        commonLoadingViewModel = commonLoadingViewModel,
-        currentStationName = currentStationName
-    )
-    
-    EditDialogHandler(
-        showEditDialog = showEditDialog,
-        selectedItem = selectedItem,
-        onDialogDismiss = { showEditDialog = false },
-        editModeManager = editModeManager,
-        commonLoadingViewModel = commonLoadingViewModel,
-        onShowDeleteConfirmDialog = { showDeleteConfirmDialog = true },
-        onShowColorSelectDialog = { showColorSelectDialog = true }
-    )
-    
-    DeleteConfirmDialogHandler(
-        showDeleteConfirmDialog = showDeleteConfirmDialog,
-        selectedItem = selectedItem,
-        onDialogDismiss = { showDeleteConfirmDialog = false },
-        dialogManager = dialogManager,
-        routeListViewModel = routeListViewModel,
-        onSelectedItemClear = { selectedItem = null }
-    )
-    
-    ColorSelectDialogHandler(
-        showColorSelectDialog = showColorSelectDialog,
-        selectedItem = selectedItem,
-        onDialogDismiss = { showColorSelectDialog = false },
-        editModeManager = editModeManager,
-        onSelectedItemUpdate = { selectedItem = it },
-        onColorUpdateTrigger = { colorUpdateTrigger++ }
+}
+
+/**
+ * トップバーのComposable
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RouteListTopBar(
+    isEditMode: Boolean,
+    onAddClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    TopAppBar(
+        title = { 
+            Text(
+                if (isEditMode) "路線一覧 (編集モード)" else "路線一覧"
+            ) 
+        },
+        actions = {
+            // 路線追加ボタン
+            IconButton(onClick = onAddClick) {
+                Icon(Icons.Default.Add, contentDescription = "路線追加")
+            }
+            
+            // 編集ボタン
+            IconButton(onClick = onEditClick) {
+                Icon(Icons.Default.Edit, contentDescription = "編集")
+            }
+            
+            // 設定ボタン
+            IconButton(onClick = onSettingsClick) {
+                Icon(Icons.Default.Settings, contentDescription = "設定")
+            }
+        }
     )
 }
 
+/**
+ * LazyColumnのComposable（ドラッグ&ドロップ対応）
+ */
+@Composable
+private fun RouteListLazyColumn(
+    routeList: List<RouteListItem>,
+    isEditMode: Boolean,
+    screenState: RouteListScreenState,
+    managers: RouteListManagers,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onRouteItemClick: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.pointerInput(Unit) {
+            if (isEditMode) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { offset ->
+                        managers.dragAndDropManager.handleDragStart(
+                            offset,
+                            listState
+                        ) { itemInfo ->
+                            screenState.dragDropActions.startDrag(itemInfo.index)
+                        }
+                    },
+                    onDragEnd = {
+                        managers.dragAndDropManager.handleDragEnd(
+                            screenState.dragDropState.initialDraggedIndex,
+                            screenState.dragDropState.currentDragOverIndex,
+                            screenState.localRouteList
+                        ) { newList ->
+                            screenState.localRouteList = newList
+                        }
+                        
+                        managers.dragAndDropManager.resetDragState {
+                            screenState.dragDropActions.resetDragState()
+                        }
+                    },
+                    onDrag = { _, dragAmount ->
+                        managers.dragAndDropManager.handleDrag(
+                            dragAmount,
+                            screenState.dragDropState.initialDraggedIndex,
+                            listState,
+                            screenState.dragDropState.draggedDistance
+                        ) { newDistance, newDragOverIndex ->
+                            screenState.dragDropActions.updateDrag(newDistance, newDragOverIndex)
+                        }
+                    }
+                )
+            }
+        },
+        state = listState
+    ) {
+        itemsIndexed(
+            items = routeList,
+            key = { _, item -> 
+                // パフォーマンス最適化: 安定したkeyを使用
+                "${item.dataId}_${item.displayColor}"
+            }
+        ) { index, item ->
+            RouteListItemWithDragSupport(
+                item = item,
+                index = index,
+                screenState = screenState,
+                isEditMode = isEditMode,
+                managers = managers,
+                onRouteItemClick = onRouteItemClick
+            )
+        }
+    }
+}
 
+/**
+ * ドラッグ対応アイテムのComposable
+ */
+@Composable
+private fun RouteListItemWithDragSupport(
+    item: RouteListItem,
+    index: Int,
+    screenState: RouteListScreenState,
+    isEditMode: Boolean,
+    managers: RouteListManagers,
+    onRouteItemClick: (Long) -> Unit
+) {
+    val isBeingDragged = screenState.dragDropState.isDragging && 
+            screenState.dragDropState.initialDraggedIndex == index
+    
+    val itemModifier = Modifier
+        .fillMaxWidth()
+        .then(
+            if (isBeingDragged) {
+                Modifier
+                    .zIndex(1f)
+                    .graphicsLayer {
+                        translationY = screenState.dragDropState.draggedDistance
+                        scaleX = 1.05f
+                        scaleY = 1.05f
+                    }
+                    .shadow(8.dp)
+            } else {
+                Modifier
+            }
+        )
+        .clickable(enabled = !screenState.dragDropState.isDragging) {
+            managers.dialogManager.handleRouteItemClick(
+                isEditMode,
+                item,
+                onRouteItemClick,
+                { screenState.updateSelectedItem(item) },
+                { screenState.dialogActions.showEditDialog(item) }
+            )
+        }
 
+    RouteListItemCompose(
+        routeListItem = item,
+        modifier = itemModifier
+    )
+}
 
+/**
+ * ダイアログハンドラ群のComposable
+ */
+@Composable
+private fun RouteListDialogs(
+    screenState: RouteListScreenState,
+    managers: RouteListManagers,
+    commonLoadingViewModel: CommonLoadingViewModel
+) {
+    SearchDialogHandler(
+        showSearchDialog = screenState.dialogState.showSearchDialog,
+        searchStationName = screenState.searchState.searchStationName,
+        onStationNameChange = screenState.searchActions::updateSearchStationName,
+        onDialogDismiss = screenState.dialogActions::hideSearchDialog,
+        routeSearchManager = managers.routeSearchManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onCurrentStationNameChange = screenState.searchActions::updateCurrentStationName,
+        onStationOptionsChange = screenState.searchActions::updateStationOptions,
+        onDestinationOptionsChange = screenState.searchActions::updateDestinationOptions,
+        onShowStationDialog = screenState.dialogActions::showStationSelectDialog,
+        onShowDestinationDialog = screenState.dialogActions::showDestinationSelectDialog
+    )
+    
+    StationSelectDialogHandler(
+        showStationSelectDialog = screenState.dialogState.showStationSelectDialog,
+        stationOptions = screenState.searchState.stationOptions,
+        selectedStationItem = screenState.searchState.selectedStationItem,
+        onStationItemChange = screenState.searchActions::updateSelectedStationItem,
+        onDialogDismiss = screenState.dialogActions::hideStationSelectDialog,
+        routeSearchManager = managers.routeSearchManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onCurrentStationNameChange = screenState.searchActions::updateCurrentStationName,
+        onDestinationOptionsChange = screenState.searchActions::updateDestinationOptions,
+        onShowDestinationDialog = screenState.dialogActions::showDestinationSelectDialog
+    )
+    
+    DestinationSelectDialogHandler(
+        showDestinationSelectDialog = screenState.dialogState.showDestinationSelectDialog,
+        destinationOptions = screenState.searchState.destinationOptions,
+        selectedDestinationItem = screenState.searchState.selectedDestinationItem,
+        onDestinationItemChange = screenState.searchActions::updateSelectedDestinationItem,
+        onDialogDismiss = screenState.dialogActions::hideDestinationSelectDialog,
+        routeRegistrationManager = managers.routeRegistrationManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        currentStationName = screenState.searchState.currentStationName
+    )
+    
+    EditDialogHandler(
+        showEditDialog = screenState.dialogState.showEditDialog,
+        selectedItem = screenState.dialogState.selectedItem,
+        onDialogDismiss = screenState.dialogActions::hideEditDialog,
+        editModeManager = managers.editModeManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onShowDeleteConfirmDialog = screenState.dialogActions::showDeleteConfirmDialog,
+        onShowColorSelectDialog = screenState.dialogActions::showColorSelectDialog
+    )
+    
+    DeleteConfirmDialogHandler(
+        showDeleteConfirmDialog = screenState.dialogState.showDeleteConfirmDialog,
+        selectedItem = screenState.dialogState.selectedItem,
+        onDialogDismiss = screenState.dialogActions::hideDeleteConfirmDialog,
+        dialogManager = managers.dialogManager,
+        routeListViewModel = managers.routeListViewModel,
+        onSelectedItemClear = screenState.dialogActions::clearSelectedItem
+    )
+    
+    ColorSelectDialogHandler(
+        showColorSelectDialog = screenState.dialogState.showColorSelectDialog,
+        selectedItem = screenState.dialogState.selectedItem,
+        onDialogDismiss = screenState.dialogActions::hideColorSelectDialog,
+        editModeManager = managers.editModeManager,
+        screenState = screenState
+    )
+}

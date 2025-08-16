@@ -52,13 +52,13 @@ class ListItemSelectDialogTest {
         var onDismissCalled = false
 
         val onItemSelect: (String) -> Unit = { onItemSelectCalled = true }
-        val onPositiveClick: () -> Unit = { onPositiveClickCalled = true }
+        val onPositiveClick: (String) -> Unit = { onPositiveClickCalled = true }
         val onNegativeClick: () -> Unit = { onNegativeClickCalled = true }
         val onDismiss: () -> Unit = { onDismissCalled = true }
 
         // When
         onItemSelect("新宿駅")
-        onPositiveClick()
+        onPositiveClick("新宿駅")
         onNegativeClick()
         onDismiss()
 

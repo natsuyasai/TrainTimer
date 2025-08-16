@@ -39,7 +39,7 @@ fun ListItemSelectDialog(
     items: List<String>,
     selectedItem: String,
     onItemSelect: (String) -> Unit,
-    onPositiveClick: () -> Unit,
+    onPositiveClick: (String) -> Unit,
     onNegativeClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -104,7 +104,7 @@ fun ListItemSelectDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onPositiveClick()
+                        onPositiveClick(currentSelectedItem)
                         onDismiss()
                     }
                 ) {
@@ -140,7 +140,7 @@ private fun ListItemSelectDialogPreview() {
         items = listOf("JR山手線", "JR中央線", "東京メトロ丸ノ内線", "都営新宿線"),
         selectedItem = "JR山手線",
         onItemSelect = {},
-        onPositiveClick = {},
+        onPositiveClick = { _ -> },
         onNegativeClick = {},
         onDismiss = {}
     )

@@ -45,6 +45,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Overview
 This is an Android Kotlin application called "TrainTimer" that helps users track train schedule information. The app has been migrated from Fragment-based navigation to Jetpack Compose for modern UI development.
 
+**🎉 2025年8月16日更新**: Jetpack Composeベストプラクティスに従った大規模リファクタリングが完了しました。State Hoisting、副作用管理、パフォーマンス最適化、コンポーネント責任分離を実施し、より保守可能で高品質なCompose実装となりました。詳細は`REFACTORING_NOTES.md`を参照してください。
+
 ### Key Technologies
 - **Language**: Kotlin with Java 19 compatibility
 - **UI**: Jetpack Compose with Navigation Compose (migrated from Fragments)
@@ -92,10 +94,41 @@ com.nyasai.traintimer/
 
 ### Navigation Flow
 The app follows a hub-and-spoke navigation pattern using Jetpack Compose Navigation:
-- **RouteListScreen**: Main hub showing saved routes with add/sort/settings actions
-- **RouteInfoScreen**: Displays detailed train schedules with countdown timer and filtering
+- **RouteListScreenRefactored**: Main hub showing saved routes with add/sort/settings actions (リファクタリング済み)
+- **RouteInfoScreenRefactored**: Displays detailed train schedules with countdown timer and filtering (リファクタリング済み)
 - **PreferenceScreen**: Application settings for data backup/restore and app info
 - **Dialogs**: Various Compose dialogs for search, selection, edit, and filter operations
+
+### 🔄 Refactored Architecture (2025年8月16日更新)
+
+#### State Management Pattern
+- **State Hoisting**: 状態をComposableから分離し、適切なState Holderクラスで管理
+- **Action Interfaces**: ダイアログ、検索、ドラッグ&ドロップの操作を明確に分離
+- **@Stable Annotations**: リコンポジション最適化のためのStableアノテーション活用
+
+#### New File Structure
+```
+app/src/main/java/com/nyasai/traintimer/
+├── routelist/
+│   ├── RouteListScreenState.kt               # 状態管理
+│   ├── RouteListScreenRefactored.kt          # 最適化されたScreen
+│   ├── dialogs/                              # ダイアログハンドラ群
+│   │   ├── SearchDialogHandler.kt
+│   │   ├── StationSelectDialogHandler.kt
+│   │   └── ...
+│   └── parts/
+│       └── RouteListItemComposePreview.kt    # 改善されたプレビュー
+├── routeinfo/
+│   ├── RouteInfoScreenState.kt               # 状態管理
+│   └── RouteInfoScreenRefactored.kt          # 最適化されたScreen
+└── commonparts/
+    └── CommonLoadingCompose.kt               # 純粋Composable版
+```
+
+#### Performance Optimizations
+- **Recomposition Control**: 不要なリコンポジションを削減
+- **Memory Management**: 状態の適切なライフサイクル管理
+- **Effect Management**: LaunchedEffectの最適化とクリーンアップ
 
 ### Main User Flows
 1. **Route Addition Flow** (based on 路線追加シーケンス.pu):

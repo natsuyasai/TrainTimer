@@ -34,10 +34,10 @@ fun StationSelectDialogHandler(
             items = stationItems,
             selectedItem = currentSelected,
             onItemSelect = onStationItemChange,
-            onPositiveClick = {
+            onPositiveClick = { selectedStation ->
                 routeSearchManager.handleStationSelectPositiveClick(
                     scope,
-                    selectedStationItem,
+                    selectedStation,
                     commonLoadingViewModel,
                     stationOptions,
                     onCurrentStationNameChange,
