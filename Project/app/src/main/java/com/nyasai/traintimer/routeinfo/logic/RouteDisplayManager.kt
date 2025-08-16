@@ -1,8 +1,10 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.nyasai.traintimer.database.RouteDetail
+import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
+import com.nyasai.traintimer.routeinfo.logic.CountdownManager
 
 /**
  * 路線表示リスト管理機能を管理するクラス

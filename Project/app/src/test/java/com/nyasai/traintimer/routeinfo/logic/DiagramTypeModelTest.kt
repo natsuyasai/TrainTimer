@@ -1,6 +1,6 @@
 @file:Suppress("NonAsciiCharacters")
 
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import com.github.kittinunf.fuel.core.Response
 import com.nyasai.traintimer.http.IHttpClient

@@ -1,6 +1,7 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import com.nyasai.traintimer.database.RouteDetail
+import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
 
 /**
  * ユーザーインタラクション管理機能を管理するクラス

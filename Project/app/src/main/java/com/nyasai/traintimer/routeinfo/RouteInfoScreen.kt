@@ -21,11 +21,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nyasai.traintimer.R
-import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.database.RouteDetail
+import com.nyasai.traintimer.routeinfo.logic.FilterManager
+import com.nyasai.traintimer.routeinfo.logic.InteractionManager
+import com.nyasai.traintimer.routeinfo.logic.RouteDisplayManager
+import com.nyasai.traintimer.routeinfo.logic.CountdownManager
+import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectDialogWithViewModel
+import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectViewModel
+import com.nyasai.traintimer.routeinfo.parts.RouteInfoItemCompose
+import com.nyasai.traintimer.routeinfo.parts.RouteInfoTitleCompose
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
-import kotlinx.coroutines.launch
 
 /**
  * 路線詳細情報画面のComposeスクリーン
@@ -260,7 +266,10 @@ fun RouteInfoScreen(
                                 routeDetail = routeDetail,
                                 isSelected = routeDetail.dataId == currentCountItem?.dataId,
                                 onItemClick = { selectedRouteDetail ->
-                                    interactionManager.handleItemClick(routeInfoViewModel, selectedRouteDetail)
+                                    interactionManager.handleItemClick(
+                                        routeInfoViewModel,
+                                        selectedRouteDetail
+                                    )
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             )

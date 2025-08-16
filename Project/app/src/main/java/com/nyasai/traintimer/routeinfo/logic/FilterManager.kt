@@ -1,8 +1,11 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import com.nyasai.traintimer.database.FilterInfo
+import com.nyasai.traintimer.routeinfo.RouteInfoViewModel
+import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -58,7 +61,7 @@ class FilterManager {
                 // ViewModelのキャッシュをクリア
                 routeInfoViewModel.clearDisplayCache()
                 // 少し遅延を入れてからUIを更新（データベース更新の完了を確実にするため）
-                kotlinx.coroutines.delay(100)
+                delay(100)
                 // フィルター更新トリガーを増加させてLaunchedEffectを実行
                 triggerUpdate()
             } catch (e: Exception) {

@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.parts
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule

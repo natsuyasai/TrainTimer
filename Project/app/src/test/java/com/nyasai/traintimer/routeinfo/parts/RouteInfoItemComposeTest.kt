@@ -1,12 +1,10 @@
 @file:Suppress("NonAsciiCharacters")
 
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.parts
 
 import com.nyasai.traintimer.database.RouteDetail
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.LocalTime
 
 /**
  * RouteInfoItemComposeのテスト

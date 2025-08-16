@@ -8,10 +8,10 @@ import com.nyasai.traintimer.database.FilterInfo
 import com.nyasai.traintimer.database.RouteDatabaseDao
 import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.http.HttpClient
+import com.nyasai.traintimer.routeinfo.logic.DiagramTypeModel
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
 import kotlinx.coroutines.Job
 import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 import java.util.Calendar
 
 /**

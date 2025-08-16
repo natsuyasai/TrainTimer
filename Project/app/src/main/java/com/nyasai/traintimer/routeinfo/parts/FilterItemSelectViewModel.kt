@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.parts
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

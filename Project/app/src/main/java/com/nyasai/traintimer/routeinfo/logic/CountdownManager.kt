@@ -1,15 +1,15 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import com.nyasai.traintimer.database.RouteDetail
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
-import java.util.*
+import java.util.Locale
 
 /**
  * カウントダウンタイマー関連機能を管理するクラス
  */
 class CountdownManager {
-    
+
     /**
      * カウントダウン時間をMM:SS形式でフォーマット
      */
@@ -18,16 +18,18 @@ class CountdownManager {
             diffSeconds < 0 -> "--:--"
             diffSeconds < 60 -> {
                 val seconds = diffSeconds % 60
-                "00:${String.format(Locale.JAPAN,"%02d", seconds)}"
+                "00:${String.Companion.format(Locale.JAPAN,"%02d", seconds)}"
             }
             else -> {
                 val minutes = diffSeconds / 60
                 val seconds = diffSeconds % 60
-                "${String.format(Locale.JAPAN,"%02d", minutes)}:${String.format(Locale.JAPAN,"%02d", seconds)}"
+                "${String.Companion.format(Locale.JAPAN,"%02d", minutes)}:${
+                    String.Companion.format(
+                        Locale.JAPAN,"%02d", seconds)}"
             }
         }
     }
-    
+
     /**
      * 次の時刻情報構築
      */
@@ -38,21 +40,21 @@ class CountdownManager {
             append(countItem.destination.ifEmpty { "--" })
         }
     }
-    
+
     /**
      * 現在時刻より先で最も近い電車のインデックスを取得
      * 深夜0時～3時は24時～27時として扱う
      */
     fun findNextTrainIndex(routeDetails: List<RouteDetail>): Int {
         val now = LocalTime.now()
-        
+
         // 現在時刻を分単位で計算（深夜0時～3時59分は24時～27時59分として扱う）
         val nowMinutes = if (now.hour < 4) {
             (now.hour + 24) * 60 + now.minute
         } else {
             now.hour * 60 + now.minute
         }
-        
+
         return routeDetails.indexOfFirst { routeDetail ->
             try {
                 val departureTime = routeDetail.departureTime

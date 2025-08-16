@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.parts
 
 import com.nyasai.traintimer.database.FilterInfo
 import org.junit.jupiter.api.Assertions.*

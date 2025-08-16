@@ -1,6 +1,6 @@
 @file:Suppress("NonAsciiCharacters")
 
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -9,7 +9,7 @@ import java.time.LocalTime
 /**
  * カウントダウン機能の深夜時刻対応テスト
  */
-internal class CountdownMidnightTest {
+internal class CountdownManagerTest {
 
     @Test
     fun `深夜時刻の変換ロジックが正しく動作する`() {

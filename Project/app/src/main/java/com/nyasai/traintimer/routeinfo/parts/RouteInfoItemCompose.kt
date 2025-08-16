@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.parts
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

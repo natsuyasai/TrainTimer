@@ -1,4 +1,4 @@
-package com.nyasai.traintimer.routeinfo
+package com.nyasai.traintimer.routeinfo.logic
 
 import android.util.Log
 import com.github.kittinunf.fuel.core.isSuccessful
