@@ -23,8 +23,11 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import android.content.res.Configuration
 
 /**
  * 色選択ダイアログ
@@ -82,10 +85,7 @@ private fun ColorSelectDialogContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +96,7 @@ private fun ColorSelectDialogContent(
             // タイトル
             Text(
                 text = "表示色を選択",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -114,7 +114,7 @@ private fun ColorSelectDialogContent(
                     modifier = Modifier
                         .size(40.dp)
                         .border(
-                            BorderStroke(2.dp, Color.Gray),
+                            BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
                             shape = CircleShape
                         )
                         .background(Color.Transparent, CircleShape),
@@ -124,21 +124,22 @@ private fun ColorSelectDialogContent(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "選択済み",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "色なし（デフォルト）",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp
                 )
             }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
-                thickness = DividerDefaults.Thickness, color = Color.Gray
+                thickness = DividerDefaults.Thickness, 
+                color = MaterialTheme.colorScheme.outline
             )
 
             // カラーパレット
@@ -170,7 +171,7 @@ private fun ColorSelectDialogContent(
                 ) {
                     Text(
                         text = "キャンセル",
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -179,14 +180,10 @@ private fun ColorSelectDialogContent(
                         onColorSelected(selectedColor)
                         onDismiss()
                     },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Blue
-                    )
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "適用",
-                        color = Color.White
+                        text = "適用"
                     )
                 }
             }
@@ -209,12 +206,12 @@ private fun ColorItem(
             .then(
                 if (isSelected) {
                     Modifier.border(
-                        BorderStroke(3.dp, Color.White),
+                        BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface),
                         shape = CircleShape
                     )
                 } else {
                     Modifier.border(
-                        BorderStroke(1.dp, Color.Gray),
+                        BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         shape = CircleShape
                     )
                 }
@@ -222,43 +219,56 @@ private fun ColorItem(
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
+            // 選択色に応じてアイコンの色を動的に決定
+            // 色の明度を簡易的に計算 (R*0.299 + G*0.587 + B*0.114)
+            val brightness = color.red * 0.299f + color.green * 0.587f + color.blue * 0.114f
+            val iconColor = if (brightness > 0.5f) Color.Black else Color.White
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "選択済み",
-                tint = Color.White,
+                tint = iconColor,
                 modifier = Modifier.size(20.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "ライトテーマ")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "ダークテーマ")
 @Composable
 private fun ColorSelectDialogPreview() {
-    ColorSelectDialog(
-        isVisible = true,
-        currentColor = Color.Blue.toArgb(),
-        onColorSelected = { },
-        onDismiss = { }
-    )
+    MaterialTheme {
+        ColorSelectDialog(
+            isVisible = true,
+            currentColor = Color.Blue.toArgb(),
+            onColorSelected = { },
+            onDismiss = { }
+        )
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "ライトテーマ")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "ダークテーマ")
 @Composable
 private fun ColorSelectDialogContentPreview() {
-    ColorSelectDialogContent(
-        currentColor = Color.Red.toArgb(),
-        onColorSelected = { },
-        onDismiss = { }
-    )
+    MaterialTheme {
+        ColorSelectDialogContent(
+            currentColor = Color.Red.toArgb(),
+            onColorSelected = { },
+            onDismiss = { }
+        )
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "ライトテーマ")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "ダークテーマ")
 @Composable
 private fun ColorSelectDialogNoSelectionPreview() {
-    ColorSelectDialogContent(
-        currentColor = null,
-        onColorSelected = { },
-        onDismiss = { }
-    )
+    MaterialTheme {
+        ColorSelectDialogContent(
+            currentColor = null,
+            onColorSelected = { },
+            onDismiss = { }
+        )
+    }
 }
