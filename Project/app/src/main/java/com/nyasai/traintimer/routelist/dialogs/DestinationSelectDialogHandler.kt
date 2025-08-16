@@ -2,7 +2,8 @@ package com.nyasai.traintimer.routelist.dialogs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.routelist.logic.RouteRegistrationManager
 import com.nyasai.traintimer.routesearch.ListItemSelectDialog
 
@@ -17,7 +18,7 @@ fun DestinationSelectDialogHandler(
     onDestinationItemChange: (String) -> Unit,
     onDialogDismiss: () -> Unit,
     routeRegistrationManager: RouteRegistrationManager,
-    commonLoadingViewModel: CommonLoadingViewModel,
+    loadingState: LoadingState,
     currentStationName: String
 ) {
     val scope = rememberCoroutineScope()
@@ -36,7 +37,7 @@ fun DestinationSelectDialogHandler(
                 routeRegistrationManager.handleDestinationSelectPositiveClick(
                     scope,
                     selectedDestination,
-                    commonLoadingViewModel,
+                    loadingState,
                     destinationOptions,
                     currentStationName
                 ) { onDialogDismiss() }

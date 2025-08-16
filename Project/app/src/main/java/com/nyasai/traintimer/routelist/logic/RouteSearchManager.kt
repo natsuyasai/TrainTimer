@@ -1,6 +1,7 @@
 package com.nyasai.traintimer.routelist.logic
 
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.routelist.RouteListViewModel
 import com.nyasai.traintimer.util.WakeLockManager
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +23,7 @@ class RouteSearchManager(
     fun handleSearchDialogPositiveClick(
         scope: CoroutineScope,
         stationName: String,
-        loadingViewModel: CommonLoadingViewModel,
+        loadingState: LoadingState,
         setCurrentStationName: (String) -> Unit,
         setStationOptions: (Map<String, String>) -> Unit,
         setDestinationOptions: (Map<String, String>) -> Unit,
@@ -32,7 +33,7 @@ class RouteSearchManager(
     ) {
         scope.launch {
             hideSearchDialog()
-            loadingViewModel.showLoading()
+            loadingState.actions.show()
             
             // WakeLockを取得してスリープを防止
             wakeLockManager.acquireWakeLock()
@@ -55,7 +56,7 @@ class RouteSearchManager(
             } catch (e: Exception) {
                 // エラーハンドリング
             } finally {
-                loadingViewModel.closeLoading()
+                loadingState.actions.close()
                 // WakeLockを解放
                 wakeLockManager.releaseWakeLock()
             }
@@ -68,7 +69,7 @@ class RouteSearchManager(
     fun handleStationSelectPositiveClick(
         scope: CoroutineScope,
         selectedStation: String,
-        loadingViewModel: CommonLoadingViewModel,
+        loadingState: LoadingState,
         stationOptions: Map<String, String>,
         setCurrentStationName: (String) -> Unit,
         setDestinationOptions: (Map<String, String>) -> Unit,
@@ -77,7 +78,7 @@ class RouteSearchManager(
     ) {
         scope.launch {
             hideStationDialog()
-            loadingViewModel.showLoading()
+            loadingState.actions.show()
             
             // WakeLockを取得してスリープを防止
             wakeLockManager.acquireWakeLock()
@@ -96,7 +97,7 @@ class RouteSearchManager(
             } catch (e: Exception) {
                 // エラーハンドリング
             } finally {
-                loadingViewModel.closeLoading()
+                loadingState.actions.close()
                 // WakeLockを解放
                 wakeLockManager.releaseWakeLock()
             }

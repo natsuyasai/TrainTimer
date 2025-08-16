@@ -11,7 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import com.nyasai.traintimer.R
 import com.nyasai.traintimer.commonparts.CommonLoadingCompose
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.RouteListManagers
 import com.nyasai.traintimer.routelist.RouteListScreenState
@@ -26,10 +27,10 @@ fun RouteListContent(
     isEditMode: Boolean,
     screenState: RouteListScreenState,
     managers: RouteListManagers,
-    commonLoadingViewModel: CommonLoadingViewModel,
     onRouteItemClick: (Long) -> Unit,
     onSettingsClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    loadingState: LoadingState = loadingState()
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -57,6 +58,6 @@ fun RouteListContent(
         }
         
         // 共通ローディング
-        CommonLoadingCompose(viewModel = commonLoadingViewModel)
+        CommonLoadingCompose(loadingState = loadingState)
     }
 }

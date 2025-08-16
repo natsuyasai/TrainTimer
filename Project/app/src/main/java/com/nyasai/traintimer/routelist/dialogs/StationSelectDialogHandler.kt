@@ -2,7 +2,8 @@ package com.nyasai.traintimer.routelist.dialogs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.routelist.logic.RouteSearchManager
 import com.nyasai.traintimer.routesearch.ListItemSelectDialog
 
@@ -17,7 +18,7 @@ fun StationSelectDialogHandler(
     onStationItemChange: (String) -> Unit,
     onDialogDismiss: () -> Unit,
     routeSearchManager: RouteSearchManager,
-    commonLoadingViewModel: CommonLoadingViewModel,
+    loadingState: LoadingState,
     onCurrentStationNameChange: (String) -> Unit,
     onDestinationOptionsChange: (Map<String, String>) -> Unit,
     onShowDestinationDialog: () -> Unit
@@ -38,7 +39,7 @@ fun StationSelectDialogHandler(
                 routeSearchManager.handleStationSelectPositiveClick(
                     scope,
                     selectedStation,
-                    commonLoadingViewModel,
+                    loadingState,
                     stationOptions,
                     onCurrentStationNameChange,
                     onDestinationOptionsChange,

@@ -16,8 +16,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModelFactory
 import com.nyasai.traintimer.database.RouteDatabase
 import com.nyasai.traintimer.routeinfo.RouteInfoScreenRefactored
 import com.nyasai.traintimer.routelist.RouteListScreenRefactored
@@ -51,21 +49,13 @@ fun TrainTimerApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
     
-    // 共通ViewModelインスタンス
-    val commonLoadingViewModel = remember {
-        ViewModelProvider(
-            context as ComponentActivity,
-            CommonLoadingViewModelFactory()
-        )[CommonLoadingViewModel::class.java]
-    }
     
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         TrainTimerNavigation(
-            navController = navController,
-            commonLoadingViewModel = commonLoadingViewModel
+            navController = navController
         )
     }
 }
@@ -75,8 +65,7 @@ fun TrainTimerApp() {
  */
 @Composable
 fun TrainTimerNavigation(
-    navController: NavHostController,
-    commonLoadingViewModel: CommonLoadingViewModel
+    navController: NavHostController
 ) {
     val context = LocalContext.current
     
@@ -104,8 +93,7 @@ fun TrainTimerNavigation(
                 onSettingsClick = {
                     navController.navigate("settings")
                 },
-                routeListViewModel = routeListViewModel,
-                commonLoadingViewModel = commonLoadingViewModel
+                routeListViewModel = routeListViewModel
             )
         }
         

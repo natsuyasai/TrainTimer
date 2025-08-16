@@ -1,6 +1,7 @@
 package com.nyasai.traintimer.routelist.logic
 
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
 import com.nyasai.traintimer.routelist.RouteListViewModel
@@ -31,7 +32,7 @@ class EditModeManager(
     fun handleEditDialogPositiveClick(
         editType: RouteListItemEditViewModel.EditType,
         scope: CoroutineScope,
-        loadingViewModel: CommonLoadingViewModel,
+        loadingState: LoadingState,
         selectedItem: RouteListItem,
         showDeleteDialog: () -> Unit,
         showColorDialog: () -> Unit,
@@ -39,7 +40,7 @@ class EditModeManager(
     ) {
         when (editType) {
             RouteListItemEditViewModel.EditType.Update -> {
-                handleRouteUpdate(scope, loadingViewModel, selectedItem)
+                handleRouteUpdate(scope, loadingState, selectedItem)
             }
             RouteListItemEditViewModel.EditType.SetColor -> {
                 showColorDialog()
@@ -59,11 +60,11 @@ class EditModeManager(
      */
     private fun handleRouteUpdate(
         scope: CoroutineScope,
-        loadingViewModel: CommonLoadingViewModel,
+        loadingState: LoadingState,
         selectedItem: RouteListItem
     ) {
         scope.launch {
-            loadingViewModel.showLoading("時刻情報更新中")
+            loadingState.actions.show("時刻情報更新中")
             
             // WakeLockを取得してスリープを防止
             wakeLockManager?.acquireWakeLock()
@@ -72,14 +73,14 @@ class EditModeManager(
                 withContext(Dispatchers.IO) {
                     routeListViewModel.updateRouteInfo(
                         selectedItem,
-                        { loadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                        { loadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
+                        { loadingState.actions.incrementMaxCount(it) },
+                        { loadingState.actions.incrementCurrentCount(1) }
                     )
                 }
             } catch (e: Exception) {
                 // エラーハンドリング
             } finally {
-                loadingViewModel.closeLoading()
+                loadingState.actions.close()
                 // WakeLockを解放
                 wakeLockManager?.releaseWakeLock()
             }

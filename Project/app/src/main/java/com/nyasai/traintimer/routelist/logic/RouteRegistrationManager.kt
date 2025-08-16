@@ -1,6 +1,7 @@
 package com.nyasai.traintimer.routelist.logic
 
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.RouteListViewModel
 import com.nyasai.traintimer.util.WakeLockManager
@@ -23,14 +24,14 @@ class RouteRegistrationManager(
     fun handleDestinationSelectPositiveClick(
         scope: CoroutineScope,
         selectedDestination: String,
-        loadingViewModel: CommonLoadingViewModel,
+        loadingState: LoadingState,
         destinationOptions: Map<String, String>,
         currentStationName: String,
         hideDestinationDialog: () -> Unit
     ) {
         scope.launch {
             hideDestinationDialog()
-            loadingViewModel.showLoading("時刻情報取得中")
+            loadingState.actions.show("時刻情報取得中")
             
             // WakeLockを取得してスリープを防止
             wakeLockManager.acquireWakeLock()
@@ -41,16 +42,16 @@ class RouteRegistrationManager(
                 val (routeInfo, parentDataId) = withContext(Dispatchers.IO) {
                     val routeInfo = routeListViewModel.getTimeTableInfo(
                         url,
-                        { loadingViewModel.incrementMaxCountFromBackgroundTask(it) },
-                        { loadingViewModel.incrementCurrentCountFromBackgroundTask(1) }
+                        { loadingState.actions.incrementMaxCount(it) },
+                        { loadingState.actions.incrementCurrentCount(1) }
                     )
                     
                     val newRouteListItem = createRouteListItem(selectedDestination, currentStationName)
                     val parentDataId = routeListViewModel.registerRouteListItem(routeInfo, newRouteListItem)
                     Pair(routeInfo, parentDataId)
                 }
-                
-                loadingViewModel.changeText("時刻情報登録中")
+
+                loadingState.actions.changeText("時刻情報登録中")
                 
                 withContext(Dispatchers.IO) {
                     routeListViewModel.registerRouteInfoDetailItems(routeInfo, parentDataId)
@@ -58,7 +59,7 @@ class RouteRegistrationManager(
             } catch (e: Exception) {
                 // エラーハンドリング
             } finally {
-                loadingViewModel.closeLoading()
+                loadingState.actions.close()
                 // WakeLockを解放
                 wakeLockManager.releaseWakeLock()
             }

@@ -1,7 +1,7 @@
 package com.nyasai.traintimer.routelist.components
 
 import androidx.compose.runtime.Composable
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
 import com.nyasai.traintimer.routelist.RouteListManagers
 import com.nyasai.traintimer.routelist.RouteListScreenState
 import com.nyasai.traintimer.routelist.dialogs.ColorSelectDialogHandler
@@ -18,7 +18,7 @@ import com.nyasai.traintimer.routelist.dialogs.StationSelectDialogHandler
 fun RouteListDialogs(
     screenState: RouteListScreenState,
     managers: RouteListManagers,
-    commonLoadingViewModel: CommonLoadingViewModel
+    loadingState: LoadingState
 ) {
     SearchDialogHandler(
         showSearchDialog = screenState.dialogState.showSearchDialog,
@@ -26,7 +26,7 @@ fun RouteListDialogs(
         onStationNameChange = screenState.searchActions::updateSearchStationName,
         onDialogDismiss = screenState.dialogActions::hideSearchDialog,
         routeSearchManager = managers.routeSearchManager,
-        commonLoadingViewModel = commonLoadingViewModel,
+        loadingState = loadingState,
         onCurrentStationNameChange = screenState.searchActions::updateCurrentStationName,
         onStationOptionsChange = screenState.searchActions::updateStationOptions,
         onDestinationOptionsChange = screenState.searchActions::updateDestinationOptions,
@@ -41,7 +41,7 @@ fun RouteListDialogs(
         onStationItemChange = screenState.searchActions::updateSelectedStationItem,
         onDialogDismiss = screenState.dialogActions::hideStationSelectDialog,
         routeSearchManager = managers.routeSearchManager,
-        commonLoadingViewModel = commonLoadingViewModel,
+        loadingState = loadingState,
         onCurrentStationNameChange = screenState.searchActions::updateCurrentStationName,
         onDestinationOptionsChange = screenState.searchActions::updateDestinationOptions,
         onShowDestinationDialog = screenState.dialogActions::showDestinationSelectDialog
@@ -54,7 +54,7 @@ fun RouteListDialogs(
         onDestinationItemChange = screenState.searchActions::updateSelectedDestinationItem,
         onDialogDismiss = screenState.dialogActions::hideDestinationSelectDialog,
         routeRegistrationManager = managers.routeRegistrationManager,
-        commonLoadingViewModel = commonLoadingViewModel,
+        loadingState = loadingState,
         currentStationName = screenState.searchState.currentStationName
     )
     
@@ -63,7 +63,7 @@ fun RouteListDialogs(
         selectedItem = screenState.dialogState.selectedItem,
         onDialogDismiss = screenState.dialogActions::hideEditDialog,
         editModeManager = managers.editModeManager,
-        commonLoadingViewModel = commonLoadingViewModel,
+        loadingState = loadingState,
         onShowDeleteConfirmDialog = screenState.dialogActions::showDeleteConfirmDialog,
         onShowColorSelectDialog = screenState.dialogActions::showColorSelectDialog
     )

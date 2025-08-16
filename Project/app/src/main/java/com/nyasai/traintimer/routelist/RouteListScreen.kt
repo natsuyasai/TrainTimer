@@ -11,7 +11,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.logic.DialogManager
 import com.nyasai.traintimer.routelist.logic.DragAndDropManager
@@ -33,7 +34,7 @@ fun RouteListScreenRefactored(
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
     routeListViewModel: RouteListViewModel = viewModel(),
-    commonLoadingViewModel: CommonLoadingViewModel = viewModel()
+    loadingState: LoadingState = loadingState()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -66,7 +67,7 @@ fun RouteListScreenRefactored(
         isEditMode = isEditMode,
         screenState = screenState,
         managers = managers,
-        commonLoadingViewModel = commonLoadingViewModel,
+        loadingState = loadingState,
         onRouteItemClick = onRouteItemClick,
         onSettingsClick = onSettingsClick,
         modifier = modifier
@@ -76,7 +77,7 @@ fun RouteListScreenRefactored(
     RouteListDialogs(
         screenState = screenState,
         managers = managers,
-        commonLoadingViewModel = commonLoadingViewModel
+        loadingState = loadingState
     )
 }
 

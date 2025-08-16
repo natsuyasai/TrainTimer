@@ -3,7 +3,8 @@ package com.nyasai.traintimer.routelist.dialogs
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nyasai.traintimer.commonparts.CommonLoadingViewModel
+import com.nyasai.traintimer.commonparts.LoadingState
+import com.nyasai.traintimer.commonparts.loadingState
 import com.nyasai.traintimer.database.RouteListItem
 import com.nyasai.traintimer.routelist.logic.EditModeManager
 import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialogWithViewModel
@@ -18,7 +19,7 @@ fun EditDialogHandler(
     selectedItem: RouteListItem?,
     onDialogDismiss: () -> Unit,
     editModeManager: EditModeManager,
-    commonLoadingViewModel: CommonLoadingViewModel,
+    loadingState: LoadingState,
     onShowDeleteConfirmDialog: () -> Unit,
     onShowColorSelectDialog: () -> Unit
 ) {
@@ -33,7 +34,7 @@ fun EditDialogHandler(
             editModeManager.handleEditDialogPositiveClick(
                 editType,
                 scope,
-                commonLoadingViewModel,
+                loadingState,
                 selectedItem,
                 onShowDeleteConfirmDialog,
                 onShowColorSelectDialog,
