@@ -48,13 +48,13 @@ import com.nyasai.traintimer.routelist.logic.DragAndDropManager
 import com.nyasai.traintimer.routelist.logic.EditModeManager
 import com.nyasai.traintimer.routelist.logic.RouteRegistrationManager
 import com.nyasai.traintimer.routelist.logic.RouteSearchManager
-import com.nyasai.traintimer.routelist.parts.ColorSelectDialog
+import com.nyasai.traintimer.routelist.dialogs.ColorSelectDialogHandler
+import com.nyasai.traintimer.routelist.dialogs.DeleteConfirmDialogHandler
+import com.nyasai.traintimer.routelist.dialogs.DestinationSelectDialogHandler
+import com.nyasai.traintimer.routelist.dialogs.EditDialogHandler
+import com.nyasai.traintimer.routelist.dialogs.SearchDialogHandler
+import com.nyasai.traintimer.routelist.dialogs.StationSelectDialogHandler
 import com.nyasai.traintimer.routelist.parts.RouteListItemCompose
-import com.nyasai.traintimer.routelist.parts.RouteListItemDeleteConfirmDialog
-import com.nyasai.traintimer.routelist.parts.RouteListItemEditDialogWithViewModel
-import com.nyasai.traintimer.routelist.parts.RouteListItemEditViewModel
-import com.nyasai.traintimer.routesearch.ListItemSelectDialog
-import com.nyasai.traintimer.routesearch.SearchTargetInputDialog
 import com.nyasai.traintimer.util.WakeLockManager
 
 /**
@@ -136,8 +136,6 @@ fun RouteListScreen(
         }
     }
     
-    // ViewModelインスタンス
-    val routeListItemEditViewModel: RouteListItemEditViewModel = viewModel()
     
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -270,147 +268,72 @@ fun RouteListScreen(
         CommonLoadingCompose(viewModel = commonLoadingViewModel)
     }
     
-    // ダイアログ群
-    if (showSearchDialog) {
-        SearchTargetInputDialog(
-            isVisible = showSearchDialog,
-            stationName = searchStationName,
-            onStationNameChange = { searchStationName = it },
-            onPositiveClick = {
-                routeSearchManager.handleSearchDialogPositiveClick(
-                    scope,
-                    searchStationName,
-                    commonLoadingViewModel,
-                    { name -> currentStationName = name },
-                    { options -> stationOptions = options },
-                    { options -> destinationOptions = options },
-                    { showSearchDialog = false },
-                    { showStationSelectDialog = true },
-                    { showDestinationSelectDialog = true }
-                )
-            },
-            onNegativeClick = {
-                searchStationName = ""
-                showSearchDialog = false
-            },
-            onDismiss = { showSearchDialog = false }
-        )
-    }
+    // ダイアログハンドラ群
+    SearchDialogHandler(
+        showSearchDialog = showSearchDialog,
+        searchStationName = searchStationName,
+        onStationNameChange = { searchStationName = it },
+        onDialogDismiss = { showSearchDialog = false },
+        routeSearchManager = routeSearchManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onCurrentStationNameChange = { name -> currentStationName = name },
+        onStationOptionsChange = { options -> stationOptions = options },
+        onDestinationOptionsChange = { options -> destinationOptions = options },
+        onShowStationDialog = { showStationSelectDialog = true },
+        onShowDestinationDialog = { showDestinationSelectDialog = true }
+    )
     
-    if (showStationSelectDialog) {
-        val stationItems = stationOptions.keys.toList()
-        val currentSelected = selectedStationItem.takeIf { it in stationItems } ?: stationItems.firstOrNull() ?: ""
-        
-        ListItemSelectDialog(
-            isVisible = showStationSelectDialog,
-            title = "駅を選択してください",
-            items = stationItems,
-            selectedItem = currentSelected,
-            onItemSelect = { selectedStationItem = it },
-            onPositiveClick = {
-                routeSearchManager.handleStationSelectPositiveClick(
-                    scope,
-                    selectedStationItem,
-                    commonLoadingViewModel,
-                    stationOptions,
-                    { station -> currentStationName = station },
-                    { options -> destinationOptions = options },
-                    { showStationSelectDialog = false },
-                    { showDestinationSelectDialog = true }
-                )
-            },
-            onNegativeClick = {
-                showStationSelectDialog = false
-            },
-            onDismiss = { showStationSelectDialog = false }
-        )
-    }
+    StationSelectDialogHandler(
+        showStationSelectDialog = showStationSelectDialog,
+        stationOptions = stationOptions,
+        selectedStationItem = selectedStationItem,
+        onStationItemChange = { selectedStationItem = it },
+        onDialogDismiss = { showStationSelectDialog = false },
+        routeSearchManager = routeSearchManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onCurrentStationNameChange = { station -> currentStationName = station },
+        onDestinationOptionsChange = { options -> destinationOptions = options },
+        onShowDestinationDialog = { showDestinationSelectDialog = true }
+    )
     
-    if (showDestinationSelectDialog) {
-        val destinationItems = destinationOptions.keys.toList()
-        val currentSelected = selectedDestinationItem.takeIf { it in destinationItems } ?: destinationItems.firstOrNull() ?: ""
-        
-        ListItemSelectDialog(
-            isVisible = showDestinationSelectDialog,
-            title = "行先を選択してください",
-            items = destinationItems,
-            selectedItem = currentSelected,
-            onItemSelect = { selectedDestinationItem = it },
-            onPositiveClick = {
-                routeRegistrationManager.handleDestinationSelectPositiveClick(
-                    scope,
-                    selectedDestinationItem,
-                    commonLoadingViewModel,
-                    destinationOptions,
-                    currentStationName
-                ) { showDestinationSelectDialog = false }
-            },
-            onNegativeClick = {
-                showDestinationSelectDialog = false
-            },
-            onDismiss = { showDestinationSelectDialog = false }
-        )
-    }
+    DestinationSelectDialogHandler(
+        showDestinationSelectDialog = showDestinationSelectDialog,
+        destinationOptions = destinationOptions,
+        selectedDestinationItem = selectedDestinationItem,
+        onDestinationItemChange = { selectedDestinationItem = it },
+        onDialogDismiss = { showDestinationSelectDialog = false },
+        routeRegistrationManager = routeRegistrationManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        currentStationName = currentStationName
+    )
     
-    if (showEditDialog && selectedItem != null) {
-        // コールバックを事前に設定
-        routeListItemEditViewModel.onClickPositiveButtonCallback = { editType, dataId ->
-            editModeManager.handleEditDialogPositiveClick(
-                editType,
-                scope,
-                commonLoadingViewModel,
-                selectedItem!!,
-                { showDeleteConfirmDialog = true },
-                { showColorSelectDialog = true },
-                { showEditDialog = false }
-            )
-        }
-        routeListItemEditViewModel.onClickNegativeButtonCallback = { _, _ ->
-            showEditDialog = false
-        }
-
-        RouteListItemEditDialogWithViewModel(
-            isVisible = showEditDialog,
-            targetDataId = selectedItem!!.dataId,
-            onDismiss = { showEditDialog = false },
-            viewModel = routeListItemEditViewModel
-        )
-    }
+    EditDialogHandler(
+        showEditDialog = showEditDialog,
+        selectedItem = selectedItem,
+        onDialogDismiss = { showEditDialog = false },
+        editModeManager = editModeManager,
+        commonLoadingViewModel = commonLoadingViewModel,
+        onShowDeleteConfirmDialog = { showDeleteConfirmDialog = true },
+        onShowColorSelectDialog = { showColorSelectDialog = true }
+    )
     
-    if (showDeleteConfirmDialog && selectedItem != null) {
-        RouteListItemDeleteConfirmDialog(
-            isVisible = showDeleteConfirmDialog,
-            onPositiveClick = {
-                dialogManager.handleDeleteConfirmPositiveClick(
-                    selectedItem!!.dataId,
-                    routeListViewModel,
-                    { showDeleteConfirmDialog = false },
-                    { selectedItem = null }
-                )
-            },
-            onNegativeClick = {
-                showDeleteConfirmDialog = false
-            },
-            onDismiss = { showDeleteConfirmDialog = false }
-        )
-    }
+    DeleteConfirmDialogHandler(
+        showDeleteConfirmDialog = showDeleteConfirmDialog,
+        selectedItem = selectedItem,
+        onDialogDismiss = { showDeleteConfirmDialog = false },
+        dialogManager = dialogManager,
+        routeListViewModel = routeListViewModel,
+        onSelectedItemClear = { selectedItem = null }
+    )
     
-    // 色選択ダイアログ
-    if (showColorSelectDialog && selectedItem != null) {
-        ColorSelectDialog(
-            isVisible = showColorSelectDialog,
-            currentColor = selectedItem!!.displayColor,
-            onColorSelected = { newColor ->
-                // selectedItemのdisplayColorを即座に更新
-                selectedItem = selectedItem!!.apply { displayColor = newColor }
-                editModeManager.handleColorUpdate(selectedItem!!, newColor)
-                // リコンポジションを強制するためのトリガー更新
-                colorUpdateTrigger++
-                showColorSelectDialog = false
-            },
-            onDismiss = { showColorSelectDialog = false }
-        )
-    }
+    ColorSelectDialogHandler(
+        showColorSelectDialog = showColorSelectDialog,
+        selectedItem = selectedItem,
+        onDialogDismiss = { showColorSelectDialog = false },
+        editModeManager = editModeManager,
+        onSelectedItemUpdate = { selectedItem = it },
+        onColorUpdateTrigger = { colorUpdateTrigger++ }
+    )
 }
 
 
