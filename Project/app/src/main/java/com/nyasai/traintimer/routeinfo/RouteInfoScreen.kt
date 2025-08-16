@@ -28,7 +28,7 @@ import com.nyasai.traintimer.database.RouteDetail
 import com.nyasai.traintimer.routeinfo.logic.InteractionManager
 import com.nyasai.traintimer.routeinfo.logic.RouteDisplayManager
 import com.nyasai.traintimer.routeinfo.logic.CountdownManager
-import com.nyasai.traintimer.routeinfo.parts.FilterItemSelectDialog
+import com.nyasai.traintimer.routeinfo.parts.FilterDialogHandler
 import com.nyasai.traintimer.routeinfo.parts.RouteInfoItemCompose
 import com.nyasai.traintimer.routeinfo.parts.RouteInfoTitleCompose
 import com.nyasai.traintimer.util.YahooRouteInfoGetter
@@ -280,39 +280,12 @@ fun RouteInfoScreen(
     }
     
     // フィルタダイアログ
-    if (showFilterDialog) {
-        FilterItemSelectDialog(
-            isVisible = showFilterDialog,
-            filterItems = localFilterItems,
-            onItemToggle = { index ->
-                if (index in 0 until localFilterItems.size) {
-                    val mutableList = localFilterItems.toMutableList()
-                    val item = mutableList[index]
-                    // 新しいFilterInfoオブジェクトを作成して状態を変更
-                    mutableList[index] = FilterInfo(
-                        item.dataId,
-                        item.parentDataId,
-                        item.trainTypeAndDestination,
-                        !item.isShow
-                    )
-                    localFilterItems = mutableList
-                }
-            },
-            onPositiveClick = {
-                // フィルタ情報を更新
-                scope.launch {
-                    withContext(Dispatchers.IO) {
-                        routeInfoViewModel.updateFilterInfoListItem(localFilterItems)
-                    }
-                    filterUpdateTrigger++
-                    showFilterDialog = false
-                }
-            },
-            onNegativeClick = {
-                showFilterDialog = false
-            },
-            onDismiss = { showFilterDialog = false }
-        )
-    }
+    FilterDialogHandler(
+        showFilterDialog = showFilterDialog,
+        localFilterItems = localFilterItems,
+        onFilterItemsChange = { localFilterItems = it },
+        onDialogDismiss = { showFilterDialog = false },
+        routeInfoViewModel = routeInfoViewModel,
+        onFilterUpdate = { filterUpdateTrigger++ }
+    )
 }
-
