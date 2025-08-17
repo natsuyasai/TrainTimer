@@ -27,6 +27,7 @@ fun RouteInfoContent(
     screenState: RouteInfoScreenState,
     managers: RouteInfoManagers,
     filterInfo: List<com.nyasai.traintimer.database.FilterInfo>,
+    listState: androidx.compose.foundation.lazy.LazyListState,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,6 +49,7 @@ fun RouteInfoContent(
                 currentCountItem = currentCountItem,
                 screenState = screenState,
                 managers = managers,
+                listState = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)

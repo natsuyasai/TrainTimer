@@ -65,6 +65,9 @@ fun RouteInfoScreenRefactored(
         }
     }
     
+    // LazyListStateをrememberで作成
+    val updateListState = rememberLazyListState()
+    
     // 改善されたカウントダウン効果
     CountdownEffect(
         currentCountItem = currentCountItem,
@@ -74,8 +77,15 @@ fun RouteInfoScreenRefactored(
         buildNextTimeInfo = { managers.countdownManager.buildNextTimeInfo(it) }
     )
     
-    // LazyListStateをrememberで作成
-    val updateListState = rememberLazyListState()
+    // カウントダウン対象変更時の自動スクロール
+    LaunchedEffect(currentCountItem) {
+        if (currentCountItem != null && screenState.displayRouteDetails.isNotEmpty()) {
+            managers.routeDisplayManager.performAutoScroll(
+                screenState.displayRouteDetails,
+                updateListState
+            )
+        }
+    }
     
     // 表示リストの更新ロジック
     LaunchedEffect(currentDiagramType, routeItems, filterInfo, screenState.filterUpdateTrigger) {
@@ -105,6 +115,7 @@ fun RouteInfoScreenRefactored(
         screenState = screenState,
         managers = managers,
         filterInfo = filterInfo,
+        listState = updateListState,
         onBackClick = onBackClick,
         modifier = modifier
     )

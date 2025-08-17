@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.nyasai.traintimer.database.RouteDetail
@@ -23,9 +22,9 @@ fun RouteInfoMainContent(
     currentCountItem: RouteDetail?,
     screenState: RouteInfoScreenState,
     managers: RouteInfoManagers,
+    listState: androidx.compose.foundation.lazy.LazyListState,
     modifier: Modifier = Modifier
 ) {
-    val listState = rememberLazyListState()
     
     Column(modifier = modifier) {
         // タイトル部分
